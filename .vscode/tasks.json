@@ -1,0 +1,52 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build server",
+            "type": "shell",
+            "command": "cargo build",
+            "problemMatcher": "$rustc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "icon": {
+                "light": "resources/light/server.svg",
+                "dark": "resources/dark/server.svg"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/server"
+            }
+        },
+        {
+            "label": "build lib",
+            "type": "shell",
+            "command": "cargo build",
+            "problemMatcher": "$rustc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "icon": {
+                "light": "resources/light/server.svg",
+                "dark": "resources/dark/server.svg"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/server"
+            }
+        },
+        {
+            "label": "build all",
+            "dependsOrder": "sequence",
+            "problemMatcher": "$rustc",
+            "dependsOn": [
+                "build lib",
+                "build server"
+            ],
+            "icon": {
+                "light": "resources/light/server.svg",
+                "dark": "resources/dark/server.svg"
+            },
+        }
+    ],
+}
