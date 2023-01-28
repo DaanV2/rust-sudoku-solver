@@ -1,4 +1,4 @@
-use super::Possibility::{Possibility, Mark};
+use super::possibility::{Possibility, Mark};
 
 
 
