@@ -1,22 +1,37 @@
-name: Rust
+name: 🦀
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "lib/**"
+      - "server/**"
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "lib/**"
+      - "server/**"
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  checks:
+    name: 🦀 ${{ matrix.folder }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        folder: [ "lib", "server" ]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
+    - name: 📦 Checkout repository
+      uses: actions/checkout@v3
+
+    - name: 🔨 Build
+      working-directory: ${{ matrix.folder }}
       run: cargo build --verbose
-    - name: Run tests
+
+    - name: 📋 Run tests
+      working-directory: ${{ matrix.folder }}
       run: cargo test --verbose
