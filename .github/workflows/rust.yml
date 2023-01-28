@@ -12,6 +12,9 @@ on:
       - "lib/**"
       - "server/**"
 
+  workflow_dispatch:
+
+
 env:
   CARGO_TERM_COLOR: always
 
