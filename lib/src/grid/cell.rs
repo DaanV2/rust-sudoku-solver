@@ -1,17 +1,17 @@
-use super::possibility::{Possibility, Mark};
+use super::{possibility::{Possibility}, mark::Mark};
 
 
-
+#[derive(Debug, Clone, Copy)]
 pub struct Cell {
-    pub value: u8,
-    pub possibilities: Possibility
+    pub possibilities: Possibility,
+    pub value: u8
 }
 
 impl Cell {
     pub fn new() -> Cell {
         Cell {
-            value: 0,
-            possibilities: Possibility::new()
+            possibilities: Possibility::new(),
+            value: 0
         }
     }
 
