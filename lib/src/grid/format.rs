@@ -15,8 +15,13 @@ pub fn to_row_col(index: usize) -> Coord {
     Coord::new(index / GRID_WIDTH, index % GRID_HEIGHT)
 }
 
+#[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::grid::{
+        constants::{GRID_HEIGHT, GRID_WIDTH},
+        coords::Coord,
+        format::{get_index, to_row_col},
+    };
 
     #[test]
     fn test_index() {

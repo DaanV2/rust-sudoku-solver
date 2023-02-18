@@ -18,6 +18,33 @@ impl SolverResult {
             grid: self.grid,
         }
     }
+
+    pub fn update(grid: Grid) -> Self {
+        Self {
+            result: SolveResult::Updated,
+            grid: grid,
+        }
+    }
+
+    pub fn nothing(grid: Grid) -> Self {
+        Self {
+            result: SolveResult::Nothing,
+            grid: grid,
+        }
+    }
+
+    pub fn solved(grid: Grid) -> Self {
+        Self {
+            result: SolveResult::Solved,
+            grid: grid,
+        }
+    }
+}
+
+pub struct AnnotatedSolverResult {
+    pub result: SolveResult,
+    pub grid: Grid,
+    pub iterations: usize,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]

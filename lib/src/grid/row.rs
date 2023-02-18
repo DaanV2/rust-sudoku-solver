@@ -29,3 +29,22 @@ impl Searchable for Row {
         Coord::new(self.row, index)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::Row;
+    use crate::grid::{cell::Cell, constants::GRID_HEIGHT_RANGE, searchable::Searchable};
+
+    #[test]
+    fn test_coords() {
+        for row_index in GRID_HEIGHT_RANGE {
+            let row = Row::new(row_index, [Cell::new(); 81]);
+
+            for col_index in GRID_HEIGHT_RANGE {
+                let coord = row.get_coord(col_index);
+                assert_eq!(coord.row, row_index);
+                assert_eq!(coord.col, col_index);
+            }
+        }
+    }
+}

@@ -1,4 +1,4 @@
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{AnnotatedSolverResult, SolveResult, Solver, SolverResult};
 use crate::grid::grid::Grid;
 
 pub struct SolverManager {
@@ -14,14 +14,22 @@ pub struct SolverManagerConfig {
 impl SolverManager {
     pub fn new() -> Self {
         Self {
-            solvers: vec![super::mark_reset::MarkReset::new_box()],
+            solvers: vec![
+                // Setups for other solvers
+                super::mark_reset::MarkReset::new_box(),
+                super::mark_simple::MarkSimple::new_box(),
+                // Solvers
+                super::determined_solver::DeterminedSolver::new_box(),
+                // Finalizers
+                super::is_solved::IsSolved::new_box(),
+            ],
             config: SolverManagerConfig {
                 max_iterations: 1000,
             },
         }
     }
 
-    pub fn solve(&self, grid: Grid) -> SolverResult {
+    pub fn solve(&self, grid: Grid) -> AnnotatedSolverResult {
         let mut current = SolverResult {
             result: SolveResult::Updated,
             grid,
@@ -44,7 +52,11 @@ impl SolverManager {
             }
         }
 
-        current
+        AnnotatedSolverResult {
+            grid: current.grid,
+            result: current.result,
+            iterations: iteration,
+        }
     }
 
     pub fn solve_round(&self, mut grid: SolverResult) -> SolverResult {

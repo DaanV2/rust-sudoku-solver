@@ -1,3 +1,5 @@
+pub mod determined_solver;
+pub mod is_solved;
 pub mod mark_reset;
 pub mod mark_simple;
 pub mod solver;

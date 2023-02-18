@@ -1,6 +1,6 @@
 use super::{mark::Mark, possibility::Possibility};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Cell {
     pub possibilities: Possibility,
     pub value: u8,
@@ -11,6 +11,13 @@ impl Cell {
         Cell {
             possibilities: Possibility::new(),
             value: 0,
+        }
+    }
+
+    pub fn new_with_value(value: u8) -> Cell {
+        Cell {
+            possibilities: Possibility::empty(),
+            value: value,
         }
     }
 
@@ -29,9 +36,13 @@ impl Cell {
         self.possibilities.is_possible(value)
     }
 
-    pub fn set(&mut self, value: Mark) {
-        self.value = value as u8;
+    pub fn set_value(&mut self, value: u8) {
+        self.value = value;
         self.possibilities.all_off();
+    }
+
+    pub fn set(&mut self, value: Mark) {
+        self.possibilities.set(value);
     }
 
     pub fn unset(&mut self, value: Mark) {
@@ -52,5 +63,43 @@ impl Cell {
 
     pub fn reset_possibilities(&mut self) {
         self.possibilities = Possibility::new();
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::grid::mark::Mark;
+
+    #[test]
+    fn test_set_value() {
+        for i in 1..10 {
+            let mut cell = super::Cell::new();
+            assert_eq!(cell.is_determined(), false);
+            assert_eq!(cell.possibilities.get_count(), 9);
+
+            cell.set_value(i as u8);
+            assert_eq!(cell.is_determined(), true);
+            assert_eq!(cell.possibilities.get_count(), 0);
+        }
+    }
+
+    #[test]
+    fn test_set_possibility() {
+        let mut cell = super::Cell::new();
+        cell.possibilities.all_off();
+
+        for i in 1..10 {
+            let mark = Mark::from_value(i);
+            cell.set_state(Mark::from_value(i), true);
+
+            assert_eq!(cell.get_state(mark), true);
+        }
+
+        for i in 1..10 {
+            let mark = Mark::from_value(i);
+            cell.set_state(Mark::from_value(i), false);
+
+            assert_eq!(cell.get_state(mark), false);
+        }
     }
 }

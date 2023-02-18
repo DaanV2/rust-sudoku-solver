@@ -1,21 +1,45 @@
 use super::mark::Mark;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Possibility {
-    value: u16
+    value: u16,
+}
+
+impl std::fmt::Debug for Possibility {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Possibility")
+            .field("1", &self.get_state(Mark::N1))
+            .field("2", &self.get_state(Mark::N2))
+            .field("3", &self.get_state(Mark::N3))
+            .field("4", &self.get_state(Mark::N4))
+            .field("5", &self.get_state(Mark::N5))
+            .field("6", &self.get_state(Mark::N6))
+            .field("7", &self.get_state(Mark::N7))
+            .field("8", &self.get_state(Mark::N8))
+            .field("9", &self.get_state(Mark::N9))
+            .finish()
+    }
 }
 
 impl Possibility {
     pub fn new() -> Possibility {
-        Possibility{ 
-            value: 0b00000001_11111111
+        Possibility {
+            value: 0b00000001_11111111,
         }
     }
 
+    pub fn empty() -> Possibility {
+        Possibility { value: 0 }
+    }
+
+    pub fn from(value: Mark) -> Possibility {
+        let mut p = Possibility::empty();
+        p.set(value);
+        p
+    }
+
     pub fn copy(&self) -> Possibility {
-        Possibility{ 
-            value: self.value
-        }
+        Possibility { value: self.value }
     }
 
     pub fn is_possible(&self, value: Mark) -> bool {
@@ -63,6 +87,12 @@ impl Possibility {
     }
 }
 
+impl Default for Possibility {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -102,7 +132,6 @@ mod tests {
     fn set_each_field_works() {
         let mut p = Possibility::new();
 
-        
         for m in Mark::iter() {
             p.all_off();
             p.set(*m);

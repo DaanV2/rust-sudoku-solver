@@ -53,7 +53,7 @@ impl Mark {
     }
 
     // Returns the value of the given index
-    pub fn from_index(index: usize) -> Self {
+    pub fn from_index(index: usize) -> Mark {
         match index {
             0 => Mark::N1,
             1 => Mark::N2,
@@ -64,6 +64,35 @@ impl Mark {
             6 => Mark::N7,
             7 => Mark::N8,
             8 => Mark::N9,
+            _ => Mark::N1,
+        }
+    }
+
+    pub fn to_value(&self) -> u8 {
+        match self {
+            Mark::N1 => 1,
+            Mark::N2 => 2,
+            Mark::N3 => 3,
+            Mark::N4 => 4,
+            Mark::N5 => 5,
+            Mark::N6 => 6,
+            Mark::N7 => 7,
+            Mark::N8 => 8,
+            Mark::N9 => 9,
+        }
+    }
+
+    pub fn from_value(value: u8) -> Mark {
+        match value {
+            1 => Mark::N1,
+            2 => Mark::N2,
+            3 => Mark::N3,
+            4 => Mark::N4,
+            5 => Mark::N5,
+            6 => Mark::N6,
+            7 => Mark::N7,
+            8 => Mark::N8,
+            9 => Mark::N9,
             _ => Mark::N1,
         }
     }
@@ -81,6 +110,17 @@ mod tests {
 
             assert_eq!(mark2, mark);
             assert_eq!(value, index);
+        }
+    }
+
+    #[test]
+    fn test_value() {
+        for (index, mark) in Mark::iter().enumerate() {
+            let value = mark.to_value();
+            let mark2 = &Mark::from_value(value);
+
+            assert_eq!(mark2, mark);
+            assert_eq!(value, index as u8 + 1);
         }
     }
 }

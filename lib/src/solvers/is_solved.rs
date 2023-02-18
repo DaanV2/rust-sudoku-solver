@@ -1,9 +1,10 @@
-use super::solver::{SolveResult, Solver, SolverResult};
 use crate::grid::{grid::Grid, searchable::Searchable};
 
-pub struct MarkReset {}
+use super::solver::{SolveResult, Solver, SolverResult};
 
-impl MarkReset {
+pub struct IsSolved {}
+
+impl IsSolved {
     pub fn new() -> Self {
         Self {}
     }
@@ -13,24 +14,23 @@ impl MarkReset {
     }
 }
 
-impl Solver for MarkReset {
+impl Solver for IsSolved {
     fn solve(&self, grid: Grid) -> SolverResult {
-        let mut current: Grid = grid.clone();
+        let current: Grid = grid.clone();
+        let mut result = SolveResult::Solved;
 
         for i in grid.iter() {
             let cell = current.get(i);
 
             // If the cell is not determined, then we need to reset the marks
             if !cell.is_determined() {
-                let mut new_cell = cell.clone();
-                new_cell.reset_possibilities();
-
-                current.set(i, new_cell)
+                result = SolveResult::Nothing;
+                break;
             }
         }
 
         SolverResult {
-            result: SolveResult::Nothing,
+            result,
             grid: current,
         }
     }
