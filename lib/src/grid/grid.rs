@@ -4,6 +4,7 @@ const GRID_HEIGHT: usize = 9;
 const GRID_WIDTH: usize = 9;
 const GRID_SIZE: usize = GRID_HEIGHT * GRID_WIDTH;
 
+#[derive(Debug, Clone, Copy)]
 pub struct Grid {
     // The grid is a vector of vectors of cells
     grid: [Cell; GRID_SIZE],

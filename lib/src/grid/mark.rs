@@ -23,7 +23,7 @@ impl Default for Mark {
 impl Mark {
     // Returns an iterator over all possible values
     pub fn iter() -> Iter<'static, Mark> {
-        static Fields: [Mark; 9] = [
+        static FIELDS: [Mark; 9] = [
             Mark::N1,
             Mark::N2,
             Mark::N3,
@@ -34,7 +34,7 @@ impl Mark {
             Mark::N8,
             Mark::N9,
         ];
-        Fields.iter()
+        FIELDS.iter()
     }
 
     // Returns the index of the given value
