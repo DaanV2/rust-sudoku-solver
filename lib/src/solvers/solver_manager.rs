@@ -1,5 +1,5 @@
+use super::solver::{SolveResult, Solver, SolverResult};
 use crate::grid::grid::Grid;
-use super::solver::{SolverResult, Solver, SolveResult};
 
 pub struct SolverManager {
     pub solvers: Vec<Box<dyn Solver>>,
@@ -14,9 +14,7 @@ pub struct SolverManagerConfig {
 impl SolverManager {
     pub fn new() -> Self {
         Self {
-            solvers: vec![
-                super::mark_reset::MarkReset::new_box(),
-            ],
+            solvers: vec![super::mark_reset::MarkReset::new_box()],
             config: SolverManagerConfig {
                 max_iterations: 1000,
             },
@@ -29,12 +27,12 @@ impl SolverManager {
             grid,
         };
         let mut iteration = 0;
-        
+
         //While the grid has been updated, keep solving
         while SolveResult::Updated == current.result {
             let result = self.solve_round(current);
             current = current.combine(result);
-            
+
             if current.result == SolveResult::Solved {
                 break;
             }
@@ -45,7 +43,7 @@ impl SolverManager {
                 break;
             }
         }
-        
+
         current
     }
 
@@ -62,6 +60,6 @@ impl SolverManager {
             }
         }
 
-        return grid
+        return grid;
     }
 }

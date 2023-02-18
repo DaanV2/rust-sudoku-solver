@@ -1,17 +1,13 @@
 use crate::grid::{grid::Grid, searchable::Searchable};
 
-use super::solver::{SolverResult, Solver, SolveResult};
+use super::solver::{SolveResult, Solver, SolverResult};
 
-
-
-
-pub struct MarkReset {
-}
+#[derive(Debug, Clone)]
+pub struct MarkReset {}
 
 impl MarkReset {
     pub fn new() -> Self {
-        Self {
-        }
+        Self {}
     }
 
     pub fn new_box() -> Box<Self> {
@@ -22,7 +18,7 @@ impl MarkReset {
 impl Solver for MarkReset {
     fn solve(&self, grid: Grid) -> SolverResult {
         let mut current: Grid = grid.clone();
-        
+
         for i in grid.iter() {
             let cell = current.get(i);
 

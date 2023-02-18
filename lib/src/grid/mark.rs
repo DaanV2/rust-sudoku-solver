@@ -68,3 +68,19 @@ impl Mark {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_index() {
+        for (index, mark) in Mark::iter().enumerate() {
+            let value = mark.to_index();
+            let mark2 = &Mark::from_index(value);
+
+            assert_eq!(mark2, mark);
+            assert_eq!(value, index);
+        }
+    }
+}

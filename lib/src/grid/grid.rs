@@ -1,21 +1,18 @@
-use super::{cell::Cell, searchable::Searchable};
-
-const GRID_HEIGHT: usize = 9;
-const GRID_WIDTH: usize = 9;
-const GRID_SIZE: usize = GRID_HEIGHT * GRID_WIDTH;
+use super::{
+    cell::Cell,
+    column::Column,
+    constants::GRID_SIZE,
+    coords::Coord,
+    format::{get_index, to_row_col},
+    row::Row,
+    searchable::Searchable,
+    square::Square,
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Grid {
     // The grid is a vector of vectors of cells
     grid: [Cell; GRID_SIZE],
-}
-
-pub fn get_index(row: usize, col: usize) -> usize {
-    (row * GRID_WIDTH + col) as usize
-}
-
-pub fn to_row_col(index: usize) -> (usize, usize) {
-    (index / GRID_WIDTH, index % GRID_HEIGHT)
 }
 
 impl Grid {
@@ -26,8 +23,8 @@ impl Grid {
     }
 
     pub fn copy(&self) -> Grid {
-        Grid { 
-            grid: self.grid.clone()
+        Grid {
+            grid: self.grid.clone(),
         }
     }
 
@@ -48,25 +45,15 @@ impl Grid {
     }
 
     pub fn get_row(&self, row: usize) -> Row {
-        Row {
-            row,
-            grid: self.grid,
-        }
+        Row::new(row, self.grid)
     }
 
     pub fn get_column(&self, col: usize) -> Column {
-        Column {
-            col,
-            grid: self.grid,
-        }
+        Column::new(col, self.grid)
     }
 
-    pub fn get_box(&self, row: usize, col: usize) -> Box {
-        Box {
-            row: row - row % 3,
-            col: col - col % 3,
-            grid: self.grid,
-        }
+    pub fn get_square(&self, row: usize, col: usize) -> Square {
+        Square::from(row, col, self.grid)
     }
 }
 
@@ -81,7 +68,7 @@ impl Searchable for Grid {
         &self.grid[index]
     }
 
-    fn get_coords(&self, index: usize) -> (usize, usize) {
+    fn get_coords(&self, index: usize) -> Coord {
         to_row_col(index)
     }
 
@@ -90,56 +77,18 @@ impl Searchable for Grid {
     }
 }
 
-pub struct Row {
-    //The row index
-    row : usize,
-    //The entire grid
-    grid: [Cell; GRID_SIZE],
-}
+#[cfg(test)]
+mod tests {
+    use crate::grid::{mark::Mark, searchable::Searchable};
 
-impl Searchable for Row {
-    fn get_cell(&self, index: usize) -> &Cell {
-        &self.grid[get_index(self.row, index)]
-    }
+    use super::Grid;
 
-    fn get_coords(&self, index: usize) -> (usize, usize) {
-        (self.row, index)
-    }
-}
+    #[test]
+    fn it_works() {
+        let grid = Grid::new();
 
-pub struct Column {
-    //The column index
-    col : usize,
-    //The entire grid
-    grid: [Cell; GRID_SIZE],
-}
-
-impl Searchable for Column {
-    fn get_cell(&self, index: usize) -> &Cell {
-        &self.grid[get_index(index, self.col)]
-    }
-
-    fn get_coords(&self, index: usize) -> (usize, usize) {
-        (index, self.col)
-    }
-}
-
-pub struct Box {
-    row : usize,
-    col : usize,
-    grid: [Cell; GRID_SIZE],
-}
-
-impl Searchable for Box {
-    fn get_cell(&self, index: usize) -> &Cell {
-        let row = self.row + index / 3;
-        let col = self.col + index % 3;
-        &self.grid[get_index(row, col)]
-    }
-
-    fn get_coords(&self, index: usize) -> (usize, usize) {
-        let row = self.row + index / 3;
-        let col = self.col + index % 3;
-        (row, col)
+        if !grid.get_row(3).has_possible(Mark::N1) {
+            panic!("Row 3 should have 1 as a possible value");
+        }
     }
 }
