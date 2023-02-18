@@ -1,24 +1,23 @@
-use super::{possibility::{Possibility}, mark::Mark};
-
+use super::{mark::Mark, possibility::Possibility};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Cell {
     pub possibilities: Possibility,
-    pub value: u8
+    pub value: u8,
 }
 
 impl Cell {
     pub fn new() -> Cell {
         Cell {
             possibilities: Possibility::new(),
-            value: 0
+            value: 0,
         }
     }
 
     pub fn copy(&self) -> Cell {
         Cell {
             value: self.value,
-            possibilities: self.possibilities.copy()
+            possibilities: self.possibilities.copy(),
         }
     }
 
@@ -33,7 +32,6 @@ impl Cell {
     pub fn set(&mut self, value: Mark) {
         self.value = value as u8;
         self.possibilities.all_off();
-        self.possibilities.set(value);
     }
 
     pub fn unset(&mut self, value: Mark) {

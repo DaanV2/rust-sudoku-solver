@@ -4,15 +4,13 @@ use super::{
 };
 
 // Calculate the index of a cell in the grid from its row and column
-pub fn get_index(row: usize, col: usize) -> usize {
-    (row * GRID_WIDTH + col) as usize
+#[inline(always)]
+pub fn get_index(coord: Coord) -> usize {
+    (coord.get_row() * GRID_WIDTH + coord.get_col()) as usize
 }
 
 // Calculate the row and column of a cell in the grid from its index
+#[inline(always)]
 pub fn to_row_col(index: usize) -> Coord {
     Coord::new(index / GRID_WIDTH, index % GRID_HEIGHT)
-}
-
-pub fn get_square_index(row: usize, col: usize) -> usize {
-    (row / 3) * 3 + col / 3
 }

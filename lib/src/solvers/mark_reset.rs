@@ -2,7 +2,6 @@ use crate::grid::{grid::Grid, searchable::Searchable};
 
 use super::solver::{SolveResult, Solver, SolverResult};
 
-#[derive(Debug, Clone)]
 pub struct MarkReset {}
 
 impl MarkReset {

@@ -2,7 +2,7 @@ use super::{cell::Cell, coords::Coord, mark::Mark};
 
 pub trait Searchable {
     fn get_cell(&self, index: usize) -> &Cell;
-    fn get_coords(&self, index: usize) -> Coord;
+    fn get_coord(&self, index: usize) -> Coord;
     fn max(&self) -> usize {
         9
     }
@@ -39,7 +39,7 @@ pub trait Searchable {
     }
 
     fn iter_coords(&self) -> Box<dyn Iterator<Item = Coord> + '_> {
-        Box::new((0..self.max()).into_iter().map(move |i| self.get_coords(i)))
+        Box::new((0..self.max()).into_iter().map(move |i| self.get_coord(i)))
     }
 
     fn iter_cells(&self) -> Box<dyn Iterator<Item = &Cell> + '_> {

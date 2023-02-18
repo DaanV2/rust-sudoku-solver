@@ -28,20 +28,24 @@ impl Grid {
         }
     }
 
+    /// Retrieves the cell at the given index
     pub fn get(&self, index: usize) -> &Cell {
         &self.grid[index]
     }
 
+    /// Sets the cell at the given index
     pub fn set(&mut self, index: usize, cell: Cell) {
         self.grid[index] = cell;
     }
 
-    pub fn get_cell(&self, row: usize, col: usize) -> &Cell {
-        &self.grid[get_index(row, col)]
+    /// Retrieves the cell at the given coordinate
+    pub fn get_cell(&self, coord: Coord) -> &Cell {
+        &self.grid[get_index(coord)]
     }
 
-    pub fn set_cell(&mut self, row: usize, col: usize, cell: Cell) {
-        self.grid[get_index(row, col)] = cell;
+    /// Sets the cell at the given coordinate
+    pub fn set_cell(&mut self, coord: Coord, cell: Cell) {
+        self.grid[get_index(coord)] = cell;
     }
 
     pub fn get_row(&self, row: usize) -> Row {
@@ -68,7 +72,7 @@ impl Searchable for Grid {
         &self.grid[index]
     }
 
-    fn get_coords(&self, index: usize) -> Coord {
+    fn get_coord(&self, index: usize) -> Coord {
         to_row_col(index)
     }
 

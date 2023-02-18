@@ -25,12 +25,11 @@ impl Square {
 
 impl Searchable for Square {
     fn get_cell(&self, index: usize) -> &Cell {
-        let row = self.row + index / 3;
-        let col = self.col + index % 3;
-        &self.grid[get_index(row, col)]
+        let coord = self.get_coord(index);
+        &self.grid[get_index(coord)]
     }
 
-    fn get_coords(&self, index: usize) -> Coord {
+    fn get_coord(&self, index: usize) -> Coord {
         let row = self.row + index / 3;
         let col = self.col + index % 3;
         Coord::new(row, col)

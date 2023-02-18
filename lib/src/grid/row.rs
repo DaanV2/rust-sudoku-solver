@@ -22,10 +22,10 @@ impl Row {
 
 impl Searchable for Row {
     fn get_cell(&self, index: usize) -> &Cell {
-        &self.grid[get_index(self.row, index)]
+        &self.grid[get_index(self.get_coord(index))]
     }
 
-    fn get_coords(&self, index: usize) -> Coord {
+    fn get_coord(&self, index: usize) -> Coord {
         Coord::new(self.row, index)
     }
 }
