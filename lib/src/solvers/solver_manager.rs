@@ -14,7 +14,9 @@ pub struct SolverManagerConfig {
 impl SolverManager {
     pub fn new() -> Self {
         Self {
-            solvers: vec![],
+            solvers: vec![
+                super::mark_reset::MarkReset::new_box(),
+            ],
             config: SolverManagerConfig {
                 max_iterations: 1000,
             },

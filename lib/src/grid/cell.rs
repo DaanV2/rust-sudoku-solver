@@ -51,4 +51,8 @@ impl Cell {
     pub fn get_count(&self) -> u32 {
         self.possibilities.get_count()
     }
+
+    pub fn reset_possibilities(&mut self) {
+        self.possibilities = Possibility::new();
+    }
 }

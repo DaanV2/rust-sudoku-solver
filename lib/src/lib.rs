@@ -7,7 +7,7 @@ pub fn add(left: usize, right: usize) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use crate::grid::grid::{Grid, Searchable};
+    use crate::grid::{grid::{Grid}, searchable::Searchable};
 
     use super::*;
 
