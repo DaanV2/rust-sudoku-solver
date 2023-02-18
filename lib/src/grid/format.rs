@@ -14,3 +14,20 @@ pub fn get_index(coord: Coord) -> usize {
 pub fn to_row_col(index: usize) -> Coord {
     Coord::new(index / GRID_WIDTH, index % GRID_HEIGHT)
 }
+
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_index() {
+        for row in 0..GRID_HEIGHT {
+            for col in 0..GRID_WIDTH {
+                let coord = Coord::new(row, col);
+                let index = get_index(coord);
+                let coord2 = to_row_col(index);
+
+                assert_eq!(coord2, coord);
+            }
+        }
+    }
+}
