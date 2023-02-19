@@ -16,52 +16,49 @@ impl MarkSimple {
 
 impl Solver for MarkSimple {
     fn solve(&self, grid: Grid) -> SolverResult {
-        solve_private(grid)
-    }
-}
+        let mut current = grid.clone();
 
-fn solve_private(grid: Grid) -> SolverResult {
-    let mut current = grid.clone();
+        for i in grid.iter() {
+            let cell = current.get_cell(i);
 
-    for i in grid.iter() {
-        let cell = current.get_cell(i);
+            //If the cell is determined, mark off that square, row and column
+            if cell.is_determined() {
+                let turnoff = Mark::from_value(cell.value as u8);
+                let coord = current.get_coord(i);
 
-        //If the cell is determined, mark off that square, row and column
-        if cell.is_determined() {
-            let turnoff = Mark::from_value(cell.value as u8);
-            let coord = current.get_coord(i);
+                //Mark off the row
+                for j in current.get_row(coord.row).iter_coords() {
+                    current.unset_possible_at(j, turnoff);
+                }
 
-            //Mark off the row
-            for j in current.get_row(coord.row).iter_coords() {
-                current.unset_possible_at(j, turnoff);
-            }
+                //Mark off the column
+                for j in current.get_column(coord.col).iter_coords() {
+                    current.unset_possible_at(j, turnoff);
+                }
 
-            //Mark off the column
-            for j in current.get_column(coord.col).iter_coords() {
-                current.unset_possible_at(j, turnoff);
-            }
-
-            //Mark off the square
-            for j in current.get_square(coord.row, coord.col).iter_coords() {
-                current.unset_possible_at(j, turnoff);
+                //Mark off the square
+                for j in current.get_square(coord.row, coord.col).iter_coords() {
+                    current.unset_possible_at(j, turnoff);
+                }
             }
         }
-    }
 
-    SolverResult {
-        result: SolveResult::Nothing,
-        grid: current,
+        SolverResult {
+            result: SolveResult::Nothing,
+            grid: current,
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::grid::{
-        cell::Cell, constants::GRID_HEIGHT_RANGE, coords::Coord, grid::Grid, mark::Mark,
-        searchable::Searchable,
+    use crate::{
+        grid::{
+            cell::Cell, constants::GRID_HEIGHT_RANGE, coords::Coord, grid::Grid, mark::Mark,
+            searchable::Searchable,
+        },
+        solvers::solver::Solver,
     };
-
-    use super::solve_private;
 
     #[test]
     fn test_solve() {
@@ -70,8 +67,8 @@ mod test {
 
         grid.set_cell_at(coord, &Cell::new_with_value(5));
 
-        // let solver = super::MarkSimple::new();
-        let result = solve_private(grid);
+        let solver = super::MarkSimple::new();
+        let result = solver.solve(grid);
         let modified = result.grid;
 
         //Check that the row is marked off
