@@ -35,7 +35,7 @@ mod test {
         let sq = grid.get_square(3, 3);
         for index in sq.iter() {
             let coord = sq.get_coord(index);
-            grid.set_cell(coord, Cell::new_with_value(0));
+            grid.set_cell_at(coord, &Cell::new_with_value(0));
         }
 
         test_should_solve(grid);

@@ -20,7 +20,7 @@ impl Solver for IsSolved {
         let mut result = SolveResult::Solved;
 
         for i in grid.iter() {
-            let cell = current.get(i);
+            let cell = current.get_cell(i);
 
             // If the cell is not determined, then we need to reset the marks
             if !cell.is_determined() {

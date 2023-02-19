@@ -58,7 +58,7 @@ impl GridInput {
                 new_cell.set_value(v as u8);
             }
 
-            grid.set(index, new_cell);
+            grid.set_cell(index, &new_cell);
         }
 
         grid
@@ -71,7 +71,7 @@ impl GridOutput {
         let grid = result.grid;
 
         for index in 0..grid.max() {
-            let cell = grid.get(index);
+            let cell = grid.get_cell(index);
             let cell_output = CellOutput::from_cell(cell);
 
             cells.push(cell_output);

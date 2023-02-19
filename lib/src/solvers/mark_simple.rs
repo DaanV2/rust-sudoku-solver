@@ -16,62 +16,61 @@ impl MarkSimple {
 
 impl Solver for MarkSimple {
     fn solve(&self, grid: Grid) -> SolverResult {
-        let mut current = grid.clone();
+        solve_private(grid)
+    }
+}
 
-        for i in grid.iter() {
-            let cell = current.get(i);
+fn solve_private(grid: Grid) -> SolverResult {
+    let mut current = grid.clone();
 
-            //If the cell is determined, mark off that square, row and column
-            if cell.is_determined() {
-                let turnoff = Mark::from_index(cell.value as usize);
-                let coord = current.get_coord(i);
+    for i in grid.iter() {
+        let cell = current.get_cell(i);
 
-                //Mark off the row
-                for j in current.get_row(coord.row).iter_coords() {
-                    let mut new_cell = current.get_cell(j).clone();
-                    new_cell.unset(turnoff);
-                    current.set_cell(j, new_cell);
-                }
+        //If the cell is determined, mark off that square, row and column
+        if cell.is_determined() {
+            let turnoff = Mark::from_index(cell.value as usize);
+            let coord = current.get_coord(i);
 
-                //Mark off the column
-                for j in current.get_column(coord.col).iter_coords() {
-                    let mut new_cell = current.get_cell(j).clone();
-                    new_cell.unset(turnoff);
-                    current.set_cell(j, new_cell);
-                }
+            //Mark off the row
+            for j in current.get_row(coord.row).iter_coords() {
+                current.unset_possible_at(j, turnoff);
+            }
 
-                //Mark off the square
-                for j in current.get_square(coord.row, coord.col).iter_coords() {
-                    let mut new_cell = current.get_cell(j).clone();
-                    new_cell.unset(turnoff);
-                    current.set_cell(j, new_cell);
-                }
+            //Mark off the column
+            for j in current.get_column(coord.col).iter_coords() {
+                current.unset_possible_at(j, turnoff);
+            }
+
+            //Mark off the square
+            for j in current.get_square(coord.row, coord.col).iter_coords() {
+                current.unset_possible_at(j, turnoff);
             }
         }
+    }
 
-        SolverResult {
-            result: SolveResult::Nothing,
-            grid: current,
-        }
+    SolverResult {
+        result: SolveResult::Nothing,
+        grid: current,
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        grid::{cell::Cell, constants::GRID_HEIGHT_RANGE, coords::Coord, grid::Grid, mark::Mark},
-        solvers::solver::Solver,
+    use crate::grid::{
+        cell::Cell, constants::GRID_HEIGHT_RANGE, coords::Coord, grid::Grid, mark::Mark,
     };
+
+    use super::solve_private;
 
     #[test]
     fn test_solve() {
         let mut grid = Grid::new();
         let coord = Coord::new(4, 3);
 
-        grid.set_cell(coord, Cell::new_with_value(5));
+        grid.set_cell_at(coord, &Cell::new_with_value(5));
 
-        let solver = super::MarkSimple::new();
-        let result = solver.solve(grid);
+        // let solver = super::MarkSimple::new();
+        let result = solve_private(grid);
         let modified = result.grid;
 
         //Check that the row is marked off
@@ -80,7 +79,7 @@ mod test {
                 continue;
             }
 
-            let c = modified.get_cell(Coord::new(row, 3));
+            let c = modified.get_cell_at(Coord::new(row, 3));
             assert_eq!(c.is_possible(Mark::N5), false);
         }
 
@@ -90,7 +89,7 @@ mod test {
                 continue;
             }
 
-            let c = modified.get_cell(Coord::new(4, col));
+            let c = modified.get_cell_at(Coord::new(4, col));
             assert_eq!(c.is_possible(Mark::N5), false);
         }
 
@@ -101,7 +100,7 @@ mod test {
                     continue;
                 }
 
-                let c = modified.get_cell(Coord::new(row, col));
+                let c = modified.get_cell_at(Coord::new(row, col));
                 assert_eq!(c.is_possible(Mark::N5), false);
             }
         }

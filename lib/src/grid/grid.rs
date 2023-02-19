@@ -4,6 +4,7 @@ use super::{
     constants::GRID_SIZE,
     coords::Coord,
     format::{get_index, to_row_col},
+    mark::Mark,
     row::Row,
     searchable::Searchable,
     square::Square,
@@ -33,23 +34,23 @@ impl Grid {
     }
 
     /// Retrieves the cell at the given index
-    pub fn get(&self, index: usize) -> &Cell {
+    pub fn get_cell(&self, index: usize) -> &Cell {
         &self.cells[index]
     }
 
     /// Sets the cell at the given index
-    pub fn set(&mut self, index: usize, cell: Cell) {
-        self.cells[index] = cell;
+    pub fn set_cell(&mut self, index: usize, cell: &Cell) {
+        self.cells[index] = *cell;
     }
 
     /// Retrieves the cell at the given coordinate
-    pub fn get_cell(&self, coord: Coord) -> &Cell {
-        &self.cells[get_index(coord)]
+    pub fn get_cell_at(&self, coord: Coord) -> &Cell {
+        &self.get_cell(get_index(coord))
     }
 
     /// Sets the cell at the given coordinate
-    pub fn set_cell(&mut self, coord: Coord, cell: Cell) {
-        self.cells[get_index(coord)] = cell;
+    pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
+        self.set_cell(get_index(coord), cell);
     }
 
     pub fn get_row(&self, row: usize) -> Row {
@@ -62,6 +63,28 @@ impl Grid {
 
     pub fn get_square(&self, row: usize, col: usize) -> Square {
         Square::from(row, col, self.cells)
+    }
+
+    pub fn set_possible_at(&mut self, coord: Coord, mark: Mark) {
+        self.set_possible(get_index(coord), mark);
+    }
+
+    pub fn set_possible(&mut self, index: usize, mark: Mark) {
+        let new_cell: &mut Cell = &mut self.get_cell(index).clone();
+
+        new_cell.set_possible(mark);
+        self.set_cell(index, &new_cell);
+    }
+
+    pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
+        self.unset_possible(get_index(coord), mark);
+    }
+
+    pub fn unset_possible(&mut self, index: usize, mark: Mark) {
+        let new_cell: &mut Cell = &mut self.get_cell(index).clone();
+
+        new_cell.set_possible(mark);
+        self.set_cell(index, &new_cell);
     }
 }
 
@@ -114,6 +137,6 @@ mod tests {
         let index = 64;
         let coord = grid.get_coord(index);
 
-        assert_eq!(grid.get(index), grid.get_cell(coord));
+        assert_eq!(grid.get_cell(index), grid.get_cell_at(coord));
     }
 }

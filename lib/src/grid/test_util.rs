@@ -119,10 +119,10 @@ pub mod test_util {
 
         while removed < amount {
             let index = rng.gen_range(0..grid.max());
-            let cell = &grid.get(index);
+            let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set(index, Cell::new());
+                grid.set_cell(index, &Cell::new());
                 removed += 1;
             }
         }
@@ -134,7 +134,7 @@ pub mod test_util {
         for y in GRID_HEIGHT_RANGE {
             for x in GRID_HEIGHT_RANGE {
                 let coord = Coord::new(x, y);
-                let cell = grid.get_cell(coord);
+                let cell = grid.get_cell_at(coord);
                 let value = cell.value;
 
                 if cell.is_determined() {

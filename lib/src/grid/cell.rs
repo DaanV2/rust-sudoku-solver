@@ -33,6 +33,10 @@ impl Cell {
     }
 
     pub fn is_possible(&self, value: Mark) -> bool {
+        if self.is_determined() {
+            return false;
+        }
+
         self.possibilities.is_possible(value)
     }
 
@@ -41,28 +45,32 @@ impl Cell {
         self.possibilities.all_off();
     }
 
-    pub fn set(&mut self, value: Mark) {
-        self.possibilities.set(value);
+    pub fn set_possible(&mut self, value: Mark) {
+        if self.is_determined() {
+            return;
+        }
+
+        self.possibilities.set_possible(value);
     }
 
-    pub fn unset(&mut self, value: Mark) {
-        self.possibilities.unset(value);
+    pub fn set_possible_state(&mut self, value: Mark, state: bool) {
+        if self.is_determined() {
+            return;
+        }
+
+        self.possibilities.set_possible_state(value, state);
     }
 
-    pub fn set_state(&mut self, value: Mark, on: bool) {
-        self.possibilities.set_state(value, on);
-    }
+    pub fn unset_possible(&mut self, value: Mark) {
+        if self.is_determined() {
+            return;
+        }
 
-    pub fn get_state(&self, value: Mark) -> bool {
-        self.possibilities.get_state(value)
+        self.possibilities.unset_possible(value);
     }
 
     pub fn get_count(&self) -> u32 {
         self.possibilities.get_count()
-    }
-
-    pub fn reset_possibilities(&mut self) {
-        self.possibilities = Possibility::new();
     }
 }
 
@@ -90,16 +98,24 @@ mod test {
 
         for i in 1..10 {
             let mark = Mark::from_value(i);
-            cell.set_state(Mark::from_value(i), true);
+            cell.set_possible(Mark::from_value(i));
 
-            assert_eq!(cell.get_state(mark), true);
+            assert_eq!(cell.is_possible(mark), true);
         }
 
         for i in 1..10 {
             let mark = Mark::from_value(i);
-            cell.set_state(Mark::from_value(i), false);
+            cell.unset_possible(Mark::from_value(i));
 
-            assert_eq!(cell.get_state(mark), false);
+            assert_eq!(cell.is_possible(mark), false);
         }
+    }
+
+    #[test]
+    fn test_size_object() {
+        let cell = super::Cell::new();
+        let size = std::mem::size_of_val(&cell);
+
+        assert_eq!(size, 4);
     }
 }

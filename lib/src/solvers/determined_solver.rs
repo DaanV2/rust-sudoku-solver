@@ -76,7 +76,7 @@ fn check_searchable<T: Searchable>(grid: &mut Grid, area: &T) -> bool {
                 let value = mark.to_value();
                 let new_cell = Cell::new_with_value(value);
 
-                grid.set_cell(coord, new_cell);
+                grid.set_cell_at(coord, &new_cell);
                 return true;
             }
         }
@@ -122,7 +122,7 @@ mod test {
         let index = 64;
         let coord = grid.get_coord(index);
 
-        let cell = grid.get_cell(coord);
+        let cell = grid.get_cell_at(coord);
         let value = cell.value;
 
         let new_cell = Cell {
@@ -130,14 +130,14 @@ mod test {
             possibilities: Possibility::from(Mark::from_value(value)),
         };
 
-        grid.set_cell(coord, new_cell);
+        grid.set_cell_at(coord, &new_cell);
 
         let solver = super::DeterminedSolver::new();
         let output = solver.solve(grid);
 
         assert_eq!(output.result, SolveResult::Updated);
 
-        let check_cell = output.grid.get_cell(coord);
+        let check_cell = output.grid.get_cell_at(coord);
 
         assert_eq!(check_cell.value, value);
     }

@@ -8,15 +8,15 @@ pub struct Possibility {
 impl std::fmt::Debug for Possibility {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Possibility")
-            .field("1", &self.get_state(Mark::N1))
-            .field("2", &self.get_state(Mark::N2))
-            .field("3", &self.get_state(Mark::N3))
-            .field("4", &self.get_state(Mark::N4))
-            .field("5", &self.get_state(Mark::N5))
-            .field("6", &self.get_state(Mark::N6))
-            .field("7", &self.get_state(Mark::N7))
-            .field("8", &self.get_state(Mark::N8))
-            .field("9", &self.get_state(Mark::N9))
+            .field("1", &self.is_possible(Mark::N1))
+            .field("2", &self.is_possible(Mark::N2))
+            .field("3", &self.is_possible(Mark::N3))
+            .field("4", &self.is_possible(Mark::N4))
+            .field("5", &self.is_possible(Mark::N5))
+            .field("6", &self.is_possible(Mark::N6))
+            .field("7", &self.is_possible(Mark::N7))
+            .field("8", &self.is_possible(Mark::N8))
+            .field("9", &self.is_possible(Mark::N9))
             .finish()
     }
 }
@@ -34,8 +34,8 @@ impl Possibility {
 
     pub fn from(value: Mark) -> Possibility {
         let mut p = Possibility::empty();
-        p.set(value);
-        p
+        p.set_possible(value);
+        return p;
     }
 
     pub fn copy(&self) -> Possibility {
@@ -57,27 +57,22 @@ impl Possibility {
     }
 
     // Sets all possibilities to true except the given value
-    pub fn set(&mut self, value: Mark) {
+    pub fn set_possible(&mut self, value: Mark) {
         self.value |= value as u16;
     }
 
     // Sets all possibilities to false except the given value
-    pub fn unset(&mut self, value: Mark) {
+    pub fn unset_possible(&mut self, value: Mark) {
         self.value &= !(value as u16);
     }
 
     // Sets all possibilities to the given value
-    pub fn set_state(&mut self, value: Mark, on: bool) {
-        if on {
-            self.set(value);
+    pub fn set_possible_state(&mut self, value: Mark, state: bool) {
+        if state {
+            self.set_possible(value);
         } else {
-            self.unset(value);
+            self.unset_possible(value);
         }
-    }
-
-    // Returns the state of the given value
-    pub fn get_state(&self, value: Mark) -> bool {
-        self.value & (value as u16) != 0
     }
 
     // Returns the number of possibilities that are true
@@ -120,9 +115,9 @@ mod tests {
     fn set_works() {
         let mut p = Possibility::new();
         p.all_off();
-        p.set(Mark::N1);
-        p.set(Mark::N2);
-        p.set(Mark::N3);
+        p.set_possible(Mark::N1);
+        p.set_possible(Mark::N2);
+        p.set_possible(Mark::N3);
 
         assert_eq!(p.value, 0b00000000_00000111);
         assert_eq!(p.get_count(), 3);
@@ -134,15 +129,15 @@ mod tests {
 
         for m in Mark::iter() {
             p.all_off();
-            p.set(*m);
+            p.set_possible(*m);
 
             assert_eq!(p.get_count(), 1);
-            assert_eq!(p.get_state(*m), true);
+            assert_eq!(p.is_possible(*m), true);
 
-            p.unset(*m);
+            p.unset_possible(*m);
 
             assert_eq!(p.get_count(), 0);
-            assert_eq!(p.get_state(*m), false);
+            assert_eq!(p.is_possible(*m), false);
         }
     }
 }

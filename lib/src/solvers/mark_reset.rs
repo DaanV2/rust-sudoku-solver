@@ -1,5 +1,5 @@
 use super::solver::{SolveResult, Solver, SolverResult};
-use crate::grid::{grid::Grid, searchable::Searchable};
+use crate::grid::{cell::Cell, grid::Grid, searchable::Searchable};
 
 pub struct MarkReset {}
 
@@ -18,14 +18,11 @@ impl Solver for MarkReset {
         let mut current: Grid = grid.clone();
 
         for i in grid.iter() {
-            let cell = current.get(i);
+            let cell = current.get_cell(i);
 
             // If the cell is not determined, then we need to reset the marks
             if !cell.is_determined() {
-                let mut new_cell = cell.clone();
-                new_cell.reset_possibilities();
-
-                current.set(i, new_cell)
+                current.set_cell(i, &Cell::new());
             }
         }
 
