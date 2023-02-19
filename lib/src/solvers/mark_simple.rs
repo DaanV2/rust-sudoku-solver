@@ -1,4 +1,4 @@
-use crate::grid::{mark::Mark, searchable::Searchable};
+use crate::grid::{grid::Grid, mark::Mark, searchable::Searchable};
 
 use super::solver::{SolveResult, Solver, SolverResult};
 
@@ -15,8 +15,8 @@ impl MarkSimple {
 }
 
 impl Solver for MarkSimple {
-    fn solve(&self, grid: crate::grid::grid::Grid) -> super::solver::SolverResult {
-        let mut current: crate::grid::grid::Grid = grid.clone();
+    fn solve(&self, grid: Grid) -> SolverResult {
+        let mut current = grid.clone();
 
         for i in grid.iter() {
             let cell = current.get(i);
