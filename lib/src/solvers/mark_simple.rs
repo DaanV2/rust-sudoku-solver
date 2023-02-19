@@ -28,7 +28,7 @@ fn solve_private(grid: Grid) -> SolverResult {
 
         //If the cell is determined, mark off that square, row and column
         if cell.is_determined() {
-            let turnoff = Mark::from_index(cell.value as usize);
+            let turnoff = Mark::from_value(cell.value as u8);
             let coord = current.get_coord(i);
 
             //Mark off the row
@@ -58,6 +58,7 @@ fn solve_private(grid: Grid) -> SolverResult {
 mod test {
     use crate::grid::{
         cell::Cell, constants::GRID_HEIGHT_RANGE, coords::Coord, grid::Grid, mark::Mark,
+        searchable::Searchable,
     };
 
     use super::solve_private;
@@ -94,15 +95,14 @@ mod test {
         }
 
         //Check that the square is marked off
-        for row in 3..6 {
-            for col in 0..3 {
-                if row == coord.row && col == coord.col {
-                    continue;
-                }
-
-                let c = modified.get_cell_at(Coord::new(row, col));
-                assert_eq!(c.is_possible(Mark::N5), false);
+        let square = modified.get_square(coord.row, coord.col);
+        for c in square.iter_coords() {
+            if coord.row == c.row && coord.row == c.col {
+                continue;
             }
+
+            let c = modified.get_cell_at(c);
+            assert_eq!(c.is_possible(Mark::N5), false);
         }
     }
 }

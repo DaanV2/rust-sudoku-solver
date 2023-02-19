@@ -15,7 +15,7 @@ impl SolverResult {
     pub fn combine(&self, other: SolverResult) -> Self {
         Self {
             result: self.result.combine(other.result),
-            grid: self.grid,
+            grid: other.grid,
         }
     }
 

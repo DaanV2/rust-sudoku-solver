@@ -6,7 +6,7 @@ use super::{
 // Calculate the index of a cell in the grid from its row and column
 #[inline(always)]
 pub fn get_index(coord: Coord) -> usize {
-    (coord.get_row() * GRID_WIDTH + coord.get_col()) as usize
+    (coord.row * GRID_WIDTH + coord.col) as usize
 }
 
 // Calculate the row and column of a cell in the grid from its index

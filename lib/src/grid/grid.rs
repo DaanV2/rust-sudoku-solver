@@ -61,12 +61,20 @@ impl Grid {
         Column::new(col, self.cells)
     }
 
+    pub fn get_square_at(&self, coord: Coord) -> Square {
+        Square::from(coord.row, coord.col, self.cells)
+    }
+
     pub fn get_square(&self, row: usize, col: usize) -> Square {
         Square::from(row, col, self.cells)
     }
 
     pub fn set_possible_at(&mut self, coord: Coord, mark: Mark) {
         self.set_possible(get_index(coord), mark);
+    }
+
+    pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
+        self.unset_possible(get_index(coord), mark);
     }
 
     pub fn set_possible(&mut self, index: usize, mark: Mark) {
@@ -76,14 +84,10 @@ impl Grid {
         self.set_cell(index, &new_cell);
     }
 
-    pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.unset_possible(get_index(coord), mark);
-    }
-
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
         let new_cell: &mut Cell = &mut self.get_cell(index).clone();
 
-        new_cell.set_possible(mark);
+        new_cell.unset_possible(mark);
         self.set_cell(index, &new_cell);
     }
 }
