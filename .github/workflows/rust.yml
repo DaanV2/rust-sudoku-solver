@@ -20,12 +20,8 @@ env:
 
 jobs:
   checks:
-    name: 🦀 ${{ matrix.folder }}
+    name: 🦀 Check rust
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        folder: [ "lib", "server" ]
 
     steps:
     - name: 📦 Checkout repository
@@ -37,4 +33,4 @@ jobs:
 
     - name: 📋 Run tests
       working-directory: ${{ matrix.folder }}
-      run: cargo test --color=always >> $GITHUB_STEP_SUMMARY
+      run: cargo test --release --color=always >> $GITHUB_STEP_SUMMARY
