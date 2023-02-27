@@ -1,8 +1,9 @@
 use super::{
-    cell::Cell, constants::GRID_SIZE, coords::Coord, format::get_index, searchable::Searchable,
-    square::Square,
+    cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, coords::Coord,
+    format::get_index, square::Square,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Row {
     //The row index
     row: usize,
@@ -20,7 +21,7 @@ impl Row {
     }
 }
 
-impl Searchable for Row {
+impl CellCollection for Row {
     fn get_cell(&self, index: usize) -> &Cell {
         &self.grid[get_index(self.get_coord(index))]
     }
@@ -33,7 +34,7 @@ impl Searchable for Row {
 #[cfg(test)]
 mod test {
     use super::Row;
-    use crate::grid::{cell::Cell, constants::GRID_HEIGHT_RANGE, searchable::Searchable};
+    use crate::grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE};
 
     #[test]
     fn test_coords() {

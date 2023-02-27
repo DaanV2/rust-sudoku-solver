@@ -1,4 +1,5 @@
 pub mod cell;
+pub mod cell_collection;
 pub mod column;
 pub mod constants;
 pub mod coords;
@@ -7,6 +8,5 @@ pub mod grid;
 pub mod mark;
 pub mod possibility;
 pub mod row;
-pub mod searchable;
 pub mod square;
 pub mod test_util;

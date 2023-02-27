@@ -1,4 +1,4 @@
-use crate::grid::{grid::Grid, searchable::Searchable};
+use crate::grid::{cell_collection::CellCollection, grid::Grid};
 
 use super::solver::{SolveResult, Solver, SolverResult};
 

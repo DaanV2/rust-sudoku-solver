@@ -2,7 +2,7 @@ use std::cmp::min;
 
 use serde::{Deserialize, Serialize};
 use sudoku_solver_lib::{
-    grid::{cell::Cell, constants, grid::Grid, mark::Mark, searchable::Searchable},
+    grid::{cell::Cell, cell_collection::CellCollection, constants, grid::Grid, mark::Mark},
     solvers::solver::AnnotatedSolverResult,
 };
 

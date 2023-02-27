@@ -29,7 +29,7 @@ impl Cell {
     }
 
     pub fn is_determined(&self) -> bool {
-        self.value != 0
+        self.value > 0
     }
 
     pub fn is_possible(&self, value: Mark) -> bool {
@@ -71,6 +71,12 @@ impl Cell {
 
     pub fn get_count(&self) -> u32 {
         self.possibilities.get_count()
+    }
+}
+
+impl Default for Cell {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

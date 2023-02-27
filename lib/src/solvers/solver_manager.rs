@@ -18,6 +18,7 @@ impl SolverManager {
                 // Setups for other solvers
                 super::mark_reset::MarkReset::new_box(),
                 super::mark_simple::MarkSimple::new_box(),
+                super::mark_shapes::MarkShapes::new_box(),
                 // Solvers
                 super::determined_solver::DeterminedSolver::new_box(),
                 // Finalizers

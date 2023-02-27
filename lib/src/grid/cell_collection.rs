@@ -1,6 +1,6 @@
-use super::{cell::Cell, coords::Coord, mark::Mark};
+use super::{cell::Cell, coords::Coord, grid::Grid, mark::Mark};
 
-pub trait Searchable {
+pub trait CellCollection {
     fn get_cell(&self, index: usize) -> &Cell;
     fn get_coord(&self, index: usize) -> Coord;
     fn max(&self) -> usize {
@@ -54,5 +54,17 @@ pub trait Searchable {
 
     fn iter_cells(&self) -> Box<dyn Iterator<Item = &Cell> + '_> {
         Box::new((0..self.max()).into_iter().map(move |i| self.get_cell(i)))
+    }
+
+    fn unset_all_possible(&self, grid: &mut Grid, mark: Mark) {
+        for coord in self.iter_coords() {
+            grid.unset_possible_at(coord, mark);
+        }
+    }
+
+    fn set_all_possible(&self, grid: &mut Grid, mark: Mark) {
+        for coord in self.iter_coords() {
+            grid.set_possible_at(coord, mark);
+        }
     }
 }

@@ -1,7 +1,8 @@
-use crate::grid::{grid::Grid, mark::Mark, searchable::Searchable};
+use crate::grid::{cell_collection::CellCollection, grid::Grid, mark::Mark};
 
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{Solver, SolverResult};
 
+/** Marks off the row, column and square of a determined cell */
 pub struct MarkSimple {}
 
 impl MarkSimple {
@@ -43,10 +44,7 @@ impl Solver for MarkSimple {
             }
         }
 
-        SolverResult {
-            result: SolveResult::Nothing,
-            grid: current,
-        }
+        SolverResult::nothing(grid)
     }
 }
 
@@ -54,8 +52,8 @@ impl Solver for MarkSimple {
 mod test {
     use crate::{
         grid::{
-            cell::Cell, constants::GRID_HEIGHT_RANGE, coords::Coord, grid::Grid, mark::Mark,
-            searchable::Searchable,
+            cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE,
+            coords::Coord, grid::Grid, mark::Mark,
         },
         solvers::solver::Solver,
     };

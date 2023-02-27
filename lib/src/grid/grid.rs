@@ -1,12 +1,12 @@
 use super::{
     cell::Cell,
+    cell_collection::CellCollection,
     column::Column,
     constants::GRID_SIZE,
     coords::Coord,
     format::{get_index, to_row_col},
     mark::Mark,
     row::Row,
-    searchable::Searchable,
     square::Square,
 };
 
@@ -90,6 +90,30 @@ impl Grid {
         new_cell.unset_possible(mark);
         self.set_cell(index, &new_cell);
     }
+
+    pub fn iter_rows(&self) -> impl Iterator<Item = Row> + '_ {
+        (0..9).map(move |row| self.get_row(row))
+    }
+
+    pub fn iter_columns(&self) -> impl Iterator<Item = Column> + '_ {
+        (0..9).map(move |col| self.get_column(col))
+    }
+
+    pub fn iter_squares(&self) -> impl Iterator<Item = Square> + '_ {
+        static COORDS: [Coord; 9] = [
+            Coord { row: 0, col: 0 },
+            Coord { row: 0, col: 3 },
+            Coord { row: 0, col: 6 },
+            Coord { row: 3, col: 0 },
+            Coord { row: 3, col: 3 },
+            Coord { row: 3, col: 6 },
+            Coord { row: 6, col: 0 },
+            Coord { row: 6, col: 3 },
+            Coord { row: 6, col: 6 },
+        ];
+
+        COORDS.iter().map(move |coord| self.get_square_at(*coord))
+    }
 }
 
 impl Default for Grid {
@@ -98,7 +122,7 @@ impl Default for Grid {
     }
 }
 
-impl Searchable for Grid {
+impl CellCollection for Grid {
     fn get_cell(&self, index: usize) -> &Cell {
         &self.cells[index]
     }
@@ -115,7 +139,7 @@ impl Searchable for Grid {
 #[cfg(test)]
 mod tests {
     use super::Grid;
-    use crate::grid::{mark::Mark, searchable::Searchable, test_util::test_util};
+    use crate::grid::{cell_collection::CellCollection, mark::Mark, test_util::test_util};
     use std::mem::size_of_val;
 
     #[test]

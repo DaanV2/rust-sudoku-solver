@@ -3,10 +3,10 @@ pub mod test_util {
 
     use crate::grid::{
         cell::Cell,
-        constants::{GRID_HEIGHT_RANGE, GRID_SIZE},
+        cell_collection::CellCollection,
+        constants::{GRID_HEIGHT_RANGE, GRID_SIZE, GRID_WIDTH_RANGE},
         coords::Coord,
         grid::Grid,
-        searchable::Searchable,
     };
 
     pub fn filled_sudoku() -> Grid {
@@ -131,9 +131,9 @@ pub mod test_util {
     pub fn ascii_grid(grid: &Grid) -> String {
         let mut result = String::new();
 
-        for y in GRID_HEIGHT_RANGE {
-            for x in GRID_HEIGHT_RANGE {
-                let coord = Coord::new(x, y);
+        for row in GRID_WIDTH_RANGE {
+            for col in GRID_HEIGHT_RANGE {
+                let coord = Coord::new(row, col);
                 let cell = grid.get_cell_at(coord);
                 let value = cell.value;
 
@@ -143,17 +143,38 @@ pub mod test_util {
                     result.push_str(". ");
                 }
 
-                if x == 2 || x == 5 {
+                if col == 2 || col == 5 {
                     result.push_str("| ");
                 }
             }
             result.push_str("\n");
 
-            if y == 2 || y == 5 {
+            if row == 2 || row == 5 {
                 result.push_str("------|-------|------\n");
             }
         }
 
         result
+    }
+
+    pub fn parse_from_ascii(ascii: &str) -> Grid {
+        let mut grid = Grid::new();
+        let mut index = 0;
+
+        for line in ascii.lines() {
+            for char in line.chars() {
+                if char == '.' || char == '0' {
+                    let c = Cell::new();
+                    grid.set_cell(index, &c);
+                    index += 1;
+                } else if let Some(value) = char.to_digit(10) {
+                    let c = Cell::new_with_value(value as u8);
+                    grid.set_cell(index, &c);
+                    index += 1;
+                }
+            }
+        }
+
+        grid
     }
 }

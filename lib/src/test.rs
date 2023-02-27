@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        grid::{cell::Cell, grid::Grid, searchable::Searchable, test_util::test_util},
+        grid::{cell::Cell, cell_collection::CellCollection, grid::Grid, test_util::test_util},
         solvers::{solver::SolveResult, solver_manager::SolverManager},
     };
 
@@ -20,25 +20,25 @@ mod test {
         test_amount(20);
     }
 
-    // #[test]
-    // fn test_30() {
-    //     test_amount(30);
-    // }
+    #[test]
+    fn test_30() {
+        test_amount(30);
+    }
 
-    // #[test]
-    // fn test_40() {
-    //     test_amount(40);
-    // }
+    #[test]
+    fn test_40() {
+        test_amount(40);
+    }
 
-    // #[test]
-    // fn test_50() {
-    //     test_amount(50);
-    // }
+    #[test]
+    fn test_50() {
+        test_amount(50);
+    }
 
-    // #[test]
-    // fn test_60() {
-    //     test_amount(60);
-    // }
+    #[test]
+    fn test_60() {
+        test_amount(60);
+    }
 
     #[test]
     fn test_1_area_missing() {

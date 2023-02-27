@@ -1,9 +1,9 @@
 use crate::grid::{
     cell::Cell,
+    cell_collection::CellCollection,
     constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
     grid::Grid,
     mark::Mark,
-    searchable::Searchable,
 };
 
 use super::solver::{Solver, SolverResult};
@@ -58,7 +58,7 @@ impl Solver for DeterminedSolver {
     }
 }
 
-fn check_searchable<T: Searchable>(grid: &mut Grid, area: &T) -> bool {
+fn check_searchable<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
     for index in area.iter() {
         let cell = area.get_cell(index);
         if cell.is_determined() {
@@ -85,7 +85,7 @@ fn check_searchable<T: Searchable>(grid: &mut Grid, area: &T) -> bool {
     false
 }
 
-fn is_only_possible_at<T: Searchable>(area: &T, mark: Mark, index: usize) -> bool {
+fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) -> bool {
     let mark_value = mark.to_value();
 
     for other_index in area.iter() {
@@ -109,7 +109,7 @@ fn is_only_possible_at<T: Searchable>(area: &T, mark: Mark, index: usize) -> boo
 mod test {
     use crate::{
         grid::{
-            cell::Cell, mark::Mark, possibility::Possibility, searchable::Searchable,
+            cell::Cell, cell_collection::CellCollection, mark::Mark, possibility::Possibility,
             test_util::test_util,
         },
         solvers::solver::{SolveResult, Solver},

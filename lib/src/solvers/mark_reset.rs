@@ -1,5 +1,5 @@
-use super::solver::{SolveResult, Solver, SolverResult};
-use crate::grid::{cell::Cell, grid::Grid, searchable::Searchable};
+use super::solver::{Solver, SolverResult};
+use crate::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid};
 
 pub struct MarkReset {}
 
@@ -26,9 +26,6 @@ impl Solver for MarkReset {
             }
         }
 
-        SolverResult {
-            result: SolveResult::Nothing,
-            grid: current,
-        }
+        SolverResult::nothing(grid)
     }
 }
