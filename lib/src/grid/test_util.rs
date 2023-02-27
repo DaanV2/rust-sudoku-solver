@@ -4,106 +4,24 @@ pub mod test_util {
     use crate::grid::{
         cell::Cell,
         cell_collection::CellCollection,
-        constants::{GRID_HEIGHT_RANGE, GRID_SIZE, GRID_WIDTH_RANGE},
+        constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
         coords::Coord,
         grid::Grid,
     };
 
     pub fn filled_sudoku() -> Grid {
-        let cells: [Cell; GRID_SIZE] = [
-            //435269781
-            Cell::new_with_value(4),
-            Cell::new_with_value(3),
-            Cell::new_with_value(5),
-            Cell::new_with_value(2),
-            Cell::new_with_value(6),
-            Cell::new_with_value(9),
-            Cell::new_with_value(7),
-            Cell::new_with_value(8),
-            Cell::new_with_value(1),
-            //682571493
-            Cell::new_with_value(6),
-            Cell::new_with_value(8),
-            Cell::new_with_value(2),
-            Cell::new_with_value(5),
-            Cell::new_with_value(7),
-            Cell::new_with_value(1),
-            Cell::new_with_value(4),
-            Cell::new_with_value(9),
-            Cell::new_with_value(3),
-            //197834562
-            Cell::new_with_value(1),
-            Cell::new_with_value(9),
-            Cell::new_with_value(7),
-            Cell::new_with_value(8),
-            Cell::new_with_value(3),
-            Cell::new_with_value(4),
-            Cell::new_with_value(5),
-            Cell::new_with_value(6),
-            Cell::new_with_value(2),
-            //826195347
-            Cell::new_with_value(8),
-            Cell::new_with_value(2),
-            Cell::new_with_value(6),
-            Cell::new_with_value(1),
-            Cell::new_with_value(9),
-            Cell::new_with_value(5),
-            Cell::new_with_value(3),
-            Cell::new_with_value(4),
-            Cell::new_with_value(7),
-            //374682915
-            Cell::new_with_value(3),
-            Cell::new_with_value(7),
-            Cell::new_with_value(4),
-            Cell::new_with_value(6),
-            Cell::new_with_value(8),
-            Cell::new_with_value(2),
-            Cell::new_with_value(9),
-            Cell::new_with_value(1),
-            Cell::new_with_value(5),
-            //951743628
-            Cell::new_with_value(9),
-            Cell::new_with_value(5),
-            Cell::new_with_value(1),
-            Cell::new_with_value(7),
-            Cell::new_with_value(4),
-            Cell::new_with_value(3),
-            Cell::new_with_value(6),
-            Cell::new_with_value(2),
-            Cell::new_with_value(8),
-            //519326874
-            Cell::new_with_value(5),
-            Cell::new_with_value(1),
-            Cell::new_with_value(9),
-            Cell::new_with_value(3),
-            Cell::new_with_value(2),
-            Cell::new_with_value(6),
-            Cell::new_with_value(8),
-            Cell::new_with_value(7),
-            Cell::new_with_value(4),
-            //248957136
-            Cell::new_with_value(2),
-            Cell::new_with_value(4),
-            Cell::new_with_value(8),
-            Cell::new_with_value(9),
-            Cell::new_with_value(5),
-            Cell::new_with_value(7),
-            Cell::new_with_value(1),
-            Cell::new_with_value(3),
-            Cell::new_with_value(6),
-            //763418259
-            Cell::new_with_value(7),
-            Cell::new_with_value(6),
-            Cell::new_with_value(3),
-            Cell::new_with_value(4),
-            Cell::new_with_value(1),
-            Cell::new_with_value(8),
-            Cell::new_with_value(2),
-            Cell::new_with_value(5),
-            Cell::new_with_value(9),
-        ];
-
-        Grid::from(cells)
+        parse_from_ascii(
+            "
+            4 3 5 2 6 9 7 8 1\n\
+            6 8 2 5 7 1 4 9 3\n\
+            1 9 7 8 3 4 5 6 2\n\
+            8 2 6 1 9 5 3 4 7\n\
+            3 7 4 6 8 2 9 1 5\n\
+            9 5 1 7 4 3 6 2 8\n\
+            5 1 9 3 2 6 8 7 4\n\
+            2 4 8 9 5 7 1 3 6\n\
+            7 6 3 4 1 8 2 5 9",
+        )
     }
 
     pub fn remove_cells(grid: &mut Grid) {
@@ -176,5 +94,25 @@ pub mod test_util {
         }
 
         grid
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::grid::coords::Coord;
+
+    //Test that filled_sudoku returns a grid with all cells determined, and that the values are with their coords
+    #[test]
+    fn test_filled_sudoku() {
+        let grid = super::test_util::filled_sudoku();
+
+        for row in 0..9 {
+            for col in 0..9 {
+                let coord = Coord::new(row, col);
+                let cell = grid.get_cell_at(coord);
+
+                assert!(cell.is_determined());
+            }
+        }
     }
 }
