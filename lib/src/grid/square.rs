@@ -25,7 +25,7 @@ impl Square {
     }
 
     pub fn get_cell_at(&self, coord: Coord) -> &Cell {
-        let c = Coord::new(self.row + coord.row, self.col + coord.col);
+        let c = &Coord::new(self.row + coord.row, self.col + coord.col);
         &self.grid[get_index(c)]
     }
 
@@ -48,7 +48,7 @@ impl Square {
 
 impl CellCollection for Square {
     fn get_cell(&self, index: usize) -> &Cell {
-        let coord = self.get_coord(index);
+        let coord = &self.get_coord(index);
         &self.grid[get_index(coord)]
     }
 
@@ -65,6 +65,35 @@ impl Default for Square {
             row: 0,
             col: 0,
             grid: [Cell::default(); GRID_SIZE],
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::grid::cell_collection::CellCollection;
+
+    #[test]
+    fn test_square_iter_coords() {
+        use crate::grid::{
+            constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+            test_util::{self},
+        };
+
+        let grid = test_util::test_util::filled_sudoku();
+
+        for row in GRID_HEIGHT_RANGE {
+            for col in GRID_WIDTH_RANGE {
+                let square = grid.get_square(row, col);
+
+                for c in square.iter_coords() {
+                    assert!(square.is_coord_in_square(c));
+
+                    //is coord within the square
+                    assert!(c.row >= square.row && c.row < square.row + 3);
+                    assert!(c.col >= square.col && c.col < square.col + 3);
+                }
+            }
         }
     }
 }

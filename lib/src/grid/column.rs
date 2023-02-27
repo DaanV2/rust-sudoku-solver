@@ -23,7 +23,7 @@ impl Column {
 
 impl CellCollection for Column {
     fn get_cell(&self, index: usize) -> &Cell {
-        &self.grid[get_index(self.get_coord(index))]
+        &self.grid[get_index(&self.get_coord(index))]
     }
 
     fn get_coord(&self, index: usize) -> Coord {
@@ -34,7 +34,12 @@ impl CellCollection for Column {
 #[cfg(test)]
 mod test {
     use super::Column;
-    use crate::grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE};
+    use crate::grid::{
+        cell::Cell,
+        cell_collection::CellCollection,
+        constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+        test_util::{self},
+    };
 
     #[test]
     fn test_coords() {
@@ -45,6 +50,33 @@ mod test {
                 let coord = row.get_coord(row_index);
                 assert_eq!(coord.row, row_index);
                 assert_eq!(coord.col, col_index);
+            }
+        }
+    }
+
+    #[test]
+    fn test_column_iter_coords() {
+        let grid = test_util::test_util::filled_sudoku();
+
+        for c in GRID_WIDTH_RANGE {
+            let column = grid.get_column(c);
+
+            for coord in column.iter_coords() {
+                assert_eq!(coord.col, c);
+            }
+        }
+    }
+
+    #[test]
+    fn test_column_iter_cells() {
+        let grid = test_util::test_util::filled_sudoku();
+
+        for c in GRID_WIDTH_RANGE {
+            let column = grid.get_column(c);
+
+            for index in column.iter() {
+                let coord = column.get_coord(index);
+                assert_eq!(coord.col, c);
             }
         }
     }

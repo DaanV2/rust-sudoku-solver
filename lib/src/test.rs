@@ -96,6 +96,6 @@ mod test {
         println!("iterations: {:?}", output.iterations);
         println!("{}", test_util::ascii_grid(&output.grid));
 
-        assert_eq!(output.result, SolveResult::Solved);
+        assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
     }
 }

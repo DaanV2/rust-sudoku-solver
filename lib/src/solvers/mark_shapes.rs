@@ -146,11 +146,14 @@ fn mark_off_other_columns(square: &Square, grid: &mut Grid, col: usize, mark: Ma
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::grid::test_util::test_util;
+    use crate::{
+        grid::test_util::test_util,
+        solvers::{mark_reset::MarkReset, mark_simple::MarkSimple},
+    };
 
     #[test]
     fn test_mark_shapes() {
-        let grid = test_util::parse_from_ascii(
+        let mut grid = test_util::parse_from_ascii(
             "
             . . . . . . . . .
             . . . 7 8 9 . . .
@@ -159,11 +162,16 @@ mod test {
         );
         println!("{}", test_util::ascii_grid(&grid));
 
+        //Run through the basics
+        let mut result = MarkReset::new().solve(grid);
+        result = MarkSimple::new().solve(result.grid);
+
         let solver = MarkShapes::new();
-        let result = solver.solve(grid);
+        result = solver.solve(result.grid);
 
         //Top row should not have 4, 5 6
-        let sq1 = result.grid.get_square(0, 0);
+        grid = result.grid;
+        let sq1 = grid.get_square(0, 0);
         for c in 0..3 {
             let coord = Coord::new(0, c);
             let cell = sq1.get_cell_at(coord);

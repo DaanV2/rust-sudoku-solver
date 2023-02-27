@@ -45,12 +45,12 @@ impl Grid {
 
     /// Retrieves the cell at the given coordinate
     pub fn get_cell_at(&self, coord: Coord) -> &Cell {
-        &self.get_cell(get_index(coord))
+        &self.get_cell(get_index(&coord))
     }
 
     /// Sets the cell at the given coordinate
     pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
-        self.set_cell(get_index(coord), cell);
+        self.set_cell(get_index(&coord), cell);
     }
 
     pub fn get_row(&self, row: usize) -> Row {
@@ -70,11 +70,11 @@ impl Grid {
     }
 
     pub fn set_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.set_possible(get_index(coord), mark);
+        self.set_possible(get_index(&coord), mark);
     }
 
     pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.unset_possible(get_index(coord), mark);
+        self.unset_possible(get_index(&coord), mark);
     }
 
     pub fn set_possible(&mut self, index: usize, mark: Mark) {
@@ -139,7 +139,12 @@ impl CellCollection for Grid {
 #[cfg(test)]
 mod tests {
     use super::Grid;
-    use crate::grid::{cell_collection::CellCollection, mark::Mark, test_util::test_util};
+    use crate::grid::{
+        cell_collection::CellCollection,
+        constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+        mark::Mark,
+        test_util::test_util,
+    };
     use std::mem::size_of_val;
 
     #[test]
@@ -166,5 +171,39 @@ mod tests {
         let coord = grid.get_coord(index);
 
         assert_eq!(grid.get_cell(index), grid.get_cell_at(coord));
+    }
+
+    #[test]
+    fn test_get_row() {
+        for row_index in GRID_HEIGHT_RANGE {
+            let grid = test_util::filled_sudoku();
+            let row = grid.get_row(row_index);
+
+            for col_index in GRID_WIDTH_RANGE {
+                let coord = row.get_coord(col_index);
+                let cell = grid.get_cell_at(coord);
+
+                let row_cell = row.get_cell(col_index);
+                assert_eq!(cell, row_cell);
+                assert_eq!(coord.row, row_index);
+            }
+        }
+    }
+
+    #[test]
+    fn test_get_column() {
+        for col_index in GRID_WIDTH_RANGE {
+            let grid = test_util::filled_sudoku();
+            let column = grid.get_column(col_index);
+
+            for row_index in GRID_HEIGHT_RANGE {
+                let coord = column.get_coord(row_index);
+                let cell = grid.get_cell_at(coord);
+
+                let column_cell = column.get_cell(row_index);
+                assert_eq!(cell, column_cell);
+                assert_eq!(coord.col, col_index);
+            }
+        }
     }
 }

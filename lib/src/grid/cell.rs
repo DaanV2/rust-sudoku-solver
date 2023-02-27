@@ -98,7 +98,15 @@ mod test {
     }
 
     #[test]
-    fn test_set_possibility() {
+    fn test_size_object() {
+        let cell = super::Cell::new();
+        let size = std::mem::size_of_val(&cell);
+
+        assert_eq!(size, 4);
+    }
+
+    #[test]
+    fn test_set_and_unset_possibility() {
         let mut cell = super::Cell::new();
         cell.possibilities.all_off();
 
@@ -118,10 +126,13 @@ mod test {
     }
 
     #[test]
-    fn test_size_object() {
-        let cell = super::Cell::new();
-        let size = std::mem::size_of_val(&cell);
+    fn test_get_count() {
+        let mut cell = super::Cell::new();
+        cell.possibilities.all_off();
 
-        assert_eq!(size, 4);
+        for i in 1..10 {
+            cell.set_possible(Mark::from_value(i));
+            assert_eq!(cell.get_count(), i as u32, "i: {}", i);
+        }
     }
 }
