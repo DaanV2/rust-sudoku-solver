@@ -44,7 +44,7 @@ impl Solver for MarkSimple {
             }
         }
 
-        SolverResult::nothing(grid)
+        SolverResult::nothing(current)
     }
 }
 

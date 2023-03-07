@@ -27,7 +27,7 @@ impl Solver for MarkShapes {
             }
         }
 
-        SolverResult::nothing(grid)
+        SolverResult::nothing(*current)
     }
 }
 
