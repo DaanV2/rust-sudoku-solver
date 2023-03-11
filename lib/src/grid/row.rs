@@ -34,8 +34,9 @@ impl CellCollection for Row {
 #[cfg(test)]
 mod test {
     use super::Row;
-    use crate::grid::{
-        cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE, test_util,
+    use crate::{
+        grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE},
+        test::util::general_tests,
     };
 
     #[test]
@@ -53,7 +54,7 @@ mod test {
 
     #[test]
     fn test_row_iter_coords() {
-        let grid = test_util::test_util::filled_sudoku();
+        let grid = general_tests::filled_sudoku();
 
         for row_index in GRID_HEIGHT_RANGE {
             let row = grid.get_row(row_index);
@@ -66,7 +67,7 @@ mod test {
 
     #[test]
     fn test_row_iter_cells() {
-        let grid = test_util::test_util::filled_sudoku();
+        let grid = general_tests::filled_sudoku();
 
         for row_index in GRID_HEIGHT_RANGE {
             let row = grid.get_row(row_index);

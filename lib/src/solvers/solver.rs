@@ -1,8 +1,12 @@
+use std::fmt::Display;
+
 use crate::grid::grid::Grid;
 
 pub trait Solver {
     /// Solves the given grid and returns the result.
     fn solve(&self, grid: Grid) -> SolverResult;
+
+    fn name(&self) -> &'static str;
 }
 
 #[derive(Debug, Clone, Copy)]

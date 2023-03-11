@@ -23,9 +23,22 @@ impl DeterminedSolver {
 }
 
 impl Solver for DeterminedSolver {
+    fn name(&self) -> &'static str {
+        "Determined Solver"
+    }
+
     fn solve(&self, grid: Grid) -> SolverResult {
         let current: &mut Grid = &mut grid.clone();
         let mut changed = false;
+
+        //For each square
+        for x in 0..3 {
+            for y in 0..3 {
+                let square = current.get_square(x * 3, y * 3);
+                let r = check_searchable(current, &square);
+                changed = changed | r;
+            }
+        }
 
         //For each row
         for row_index in GRID_HEIGHT_RANGE {
@@ -39,15 +52,6 @@ impl Solver for DeterminedSolver {
             let col = current.get_column(col);
             let r = check_searchable(current, &col);
             changed = changed | r;
-        }
-
-        //For each square
-        for x in 0..3 {
-            for y in 0..3 {
-                let square = current.get_square(x * 3, y * 3);
-                let r = check_searchable(current, &square);
-                changed = changed | r;
-            }
         }
 
         if changed {
@@ -108,16 +112,14 @@ fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) ->
 #[cfg(test)]
 mod test {
     use crate::{
-        grid::{
-            cell::Cell, cell_collection::CellCollection, mark::Mark, possibility::Possibility,
-            test_util::test_util,
-        },
+        grid::{cell::Cell, cell_collection::CellCollection, mark::Mark, possibility::Possibility},
         solvers::solver::{SolveResult, Solver},
+        test::util::general_tests,
     };
 
     #[test]
     fn test_can_solve() {
-        let mut grid = test_util::filled_sudoku();
+        let mut grid = general_tests::filled_sudoku();
 
         let index = 64;
         let coord = grid.get_coord(index);
@@ -140,5 +142,26 @@ mod test {
         let check_cell = output.grid.get_cell_at(coord);
 
         assert_eq!(check_cell.value, value);
+    }
+
+    #[test]
+    fn test_single_missing_number() {
+        let mut grid = general_tests::filled_sudoku();
+
+        general_tests::remove_number(&mut grid, 5);
+
+        println!("{}", grid);
+        let result = super::DeterminedSolver::new().solve(grid);
+
+        assert_eq!(result.result, SolveResult::Updated);
+
+        //Check that all cells with value 5 are determined
+        for index in result.grid.iter() {
+            let cell = result.grid.get_cell(index);
+            assert_ne!(cell.value, 0);
+            if cell.value == 5 {
+                assert!(cell.is_determined());
+            }
+        }
     }
 }

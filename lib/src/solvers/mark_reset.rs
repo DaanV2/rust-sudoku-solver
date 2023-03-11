@@ -14,6 +14,10 @@ impl MarkReset {
 }
 
 impl Solver for MarkReset {
+    fn name(&self) -> &'static str {
+        "Mark Resetter"
+    }
+
     fn solve(&self, grid: Grid) -> SolverResult {
         let mut current = grid.clone();
 
@@ -34,13 +38,12 @@ impl Solver for MarkReset {
 mod test {
     use super::*;
     use crate::{
-        grid::{possibility::Possibility, test_util::test_util},
-        solvers::mark_reset::MarkReset,
+        grid::possibility::Possibility, solvers::mark_reset::MarkReset, test::util::general_tests,
     };
 
     #[test]
     fn test_mark_reset() {
-        let mut grid = test_util::filled_sudoku();
+        let mut grid = general_tests::filled_sudoku();
 
         let index = 12;
         let cell = Cell::new_with_value(0);

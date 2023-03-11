@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::{
     cell::Cell,
     cell_collection::CellCollection,
@@ -8,6 +10,7 @@ use super::{
     mark::Mark,
     row::Row,
     square::Square,
+    utility::utility,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -136,14 +139,22 @@ impl CellCollection for Grid {
     }
 }
 
+impl Display for Grid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", utility::ascii_grid(self))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Grid;
-    use crate::grid::{
-        cell_collection::CellCollection,
-        constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
-        mark::Mark,
-        test_util::test_util,
+    use crate::{
+        grid::{
+            cell_collection::CellCollection,
+            constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+            mark::Mark,
+        },
+        test::util::general_tests,
     };
     use std::mem::size_of_val;
 
@@ -165,7 +176,7 @@ mod tests {
 
     #[test]
     fn cell_same_at_index() {
-        let grid = test_util::filled_sudoku();
+        let grid = general_tests::filled_sudoku();
 
         let index = 64;
         let coord = grid.get_coord(index);
@@ -176,7 +187,7 @@ mod tests {
     #[test]
     fn test_get_row() {
         for row_index in GRID_HEIGHT_RANGE {
-            let grid = test_util::filled_sudoku();
+            let grid = general_tests::filled_sudoku();
             let row = grid.get_row(row_index);
 
             for col_index in GRID_WIDTH_RANGE {
@@ -193,7 +204,7 @@ mod tests {
     #[test]
     fn test_get_column() {
         for col_index in GRID_WIDTH_RANGE {
-            let grid = test_util::filled_sudoku();
+            let grid = general_tests::filled_sudoku();
             let column = grid.get_column(col_index);
 
             for row_index in GRID_HEIGHT_RANGE {

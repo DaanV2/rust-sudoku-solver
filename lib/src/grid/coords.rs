@@ -1,3 +1,5 @@
+use std::fmt::{self, Display, Formatter};
+
 use super::format::{get_index, to_row_col};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -29,6 +31,12 @@ impl Coord {
 
     pub fn get_row_col(&self) -> (usize, usize) {
         (self.row, self.col)
+    }
+}
+
+impl Display for Coord {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "[{}, {}]", self.row, self.col)
     }
 }
 

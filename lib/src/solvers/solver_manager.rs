@@ -18,7 +18,7 @@ impl SolverManager {
                 // Setups for other solvers
                 super::mark_reset::MarkReset::new_box(),
                 super::mark_simple::MarkSimple::new_box(),
-                // super::mark_shapes::MarkShapes::new_box(),
+                super::mark_shapes::MarkShapes::new_box(),
                 // Solvers
                 super::determined_solver::DeterminedSolver::new_box(),
                 // Finalizers
@@ -39,9 +39,7 @@ impl SolverManager {
 
         //While the grid has been updated, keep solving
         while SolveResult::Updated == current.result {
-            let result = self.solve_round(current);
-            current = current.combine(result);
-
+            current = self.solve_round(current);
             if current.result == SolveResult::Solved {
                 break;
             }
@@ -60,19 +58,20 @@ impl SolverManager {
         }
     }
 
-    pub fn solve_round(&self, mut grid: SolverResult) -> SolverResult {
+    pub fn solve_round(&self, mut current: SolverResult) -> SolverResult {
         //Reset the result
-        grid.result = SolveResult::Nothing;
+        current.result = SolveResult::Nothing;
 
         for solver in &self.solvers {
-            let solver_result = solver.solve(grid.grid);
-            grid = grid.combine(solver_result);
+            println!("{}", current.grid);
+            let solver_result = solver.solve(current.grid);
+            current = current.combine(solver_result);
 
-            if grid.result == SolveResult::Solved {
+            if current.result == SolveResult::Solved {
                 break;
             }
         }
 
-        return grid;
+        return current;
     }
 }

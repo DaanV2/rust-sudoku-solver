@@ -16,6 +16,10 @@ impl MarkSimple {
 }
 
 impl Solver for MarkSimple {
+    fn name(&self) -> &'static str {
+        "Mark Simple"
+    }
+
     fn solve(&self, grid: Grid) -> SolverResult {
         let mut current = grid.clone();
 

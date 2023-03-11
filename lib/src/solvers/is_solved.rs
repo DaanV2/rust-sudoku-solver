@@ -15,6 +15,10 @@ impl IsSolved {
 }
 
 impl Solver for IsSolved {
+    fn name(&self) -> &'static str {
+        "Is Solved"
+    }
+
     fn solve(&self, grid: Grid) -> SolverResult {
         let current: Grid = grid.clone();
         let mut result = SolveResult::Solved;

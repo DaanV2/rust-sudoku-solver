@@ -71,16 +71,13 @@ impl Default for Square {
 
 #[cfg(test)]
 mod test {
-    use crate::grid::cell_collection::CellCollection;
+    use crate::{grid::cell_collection::CellCollection, test::util::general_tests};
 
     #[test]
     fn test_square_iter_coords() {
-        use crate::grid::{
-            constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
-            test_util::{self},
-        };
+        use crate::grid::constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE};
 
-        let grid = test_util::test_util::filled_sudoku();
+        let grid = general_tests::filled_sudoku();
 
         for row in GRID_HEIGHT_RANGE {
             for col in GRID_WIDTH_RANGE {

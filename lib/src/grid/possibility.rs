@@ -80,6 +80,11 @@ impl Possibility {
         let v = self.value as usize;
         v.count_ones()
     }
+
+    // Returns the value of the possibilities
+    pub fn get_value(&self) -> u16 {
+        self.value
+    }
 }
 
 impl Default for Possibility {

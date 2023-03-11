@@ -9,4 +9,4 @@ pub mod mark;
 pub mod possibility;
 pub mod row;
 pub mod square;
-pub mod test_util;
+pub mod utility;

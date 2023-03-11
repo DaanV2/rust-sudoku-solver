@@ -18,6 +18,10 @@ impl MarkShapes {
 }
 
 impl Solver for MarkShapes {
+    fn name(&self) -> &'static str {
+        "Mark Shapes"
+    }
+
     fn solve(&self, grid: Grid) -> SolverResult {
         let current = &mut grid.clone();
 
@@ -111,12 +115,12 @@ fn mark_off_other_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark)
                     continue;
                 }
 
-                row.unset_all_possible(grid, mark)
+                grid.unset_possible_at(c, mark)
             }
+        } else {
+            let row = grid.get_row(row_index);
+            row.unset_all_possible(grid, mark);
         }
-
-        let row = grid.get_row(row_index);
-        row.unset_all_possible(grid, mark);
     }
 }
 
@@ -125,52 +129,59 @@ fn mark_off_other_columns(square: &Square, grid: &mut Grid, col: usize, mark: Ma
 
     for c in 0..3 {
         let col_index = col_start + c;
+        let column = grid.get_column(col_index);
+
         if c == col {
             //Unset the column but not in the square
-            let col = grid.get_column(col_index);
-
-            for r in col.iter_coords() {
+            for r in column.iter_coords() {
                 if square.is_row_in_square(r.row) {
                     continue;
                 }
 
-                col.unset_all_possible(grid, mark)
+                grid.unset_possible_at(r, mark)
             }
+        } else {
+            column.unset_all_possible(grid, mark);
         }
-
-        let col = grid.get_column(col_index);
-        col.unset_all_possible(grid, mark);
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::vec;
+
     use super::*;
     use crate::{
-        grid::test_util::test_util,
+        grid::utility::utility,
         solvers::{mark_reset::MarkReset, mark_simple::MarkSimple},
+        test::util::general_tests,
     };
 
-    #[test]
-    fn test_mark_shapes() {
-        let mut grid = test_util::parse_from_ascii(
+    fn base_grid() -> Grid {
+        return utility::parse_from_ascii(
             "
             . . . . . . . . .
             . . . 7 8 9 . . .
             . . . 1 2 3 . . .
             ",
         );
-        println!("{}", test_util::ascii_grid(&grid));
+    }
+
+    #[test]
+    fn test_mark_shapes() {
+        let mut grid = base_grid();
 
         //Run through the basics
-        let mut result = MarkReset::new().solve(grid);
-        result = MarkSimple::new().solve(result.grid);
+        grid = general_tests::process_through(
+            &mut grid,
+            vec![
+                MarkReset::new_box(),
+                MarkSimple::new_box(),
+                MarkShapes::new_box(),
+            ],
+        );
 
-        let solver = MarkShapes::new();
-        result = solver.solve(result.grid);
-
-        //Top row should not have 4, 5 6
-        grid = result.grid;
+        //Top row should not have 4 5 6
         let sq1 = grid.get_square(0, 0);
         for c in 0..3 {
             let coord = Coord::new(0, c);
@@ -181,7 +192,7 @@ mod test {
         }
 
         //Top row should not have 4, 5 6
-        let sq3 = result.grid.get_square(0, 6);
+        let sq3 = grid.get_square(0, 6);
         for c in 0..3 {
             let coord = Coord::new(0, c);
             let cell = sq3.get_cell_at(coord);
@@ -191,7 +202,7 @@ mod test {
         }
 
         //Top row should have 4, 5, 6 and only those
-        let sq2 = result.grid.get_square(0, 3);
+        let sq2 = grid.get_square(0, 3);
         for c in 0..3 {
             let coord = Coord::new(0, c);
             let cell = sq2.get_cell_at(coord);
@@ -199,12 +210,35 @@ mod test {
             assert!(cell.is_possible(Mark::N5));
             assert!(cell.is_possible(Mark::N6));
 
+            //Make sure the other numbers are not possible
             assert!(!cell.is_possible(Mark::N1));
             assert!(!cell.is_possible(Mark::N2));
             assert!(!cell.is_possible(Mark::N3));
             assert!(!cell.is_possible(Mark::N7));
             assert!(!cell.is_possible(Mark::N8));
             assert!(!cell.is_possible(Mark::N9));
+        }
+    }
+
+    #[test]
+    fn test_mark_shapes_touched_nothing() {
+        let mut grid = general_tests::filled_sudoku();
+
+        //Run through the basics
+        grid = general_tests::process_through(
+            &mut grid,
+            vec![MarkReset::new_box(), MarkSimple::new_box()],
+        );
+
+        grid = MarkShapes::new_box().solve(grid).grid;
+
+        //Empty grids should still be possible for only 5
+        for c in grid.iter_cells() {
+            if !c.is_determined() {
+                let p = c.possibilities.get_value();
+
+                assert_eq!(p, Mark::N5 as u16);
+            }
         }
     }
 }
