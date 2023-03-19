@@ -53,7 +53,7 @@ pub mod general_tests {
         for i in grid.iter() {
             let cell = grid.get_cell(i);
             if cell.value == number {
-                let c = &mut Cell::new();
+                let c = &mut Cell::new_with_value(0);
                 c.set_possible(mark);
 
                 grid.set_cell(i, c);

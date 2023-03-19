@@ -6,7 +6,7 @@ use crate::grid::{
     mark::Mark,
 };
 
-use super::solver::{Solver, SolverResult};
+use super::solver::{SolveResult, Solver, SolverResult};
 
 // The solver that turns solved cells into determined cells.
 // EC if only 1 possibility is left
@@ -32,9 +32,10 @@ impl Solver for DeterminedSolver {
         let mut changed = false;
 
         //For each square
-        for x in 0..3 {
-            for y in 0..3 {
-                let square = current.get_square(x * 3, y * 3);
+        for row in 0..3 {
+            for col in 0..3 {
+                let square = current.get_square(row * 3, col * 3);
+
                 let r = check_searchable(current, &square);
                 changed = changed | r;
             }
@@ -54,35 +55,47 @@ impl Solver for DeterminedSolver {
             changed = changed | r;
         }
 
+        let mut result = SolverResult::nothing(*current);
+
         if changed {
-            SolverResult::update(*current)
-        } else {
-            SolverResult::nothing(*current)
+            result.result = SolveResult::Updated;
         }
+
+        result
     }
 }
 
 fn check_searchable<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
+    let mut result = false;
+
     for index in area.iter() {
         let cell = area.get_cell(index);
         if cell.is_determined() {
             continue;
         }
 
-        for mark in Mark::iter() {
-            if !cell.is_possible(*mark) {
-                continue;
-            }
+        result |= set_if_possible(grid, area, &cell, index);
+    }
 
-            //Loop through the rest of the area to see if the mark is possible anywhere else
-            if is_only_possible_at(area, *mark, index) {
-                let coord = area.get_coord(index);
-                let value = mark.to_value();
-                let new_cell = Cell::new_with_value(value);
+    result
+}
 
-                grid.set_cell_at(coord, &new_cell);
-                return true;
-            }
+fn set_if_possible<T: CellCollection>(
+    grid: &mut Grid,
+    area: &T,
+    cell: &Cell,
+    index: usize,
+) -> bool {
+    let p = cell.possibilities;
+    for mark in p.iter_possible() {
+        //Loop through the rest of the area to see if the mark is possible anywhere else
+        if is_only_possible_at(area, mark, index) {
+            let coord = area.get_coord(index);
+            let value = mark.to_value();
+            let new_cell = Cell::new_with_value(value);
+
+            grid.set_cell_at(coord, &new_cell);
+            return true;
         }
     }
 
@@ -98,6 +111,7 @@ fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) ->
         }
 
         let cell = area.get_cell(other_index);
+
         if cell.value == mark_value {
             return false;
         }
@@ -151,6 +165,28 @@ mod test {
         general_tests::remove_number(&mut grid, 5);
 
         println!("{}", grid);
+        let solver = super::DeterminedSolver::new();
+        let result = solver.solve(grid);
+
+        assert_eq!(result.result, SolveResult::Updated);
+
+        //Check that all cells with value 5 are determined
+        for index in result.grid.iter() {
+            let cell = result.grid.get_cell(index);
+            assert_ne!(cell.value, 0);
+            if cell.value == 5 {
+                assert!(cell.is_determined());
+            }
+        }
+    }
+
+    #[test]
+    fn test_double_missing_number() {
+        let mut grid = general_tests::filled_sudoku();
+
+        general_tests::remove_number(&mut grid, 5);
+        general_tests::remove_number(&mut grid, 1);
+
         let result = super::DeterminedSolver::new().solve(grid);
 
         assert_eq!(result.result, SolveResult::Updated);
@@ -162,6 +198,27 @@ mod test {
             if cell.value == 5 {
                 assert!(cell.is_determined());
             }
+        }
+    }
+
+    #[test]
+    fn test_only_1_possible() {
+        let mut grid = general_tests::filled_sudoku();
+
+        for i in 0..10 {
+            general_tests::remove_number(&mut grid, i);
+        }
+
+        println!("{}", grid);
+        let result = super::DeterminedSolver::new().solve(grid);
+
+        println!("{}", result.grid);
+        assert_eq!(result.result, SolveResult::Updated);
+
+        //Check that all cells with value 5 are determined
+        for index in result.grid.iter() {
+            let cell = result.grid.get_cell(index);
+            assert_ne!(cell.value, 0);
         }
     }
 }

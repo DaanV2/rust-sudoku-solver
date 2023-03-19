@@ -1,6 +1,8 @@
+use std::fmt::Display;
+
 use super::{
     cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, coords::Coord,
-    format::get_index,
+    format::get_index, utility::utility,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -66,6 +68,12 @@ impl Default for Square {
             col: 0,
             grid: [Cell::default(); GRID_SIZE],
         }
+    }
+}
+
+impl Display for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", utility::ascii_square(self))
     }
 }
 

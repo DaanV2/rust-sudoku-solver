@@ -63,9 +63,10 @@ impl SolverManager {
         current.result = SolveResult::Nothing;
 
         for solver in &self.solvers {
-            println!("{}", current.grid);
-            let solver_result = solver.solve(current.grid);
-            current = current.combine(solver_result);
+            println!("Solver: {}", solver.name());
+            let old_result = current.result;
+            current = solver.solve(current.grid);
+            current.result = old_result.combine(current.result);
 
             if current.result == SolveResult::Solved {
                 break;

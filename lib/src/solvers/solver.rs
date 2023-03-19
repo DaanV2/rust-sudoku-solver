@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::grid::grid::Grid;
 
 pub trait Solver {

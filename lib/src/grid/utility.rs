@@ -5,6 +5,7 @@ pub mod utility {
         constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
         coords::Coord,
         grid::Grid,
+        square::Square,
     };
 
     pub fn ascii_grid(grid: &Grid) -> String {
@@ -31,6 +32,28 @@ pub mod utility {
             if row == 2 || row == 5 {
                 result.push_str("------|-------|------\n");
             }
+        }
+
+        result
+    }
+
+    pub fn ascii_square(square: &Square) -> String {
+        let mut result = String::new();
+
+        // 3x3 square
+        for row in 0..3 {
+            for col in 0..3 {
+                let coord = Coord::new(row, col);
+                let cell = square.get_cell_at(coord);
+                let value = cell.value;
+
+                if cell.is_determined() {
+                    result.push_str(&format!("{} ", value));
+                } else {
+                    result.push_str(". ");
+                }
+            }
+            result.push_str("\n");
         }
 
         result

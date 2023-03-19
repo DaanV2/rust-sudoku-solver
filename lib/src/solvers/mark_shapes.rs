@@ -222,18 +222,21 @@ mod test {
 
     #[test]
     fn test_mark_shapes_touched_nothing() {
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
+
+        general_tests::remove_number(grid, 5);
 
         //Run through the basics
-        grid = general_tests::process_through(
-            &mut grid,
+        let processed = &mut general_tests::process_through(
+            grid,
             vec![MarkReset::new_box(), MarkSimple::new_box()],
         );
 
-        grid = MarkShapes::new_box().solve(grid).grid;
+        let solved = MarkShapes::new().solve(processed.copy()).grid;
+        println!("{}", solved);
 
         //Empty grids should still be possible for only 5
-        for c in grid.iter_cells() {
+        for c in solved.iter_cells() {
             if !c.is_determined() {
                 let p = c.possibilities.get_value();
 

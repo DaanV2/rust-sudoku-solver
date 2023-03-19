@@ -85,6 +85,20 @@ impl Possibility {
     pub fn get_value(&self) -> u16 {
         self.value
     }
+
+    pub fn iter_possible(&self) -> impl Iterator<Item = Mark> {
+        let mut value = self.value;
+        std::iter::from_fn(move || {
+            if value == 0 {
+                return None;
+            }
+
+            let mark = Mark::from_index(value.trailing_zeros() as usize);
+            let mask = mark as u16;
+            value &= !(mask);
+            Some(mark)
+        })
+    }
 }
 
 impl Default for Possibility {
@@ -144,5 +158,20 @@ mod tests {
             assert_eq!(p.get_count(), 0);
             assert_eq!(p.is_possible(*m), false);
         }
+    }
+
+    #[test]
+    fn iter_possible() {
+        let mut p = Possibility::new();
+        p.all_off();
+        p.set_possible(Mark::N1);
+        p.set_possible(Mark::N2);
+        p.set_possible(Mark::N3);
+
+        let mut iter = p.iter_possible();
+        assert_eq!(iter.next(), Some(Mark::N1));
+        assert_eq!(iter.next(), Some(Mark::N2));
+        assert_eq!(iter.next(), Some(Mark::N3));
+        assert_eq!(iter.next(), None);
     }
 }
