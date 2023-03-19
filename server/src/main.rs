@@ -25,6 +25,7 @@ async fn main() -> io::Result<()> {
             .wrap(Logger::new("%a %{User-Agent}i"))
             .service(routes::solver::solve)
             .service(routes::solver::solve_once)
+            .service(routes::solver::filled)
             .service(
                 fs::Files::new("/", "./static/")
                     .prefer_utf8(true)

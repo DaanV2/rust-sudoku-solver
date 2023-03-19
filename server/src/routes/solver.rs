@@ -1,7 +1,10 @@
-use actix_web::{post, web::Json, HttpResponse};
-use sudoku_solver_lib::solvers::{
-    solver::{AnnotatedSolverResult, SolverResult},
-    solver_manager::SolverManager,
+use actix_web::{get, post, web::Json, HttpResponse};
+use sudoku_solver_lib::{
+    grid::utility::utility::filled_sudoku,
+    solvers::{
+        solver::{AnnotatedSolverResult, SolveResult, SolverResult},
+        solver_manager::SolverManager,
+    },
 };
 
 use crate::data::grid::{GridInput, GridOutput};
@@ -35,6 +38,20 @@ pub async fn solve_once(input: Json<GridInput>) -> HttpResponse {
     let annotated = AnnotatedSolverResult {
         result: result.result,
         grid: result.grid,
+        iterations: 1,
+    };
+    let output = GridOutput::from_grid(annotated);
+
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .json(output)
+}
+
+#[get("/api/v1/filled")]
+pub async fn filled() -> HttpResponse {
+    let annotated = AnnotatedSolverResult {
+        result: SolveResult::Nothing,
+        grid: filled_sudoku(),
         iterations: 1,
     };
     let output = GridOutput::from_grid(annotated);
