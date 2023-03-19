@@ -1,4 +1,7 @@
-use std::slice::Iter;
+use std::{
+    fmt::{Display, Formatter},
+    slice::Iter,
+};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[repr(u16)]
@@ -17,6 +20,12 @@ pub enum Mark {
 impl Default for Mark {
     fn default() -> Self {
         Self::N1
+    }
+}
+
+impl Display for Mark {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.to_value())
     }
 }
 

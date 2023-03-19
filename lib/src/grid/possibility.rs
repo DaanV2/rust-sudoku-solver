@@ -32,6 +32,10 @@ impl Possibility {
         Possibility { value: 0 }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.value == 0
+    }
+
     pub fn from(value: Mark) -> Possibility {
         let mut p = Possibility::empty();
         p.set_possible(value);

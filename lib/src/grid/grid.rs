@@ -72,6 +72,14 @@ impl Grid {
         Square::from(row, col, self.cells)
     }
 
+    pub fn is_possible_at(&self, coord: Coord, mark: Mark) -> bool {
+        self.get_cell_at(coord).is_possible(mark)
+    }
+
+    pub fn is_possible(&self, index: usize, mark: Mark) -> bool {
+        self.get_cell(index).is_possible(mark)
+    }
+
     pub fn set_possible_at(&mut self, coord: Coord, mark: Mark) {
         self.set_possible(get_index(&coord), mark);
     }
@@ -82,6 +90,9 @@ impl Grid {
 
     pub fn set_possible(&mut self, index: usize, mark: Mark) {
         let new_cell: &mut Cell = &mut self.get_cell(index).clone();
+        if new_cell.is_determined() {
+            return;
+        }
 
         new_cell.set_possible(mark);
         self.set_cell(index, &new_cell);
@@ -89,6 +100,9 @@ impl Grid {
 
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
         let new_cell: &mut Cell = &mut self.get_cell(index).clone();
+        if new_cell.is_determined() || new_cell.possibilities.is_empty() {
+            return;
+        }
 
         new_cell.unset_possible(mark);
         self.set_cell(index, &new_cell);

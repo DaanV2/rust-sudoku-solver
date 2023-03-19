@@ -63,7 +63,7 @@ impl SolverManager {
         current.result = SolveResult::Nothing;
 
         for solver in &self.solvers {
-            println!("Solver: {}", solver.name());
+            //println!("Solver: {}", solver.name());
             let old_result = current.result;
             current = solver.solve(current.grid);
             current.result = old_result.combine(current.result);

@@ -38,14 +38,14 @@ impl Solver for MarkShapes {
 fn check_square(square: &Square, grid: &mut Grid, mark: Mark) {
     for row in 0..3 {
         if only_possible_in_row(square, row, mark) {
-            mark_off_other_rows(square, grid, row, mark);
+            mark_off_rows(square, grid, row, mark);
             break;
         }
     }
 
     for col in 0..3 {
         if only_possible_in_column(square, col, mark) {
-            mark_off_other_columns(square, grid, col, mark);
+            mark_off_columns(square, grid, col, mark);
             break;
         }
     }
@@ -101,48 +101,33 @@ fn only_possible_in_column(square: &Square, col: usize, mark: Mark) -> bool {
     return in_col > 0;
 }
 
-fn mark_off_other_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
+fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     let row_start = square.row;
+    let row_index = row_start + row;
+    let row_data = grid.get_row(row_index);
 
-    for r in 0..3 {
-        let row_index = row_start + r;
-        if r == row {
-            //Unset the row but not in the square
-            let row = grid.get_row(row_index);
-
-            for c in row.iter_coords() {
-                if square.is_column_in_square(c.col) {
-                    continue;
-                }
-
-                grid.unset_possible_at(c, mark)
-            }
-        } else {
-            let row = grid.get_row(row_index);
-            row.unset_all_possible(grid, mark);
+    //Unset the row but not in the square
+    for c in row_data.iter_coords() {
+        if square.is_column_in_square(c.col) {
+            continue;
         }
+
+        grid.unset_possible_at(c, mark)
     }
 }
 
-fn mark_off_other_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
+fn mark_off_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
     let col_start = square.col;
+    let col_index = col_start + col;
+    let column = grid.get_column(col_index);
 
-    for c in 0..3 {
-        let col_index = col_start + c;
-        let column = grid.get_column(col_index);
-
-        if c == col {
-            //Unset the column but not in the square
-            for r in column.iter_coords() {
-                if square.is_row_in_square(r.row) {
-                    continue;
-                }
-
-                grid.unset_possible_at(r, mark)
-            }
-        } else {
-            column.unset_all_possible(grid, mark);
+    //Unset the column but not in the square
+    for r in column.iter_coords() {
+        if square.is_row_in_square(r.row) {
+            continue;
         }
+
+        grid.unset_possible_at(r, mark)
     }
 }
 
@@ -160,9 +145,9 @@ mod test {
     fn base_grid() -> Grid {
         return utility::parse_from_ascii(
             "
-            . . . . . . . . .
-            . . . 7 8 9 . . .
-            . . . 1 2 3 . . .
+            . . . | . . . | . . .
+            . . . | 7 8 9 | . . .
+            . . . | 1 2 3 | . . .
             ",
         );
     }
@@ -232,15 +217,17 @@ mod test {
             vec![MarkReset::new_box(), MarkSimple::new_box()],
         );
 
-        let solved = MarkShapes::new().solve(processed.copy()).grid;
+        let solver = MarkShapes::new();
+        let solved = solver.solve(processed.copy()).grid;
         println!("{}", solved);
 
         //Empty grids should still be possible for only 5
-        for c in solved.iter_cells() {
+        for coord in solved.iter_coords() {
+            let c = solved.get_cell_at(coord);
             if !c.is_determined() {
                 let p = c.possibilities.get_value();
 
-                assert_eq!(p, Mark::N5 as u16);
+                assert_eq!(p, Mark::N5 as u16, "Coord: {}", coord);
             }
         }
     }
