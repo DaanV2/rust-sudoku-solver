@@ -123,9 +123,9 @@ function set_sudoku(data) {
 
             //Use placeholder to show possible values
             var placeholder = '';
-            for (var j = 0; j < 9; j++) {
+            for (var j = 0; j < 10; j++) {
                 if (c.possible["p"+j] == true) {
-                    placeholder += (j + 1);
+                    placeholder += j;
                 }
             }
         }

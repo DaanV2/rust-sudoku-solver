@@ -8,12 +8,14 @@
 }
 
 .cell {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     text-align: center;
     padding: 0;
     margin: 0;
     transition: background-color 0.5s;
+    word-wrap: break-word;
+    word-break: break-all;
 }
 
 /* Cell hover col */
@@ -30,4 +32,18 @@
 .col {
     padding: 0;
     margin: 0;
+}
+
+.row_2 {
+    border-bottom: 2px solid black;
+}
+.row_5 {
+    border-bottom: 2px solid black;
+}
+
+.col_2 {
+    border-right: 2px solid black;
+}
+.col_5 {
+    border-right: 2px solid black;
 }
