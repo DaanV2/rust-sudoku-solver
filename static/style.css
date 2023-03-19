@@ -3,15 +3,31 @@
 }
 
 #sudoku td {
-    border: 1px solid black;
-    width: 30px;
-    height: 30px;
+    border: 1px thin grey;
     text-align: center;
 }
 
-cell {
-    width: 30px;
-    height: 30px;
+.cell {
+    width: 60px;
+    height: 60px;
     text-align: center;
-    border: 1px solid black;
+    padding: 0;
+    margin: 0;
+    transition: background-color 0.5s;
+}
+
+/* Cell hover col */
+.cell:hover {
+    background-color: aqua;
+    transition: background-color 0.5s;
+}
+
+.row {
+    padding: 0;
+    margin: 0;
+}
+
+.col {
+    padding: 0;
+    margin: 0;
 }

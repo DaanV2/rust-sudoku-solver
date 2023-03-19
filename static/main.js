@@ -1,9 +1,16 @@
 var table = document.getElementById("sudoku");
+
 for (var i = 0; i < 9; i++) {
     var row = table.insertRow(i);
+    row.setAttribute("class", "row row_" + i);
+    row.setAttribute("id", "row_" + i);
+
     for (var j = 0; j < 9; j++) {
         var cell = row.insertCell(j);
-        cell.innerHTML = `<input type='text' class='cell' id='cell_${i*9+j}' maxlength='1' size='1' onkeyup='checkInput(this)'>`;
+        cell.setAttribute("class", "col col_" + j);
+        cell.setAttribute("id", "col_" + j);
+
+        cell.innerHTML = `<input type='text' class='cell' id='cell_${i*9+j}' placeholder="" maxlength='1' size='1' onkeyup='checkInput(this)'>`;
     }
 }
 function checkInput(input) {
@@ -58,6 +65,19 @@ solve_once.onclick = function () {
         .then(set_sudoku);
 }
 
+var filled = document.getElementById("filled");
+filled.onclick = function () {
+    var req = new Request('/api/v1/filled', {
+        method: 'GET',
+    });
+
+    fetch(req)
+        .then(function (response) {
+            return response.json();
+        })
+        .then(set_sudoku);
+}
+
 function get_sudoku() {
     var cells = document.getElementsByClassName("cell");
     var data = [];
@@ -83,11 +103,15 @@ function set_sudoku(data) {
         iterations: data.iterations,
         result: data.result,
     };
-    document.getElementById("text").innerHTML = JSON.stringify(annotations);
+    document.getElementById("text").innerHTML = `<code>\n${JSON.stringify(annotations, null, 4)}\n</code>`;
 
     for (var i = 0; i < cells.length; i++) {
         //Get id from cell and look up value in data
         var id = cells[i].id;
+        //Remove "cell_" from id
+        id = id.substring(5);
+        //Convert to int
+        id = parseInt(id);
         var c = data.cells[id];
         if (c == undefined) {
             continue;
@@ -96,8 +120,17 @@ function set_sudoku(data) {
         var value = c.value;
         if (value == 0 || value == undefined) {
             value = '';
+
+            //Use placeholder to show possible values
+            var placeholder = '';
+            for (var j = 0; j < 9; j++) {
+                if (c.possible["p"+j] == true) {
+                    placeholder += (j + 1);
+                }
+            }
         }
 
+        cells[i].setAttribute("placeholder", placeholder);
         cells[i].value = value;
     }
 }
