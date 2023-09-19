@@ -116,6 +116,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn new_works() {
+        let p = Possibility::new();
+
+        assert_eq!(p.value, 0b00000001_11111111);
+        assert_eq!(p.get_count(), 9);
+        assert!(p.is_possible(Mark::N1));
+        assert!(p.is_possible(Mark::N2));
+        assert!(p.is_possible(Mark::N3));
+        assert!(p.is_possible(Mark::N4));
+        assert!(p.is_possible(Mark::N5));
+        assert!(p.is_possible(Mark::N6));
+        assert!(p.is_possible(Mark::N7));
+        assert!(p.is_possible(Mark::N8));
+        assert!(p.is_possible(Mark::N9));
+    }
+
+    #[test]
     fn all_off_works() {
         let mut p = Possibility::new();
         p.all_off();

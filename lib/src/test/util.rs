@@ -5,6 +5,7 @@ pub mod general_tests {
 
     use crate::grid::cell::Cell;
     use crate::grid::cell_collection::CellCollection;
+    use crate::grid::constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE};
     use crate::grid::coords::Coord;
     use crate::grid::grid::Grid;
     use crate::grid::mark::Mark;
@@ -19,7 +20,11 @@ pub mod general_tests {
         let output = solver.solve(grid);
 
         println!("iterations: {:?}", output.iterations);
-        println!("{}", utility::ascii_grid(&output.grid));
+        println!(
+            "{}\n{}",
+            get_url(&output.grid),
+            utility::ascii_grid(&output.grid)
+        );
 
         assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
     }
@@ -86,6 +91,25 @@ pub mod general_tests {
              2 4 8 | 9 5 7 | 1 3 6\n\
              7 6 3 | 4 1 8 | 2 5 9",
         )
+    }
+
+    pub fn get_url(grid: &Grid) -> String {
+        let mut result = String::new();
+        result.push_str("http://localhost:8080/?grid=");
+
+        for col in GRID_WIDTH_RANGE {
+            for row in GRID_HEIGHT_RANGE {
+                let coord = Coord::new(row, col);
+                let cell = grid.get_cell_at(coord);
+
+                match cell.is_determined() {
+                    true => result.push_str(&cell.value.to_string()),
+                    false => result.push_str("."),
+                }
+            }
+        }
+
+        return result;
     }
 
     //Test that filled_sudoku returns a grid with all cells determined, and that the values are with their coords

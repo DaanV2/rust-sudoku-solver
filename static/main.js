@@ -10,9 +10,31 @@ for (var i = 0; i < 9; i++) {
         cell.setAttribute("class", "col col_" + j);
         cell.setAttribute("id", "col_" + j);
 
-        cell.innerHTML = `<input type='text' class='cell' id='cell_${i*9+j}' placeholder="" maxlength='1' size='1' onkeyup='checkInput(this)'>`;
+        cell.innerHTML = `<input type='text' class='cell' id='cell_${i*9+j}' placeholder="" maxlength='1' size='1' onkeyup='checkInput(this)' onchange='cell_changed(this)'>`;
     }
 }
+
+function cell_changed(c) {
+    to_query();
+}
+
+//Check if grid was enter by query string, which is a string of 81 characters representing the grid
+var urlParams = new URLSearchParams(window.location.search);
+var grid = urlParams.get('grid');
+if (grid != null) {
+    var data = { cells: [] };
+    for (var i = 0; i < grid.length; i++) {
+        var c = grid.charAt(i);
+        c = c == '.' ? 0 : parseInt(c);
+        data.cells.push({
+            value: c,
+            possible: {}
+        });
+    }
+    set_sudoku(data);
+}
+
+
 function checkInput(input) {
     var value = input.value;
     if (value.length > 1) {
@@ -133,4 +155,19 @@ function set_sudoku(data) {
         cells[i].setAttribute("placeholder", placeholder);
         cells[i].value = value;
     }
+
+    to_query();
+}
+
+function to_query() {
+    //Takes the current grid and converts it to a query string
+    var cells = document.getElementsByClassName("cell");
+    var query = '?grid=';
+    for (var i = 0; i < cells.length; i++) {
+        var c = cells[i].value;
+        query += c == '' ? '.' : c;
+    }
+
+    //Update url
+    window.history.pushState({}, '', query);
 }

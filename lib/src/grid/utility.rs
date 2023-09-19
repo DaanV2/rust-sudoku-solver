@@ -11,8 +11,8 @@ pub mod utility {
     pub fn ascii_grid(grid: &Grid) -> String {
         let mut result = String::new();
 
-        for row in GRID_WIDTH_RANGE {
-            for col in GRID_HEIGHT_RANGE {
+        for col in GRID_HEIGHT_RANGE {
+            for row in GRID_WIDTH_RANGE {
                 let coord = Coord::new(row, col);
                 let cell = grid.get_cell_at(coord);
                 let value = cell.value;
@@ -22,14 +22,13 @@ pub mod utility {
                 } else {
                     result.push_str(". ");
                 }
-
-                if col == 2 || col == 5 {
+                if row == 2 || row == 5 {
                     result.push_str("| ");
                 }
             }
             result.push_str("\n");
 
-            if row == 2 || row == 5 {
+            if col == 2 || col == 5 {
                 result.push_str("------|-------|------\n");
             }
         }

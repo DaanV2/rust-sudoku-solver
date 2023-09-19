@@ -56,8 +56,12 @@ impl Solver for MarkSimple {
 mod test {
     use crate::{
         grid::{
-            cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE,
-            coords::Coord, grid::Grid, mark::Mark,
+            cell::Cell,
+            cell_collection::CellCollection,
+            constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+            coords::Coord,
+            grid::Grid,
+            mark::Mark,
         },
         solvers::solver::Solver,
     };
@@ -84,7 +88,7 @@ mod test {
         }
 
         //Check that the column is marked off
-        for col in GRID_HEIGHT_RANGE {
+        for col in GRID_WIDTH_RANGE {
             if col == coord.col {
                 continue;
             }

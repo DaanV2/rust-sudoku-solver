@@ -46,6 +46,22 @@ impl Square {
     pub fn is_coord_in_square(&self, coord: Coord) -> bool {
         self.is_row_in_square(coord.row) && self.is_column_in_square(coord.col)
     }
+
+    pub fn iter_square_coords() -> impl Iterator<Item = Coord> {
+        static COORDS: [Coord; 9] = [
+            Coord { row: 0, col: 0 },
+            Coord { row: 0, col: 3 },
+            Coord { row: 0, col: 6 },
+            Coord { row: 3, col: 0 },
+            Coord { row: 3, col: 3 },
+            Coord { row: 3, col: 6 },
+            Coord { row: 6, col: 0 },
+            Coord { row: 6, col: 3 },
+            Coord { row: 6, col: 6 },
+        ];
+
+        COORDS.iter().map(move |x| *x)
+    }
 }
 
 impl CellCollection for Square {

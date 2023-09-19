@@ -1,10 +1,9 @@
 use crate::grid::grid::Grid;
 
 pub trait Solver {
+    fn name(&self) -> &'static str;
     /// Solves the given grid and returns the result.
     fn solve(&self, grid: Grid) -> SolverResult;
-
-    fn name(&self) -> &'static str;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -14,32 +13,31 @@ pub struct SolverResult {
 }
 
 impl SolverResult {
+    pub fn new(grid: Grid, result: SolveResult) -> Self {
+        Self {
+            result: result,
+            grid: grid,
+        }
+    }
+
+    #[inline]
     pub fn combine(&self, other: SolverResult) -> Self {
-        Self {
-            result: self.result.combine(other.result),
-            grid: other.grid,
-        }
+        SolverResult::new(other.grid, self.result.combine(other.result))
     }
 
+    #[inline]
     pub fn update(grid: Grid) -> Self {
-        Self {
-            result: SolveResult::Updated,
-            grid: grid,
-        }
+        SolverResult::new(grid, SolveResult::Updated)
     }
 
+    #[inline]
     pub fn nothing(grid: Grid) -> Self {
-        Self {
-            result: SolveResult::Nothing,
-            grid: grid,
-        }
+        SolverResult::new(grid, SolveResult::Nothing)
     }
 
+    #[inline]
     pub fn solved(grid: Grid) -> Self {
-        Self {
-            result: SolveResult::Solved,
-            grid: grid,
-        }
+        SolverResult::new(grid, SolveResult::Solved)
     }
 }
 
@@ -55,6 +53,7 @@ pub enum SolveResult {
     Nothing = 0,
     Updated = 1,
     Solved = 2,
+    Error = 3,
 }
 
 impl SolveResult {

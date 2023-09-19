@@ -117,19 +117,7 @@ impl Grid {
     }
 
     pub fn iter_squares(&self) -> impl Iterator<Item = Square> + '_ {
-        static COORDS: [Coord; 9] = [
-            Coord { row: 0, col: 0 },
-            Coord { row: 0, col: 3 },
-            Coord { row: 0, col: 6 },
-            Coord { row: 3, col: 0 },
-            Coord { row: 3, col: 3 },
-            Coord { row: 3, col: 6 },
-            Coord { row: 6, col: 0 },
-            Coord { row: 6, col: 3 },
-            Coord { row: 6, col: 6 },
-        ];
-
-        COORDS.iter().map(move |coord| self.get_square_at(*coord))
+        Square::iter_square_coords().map(move |coord| self.get_square_at(coord))
     }
 }
 

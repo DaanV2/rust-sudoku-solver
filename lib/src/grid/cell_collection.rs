@@ -44,6 +44,16 @@ pub trait CellCollection {
         count
     }
 
+    fn count_determined(&self) -> u32 {
+        let mut count = 0;
+        for i in 0..self.max() {
+            if self.get_cell(i).is_determined() {
+                count += 1;
+            }
+        }
+        count
+    }
+
     fn iter(&self) -> Box<dyn Iterator<Item = usize>> {
         Box::new((0..self.max()).into_iter())
     }
