@@ -116,8 +116,10 @@ impl SolverManager {
 
                 let result = self.solve_internal(new_grid, start_iteration);
 
-                if result.result == SolveResult::Solved {
-                    return result;
+                match result.result {
+                    SolveResult::Solved => return result,
+                    SolveResult::Error => continue,
+                    _ => {}
                 }
 
                 if result.grid.count_determined() > solved_amount {
