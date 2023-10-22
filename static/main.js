@@ -8,7 +8,7 @@ for (var i = 0; i < 9; i++) {
     for (var j = 0; j < 9; j++) {
         var cell = row.insertCell(j);
         cell.setAttribute("class", "col col_" + j);
-        cell.setAttribute("id", "col_" + j);
+        cell.setAttribute("id", `c_${i}_${j}`);
 
         cell.innerHTML = `<input type='text' class='cell' id='cell_${i*9+j}' placeholder="" maxlength='1' size='1' onkeyup='checkInput(this)' onchange='cell_changed(this)'>`;
     }
@@ -16,6 +16,17 @@ for (var i = 0; i < 9; i++) {
 
 function cell_changed(c) {
     to_query();
+}
+
+function setMessage(text, classes) {
+    text = text || "";
+    const t = document.getElementById("text");
+    t.innerHTML = text;
+    t.hidden = text.length == 0;
+
+    if (classes) {
+        t.setAttribute("class", classes);
+    }
 }
 
 //Check if grid was enter by query string, which is a string of 81 characters representing the grid
@@ -64,7 +75,8 @@ solve.onclick = function () {
         .then(function (response) {
             return response.json();
         })
-        .then(set_sudoku);
+        .then(set_sudoku)
+        .catch(err => setMessage(err, "error"));
 }
 
 var solve_once = document.getElementById("solve_once");
@@ -84,7 +96,8 @@ solve_once.onclick = function () {
         .then(function (response) {
             return response.json();
         })
-        .then(set_sudoku);
+        .then(set_sudoku)
+        .catch(err => setMessage(err, "error"));
 }
 
 var filled = document.getElementById("filled");
@@ -97,7 +110,8 @@ filled.onclick = function () {
         .then(function (response) {
             return response.json();
         })
-        .then(set_sudoku);
+        .then(set_sudoku)
+        .catch(err => setMessage(err, "error"));
 }
 
 function get_sudoku() {
@@ -125,7 +139,7 @@ function set_sudoku(data) {
         iterations: data.iterations,
         result: data.result,
     };
-    document.getElementById("text").innerHTML = `<code>\n${JSON.stringify(annotations, null, 4)}\n</code>`;
+    setMessage(`<code>\n${JSON.stringify(annotations, null, 4)}\n</code>`, "info");
 
     for (var i = 0; i < cells.length; i++) {
         //Get id from cell and look up value in data
