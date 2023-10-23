@@ -1039,6 +1039,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "sudoku-benchmark"
+version = "0.1.0"
+dependencies = [
+ "rand",
+ "sudoku-solver-lib",
+]
+
+[[package]]
 name = "sudoku-solver-lib"
 version = "0.1.0"
 dependencies = [

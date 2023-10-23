@@ -1,12 +1,16 @@
 use super::{mark::Mark, possibility::Possibility};
 
+/// A cell in the grid
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Cell {
+    /// The possibilities for this cell
     pub possibilities: Possibility,
+    /// The value of this cell, 0 if not determined
     pub value: u8,
 }
 
 impl Cell {
+    /// Creates a new empty cell, with all possibilities on
     pub fn new() -> Cell {
         Cell {
             possibilities: Possibility::new(),
@@ -14,6 +18,7 @@ impl Cell {
         }
     }
 
+    /// Creates a new cell with a value, and all possibilities off
     pub fn new_with_value(value: u8) -> Cell {
         Cell {
             possibilities: Possibility::empty(),
@@ -21,17 +26,12 @@ impl Cell {
         }
     }
 
-    pub fn copy(&self) -> Cell {
-        Cell {
-            value: self.value,
-            possibilities: self.possibilities.copy(),
-        }
-    }
-
+    /// Returns true if the cell is determined or not
     pub fn is_determined(&self) -> bool {
         self.value > 0
     }
 
+    /// Returns true if the given value is possible for this cell
     pub fn is_possible(&self, value: Mark) -> bool {
         if self.is_determined() {
             return false;
@@ -40,16 +40,14 @@ impl Cell {
         self.possibilities.is_possible(value)
     }
 
+    /// Stores the given value in the cell, sets all possibilities off
     pub fn set_value(&mut self, value: u8) {
         self.value = value;
-        self.possibilities.all_off();
+        self.possibilities = Possibility::empty();
     }
 
+    /// Sets the given value as possible for this cell
     pub fn set_possible(&mut self, value: Mark) {
-        if self.is_determined() {
-            return;
-        }
-
         self.possibilities.set_possible(value);
     }
 

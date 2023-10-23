@@ -15,6 +15,7 @@ pub async fn solve(input: Json<GridInput>) -> HttpResponse {
         return HttpResponse::BadRequest().body("body is not valid");
     }
 
+    println!("Solve full");
     let grid = input.to_grid();
     let solver = SolverManager::new();
     let result = solver.solve(grid);
@@ -31,6 +32,7 @@ pub async fn solve_once(input: Json<GridInput>) -> HttpResponse {
         return HttpResponse::BadRequest().body("body is not valid");
     }
 
+    println!("Solve once");
     let grid = input.to_grid();
     let solver = SolverManager::new();
     let wrapped = SolverResult::nothing(grid);

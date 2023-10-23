@@ -13,6 +13,7 @@ pub mod general_tests {
     use crate::solvers::solver::{SolveResult, Solver};
     use crate::solvers::solver_manager::SolverManager;
 
+    /// Tests that the grid should be solved
     pub fn test_should_solve(grid: Grid) {
         println!("{}", utility::ascii_grid(&grid));
 
@@ -29,13 +30,7 @@ pub mod general_tests {
         assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
     }
 
-    pub fn remove_cells(grid: &mut Grid) {
-        let mut rng = rand::thread_rng();
-        let amount = rng.gen_range((grid.max() / 2)..grid.max());
-
-        remove_cells_amount(grid, amount);
-    }
-
+    /// Removes a random amount of cells from the grid
     pub fn remove_cells_amount(grid: &mut Grid, amount: usize) {
         let mut rng = rand::thread_rng();
         let mut removed = 0;
@@ -51,6 +46,7 @@ pub mod general_tests {
         }
     }
 
+    /// Removes a number from the grid
     pub fn remove_number(grid: &mut Grid, number: u8) {
         let mark = Mark::from_value(number);
 
@@ -66,6 +62,7 @@ pub mod general_tests {
         }
     }
 
+    /// Solves the grid with the given solvers
     pub fn process_through(grid: &mut Grid, solves: Vec<Box<dyn Solver>>) -> Grid {
         let mut result = grid.clone();
 
@@ -77,6 +74,7 @@ pub mod general_tests {
         result
     }
 
+    /// Returns a filled sudoku grid
     pub fn filled_sudoku() -> Grid {
         parse_from_ascii(
             "4 3 5 | 2 6 9 | 7 8 1\n\
@@ -93,6 +91,7 @@ pub mod general_tests {
         )
     }
 
+    /// Returns a localhost url with the grid as a query parameter
     pub fn get_url(grid: &Grid) -> String {
         let mut result = String::new();
         result.push_str("http://localhost:8080/?grid=");
@@ -112,7 +111,7 @@ pub mod general_tests {
         return result;
     }
 
-    //Test that filled_sudoku returns a grid with all cells determined, and that the values are with their coords
+    /// Test that filled_sudoku returns a grid with all cells determined, and that the values are with their coords
     #[test]
     fn test_filled_sudoku() {
         let grid = filled_sudoku();

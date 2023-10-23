@@ -31,7 +31,8 @@
                 "args": [
                     "build",
                     "--bin=server-sudoku-solver",
-                    "--package=server-sudoku-solver"
+                    "--package=server-sudoku-solver",
+                    "--release"
                 ],
                 "filter": {
                     "name": "server-sudoku-solver",
