@@ -48,14 +48,22 @@ fn main() {
     }
 
     let solve_time = start_time.elapsed();
+    let size = SIZE as u128;
 
     println!("Results:");
     println!("  Generation time: {}ms", generation_time.as_millis());
-    println!("  Solve time: {}ms", solve_time.as_millis());
     println!(
-        "csv: {},{},{}",
-        SIZE,
+        "  Generation time per: {}ms",
+        (generation_time.as_millis() / size)
+    );
+    println!("  Solve time: {}ms", solve_time.as_millis());
+    println!("  Solve time per: {}ms", solve_time.as_millis() / size);
+    println!(
+        "csv: {},{},{},{},{}",
+        size,
         generation_time.as_millis(),
-        solve_time.as_millis()
+        solve_time.as_millis(),
+        generation_time.as_millis() / size,
+        solve_time.as_millis() / size
     );
 }
