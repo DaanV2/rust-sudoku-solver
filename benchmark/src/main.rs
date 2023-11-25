@@ -8,7 +8,7 @@ use sudoku_solver_lib::{
 pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
-const SIZE: usize = 200;
+const SIZE: usize = 1000;
 
 fn main() {
     let mut start_time = Instant::now();
@@ -51,19 +51,19 @@ fn main() {
     let size = SIZE as u128;
 
     println!("Results:");
-    println!("  Generation time: {}ms", generation_time.as_millis());
+    println!("  Generation time: {}ms", generation_time.as_nanos());
     println!(
         "  Generation time per: {}ms",
-        (generation_time.as_millis() / size)
+        (generation_time.as_nanos() / size)
     );
-    println!("  Solve time: {}ms", solve_time.as_millis());
-    println!("  Solve time per: {}ms", solve_time.as_millis() / size);
+    println!("  Solve time: {}ms", solve_time.as_nanos());
+    println!("  Solve time per: {}ms", solve_time.as_nanos() / size);
     println!(
         "csv: {},{},{},{},{}",
         size,
-        generation_time.as_millis(),
-        solve_time.as_millis(),
-        generation_time.as_millis() / size,
-        solve_time.as_millis() / size
+        generation_time.as_nanos(),
+        solve_time.as_nanos(),
+        generation_time.as_nanos() / size,
+        solve_time.as_nanos() / size
     );
 }
