@@ -12,12 +12,26 @@ pub struct SolverManagerConfig {
     pub max_iterations: usize,
 }
 
-impl SolverManager {
+impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            config: SolverManagerConfig {
-                max_iterations: 1000,
-            },
+            max_iterations: 100,
+        }
+    }
+}
+
+impl SolverManager {
+    /// Creates a new solver manager with default settings
+    pub fn new() -> Self {
+        let default_config = SolverManagerConfig::new();
+
+        SolverManager::new_with_config(default_config)
+    }
+
+    /// Creates a new solver manager with the given config
+    pub fn new_with_config(config: SolverManagerConfig) -> Self {
+        Self {
+            config: config,
             pre_solvers: vec![
                 // Setups for other solvers
                 super::mark_reset::MarkReset::new_box(),
@@ -30,7 +44,7 @@ impl SolverManager {
                 super::mark_survivor::MarkSurvivor::new_box(),
                 // Solvers
                 super::determined_solver::DeterminedSolver::new_box(),
-                // Finalizers
+                //Finalizers
                 super::is_solved::IsSolved::new_box(),
             ],
         }
@@ -41,11 +55,11 @@ impl SolverManager {
     }
 
     pub fn solve_round(&self, current: SolverResult) -> SolverResult {
-        apply_solvers(current, &self.solvers)
+        return apply_solvers(current, &self.solvers);
     }
 
     pub fn solve(&self, grid: Grid) -> AnnotatedSolverResult {
-        let result = self.solve_internal(grid, 0);
+        let result = self.solve_simple(grid);
 
         if result.result != SolveResult::Solved {
             let mut r = result;
@@ -58,6 +72,10 @@ impl SolverManager {
         }
 
         result
+    }
+
+    pub fn solve_simple(&self, grid: Grid) -> AnnotatedSolverResult {
+        self.solve_internal(grid, 0)
     }
 
     fn solve_internal(&self, grid: Grid, start_iteration: usize) -> AnnotatedSolverResult {
@@ -101,8 +119,8 @@ impl SolverManager {
         let mut iterations = start_iteration + 1;
 
         //Just set some cells to see if it works
-        for coord in grid.iter_coords() {
-            let cell = grid.get_cell_at(coord);
+        for index in grid.iter() {
+            let cell = grid.get_cell(index);
 
             if cell.is_determined() {
                 continue;
@@ -112,7 +130,7 @@ impl SolverManager {
                 let mut new_grid = grid.clone();
                 let c = Cell::new_with_value(mark.to_value());
 
-                new_grid.set_cell_at(coord, &c);
+                new_grid.set_cell(index, &c);
 
                 let result = self.solve_internal(new_grid, start_iteration);
 

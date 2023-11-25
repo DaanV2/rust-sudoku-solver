@@ -1,7 +1,7 @@
 use rand::{rngs::ThreadRng, Rng};
 use sudoku_solver_lib::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid};
 
-pub fn remove_cells_amount(rng: &ThreadRng, grid: &mut Grid, amount: usize) {
+pub fn remove_cells_amount(rng: &mut ThreadRng, grid: &mut Grid, amount: usize) {
     let mut removed = 0;
 
     while removed < amount {

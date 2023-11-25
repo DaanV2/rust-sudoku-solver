@@ -66,7 +66,7 @@ impl MarkAreaCountInstance {
         for mark in Mark::iter() {
             for sq in Square::iter_square_coords() {
                 let square = self.grid.get_square_at(sq);
-                let result = self.check_area(square, *mark);
+                let result = self.check_area(square, mark);
                 if result != SolveResult::Nothing {
                     return result;
                 }

@@ -1,24 +1,8 @@
 use super::mark::Mark;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Possibility {
     value: u16,
-}
-
-impl std::fmt::Debug for Possibility {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Possibility")
-            .field("1", &self.is_possible(Mark::N1))
-            .field("2", &self.is_possible(Mark::N2))
-            .field("3", &self.is_possible(Mark::N3))
-            .field("4", &self.is_possible(Mark::N4))
-            .field("5", &self.is_possible(Mark::N5))
-            .field("6", &self.is_possible(Mark::N6))
-            .field("7", &self.is_possible(Mark::N7))
-            .field("8", &self.is_possible(Mark::N8))
-            .field("9", &self.is_possible(Mark::N9))
-            .finish()
-    }
 }
 
 impl Possibility {
@@ -169,15 +153,15 @@ mod tests {
 
         for m in Mark::iter() {
             p.all_off();
-            p.set_possible(*m);
+            p.set_possible(m);
 
             assert_eq!(p.get_count(), 1);
-            assert_eq!(p.is_possible(*m), true);
+            assert_eq!(p.is_possible(m), true);
 
-            p.unset_possible(*m);
+            p.unset_possible(m);
 
             assert_eq!(p.get_count(), 0);
-            assert_eq!(p.is_possible(*m), false);
+            assert_eq!(p.is_possible(m), false);
         }
     }
 

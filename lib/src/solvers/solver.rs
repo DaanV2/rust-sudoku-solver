@@ -64,4 +64,11 @@ impl SolveResult {
 
         return self;
     }
+
+    pub fn is_done(self) -> bool {
+        match self {
+            SolveResult::Solved | SolveResult::Error => true,
+            _ => false,
+        }
+    }
 }

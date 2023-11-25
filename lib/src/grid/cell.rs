@@ -26,6 +26,11 @@ impl Cell {
         }
     }
 
+    /// Creates a new cell with a mark as a value, and all possibilities off
+    pub fn new_from_mark(mark: Mark) -> Cell {
+        Cell::new_with_value(Mark::to_value(mark))
+    }
+
     /// Returns true if the cell is determined or not
     pub fn is_determined(&self) -> bool {
         self.value > 0

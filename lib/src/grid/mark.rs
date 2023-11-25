@@ -1,10 +1,10 @@
 use std::{
     fmt::{Display, Formatter},
-    slice::Iter,
+    ops::Shl,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-#[repr(u16)]
+#[repr(usize)]
 pub enum Mark {
     N1 = 0b00000000_00000001, //1
     N2 = 0b00000000_00000010, //2
@@ -28,26 +28,33 @@ impl Display for Mark {
         write!(f, "{}", self.to_value())
     }
 }
+pub struct MarkIter {
+    current: Mark,
+}
+
+impl Iterator for MarkIter {
+    type Item = Mark;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let current = self.current;
+
+        if current == Mark::N9 {
+            None
+        } else {
+            self.current = current.shl(1);
+            Some(current)
+        }
+    }
+}
 
 impl Mark {
     // Returns an iterator over all possible values
-    pub fn iter() -> Iter<'static, Mark> {
-        static FIELDS: [Mark; 9] = [
-            Mark::N1,
-            Mark::N2,
-            Mark::N3,
-            Mark::N4,
-            Mark::N5,
-            Mark::N6,
-            Mark::N7,
-            Mark::N8,
-            Mark::N9,
-        ];
-        FIELDS.iter()
+    pub fn iter() -> MarkIter {
+        MarkIter { current: Mark::N1 }
     }
 
     // Returns the index of the given value
-    pub fn to_index(&self) -> usize {
+    pub fn to_index(self) -> usize {
         match self {
             Mark::N1 => 0,
             Mark::N2 => 1,
@@ -77,7 +84,7 @@ impl Mark {
         }
     }
 
-    pub fn to_value(&self) -> u8 {
+    pub fn to_value(self) -> u8 {
         match self {
             Mark::N1 => 1,
             Mark::N2 => 2,
@@ -113,6 +120,17 @@ impl From<u32> for Mark {
     }
 }
 
+impl Shl<u32> for Mark {
+    type Output = Mark;
+
+    fn shl(self, rhs: u32) -> Self::Output {
+        //Convert unsafe to usize, shift it and convert back to Mark
+        let mut value = self as usize;
+        value = value << rhs;
+        unsafe { std::mem::transmute(value) }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,7 +139,7 @@ mod tests {
     fn test_index() {
         for (index, mark) in Mark::iter().enumerate() {
             let value = mark.to_index();
-            let mark2 = &Mark::from_index(value);
+            let mark2 = Mark::from_index(value);
 
             assert_eq!(mark2, mark);
             assert_eq!(value, index);
@@ -132,7 +150,7 @@ mod tests {
     fn test_value() {
         for (index, mark) in Mark::iter().enumerate() {
             let value = mark.to_value();
-            let mark2 = &Mark::from_value(value);
+            let mark2 = Mark::from_value(value);
 
             assert_eq!(mark2, mark);
             assert_eq!(value, index as u8 + 1);

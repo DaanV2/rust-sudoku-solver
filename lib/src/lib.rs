@@ -1,3 +1,4 @@
+pub mod generators;
 pub mod grid;
 pub mod solvers;
 

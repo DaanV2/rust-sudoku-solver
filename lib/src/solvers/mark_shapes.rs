@@ -27,7 +27,7 @@ impl Solver for MarkShapes {
 
         for mark in Mark::iter() {
             for square in grid.iter_squares() {
-                check_square(&square, current, *mark);
+                check_square(&square, current, mark);
             }
         }
 
@@ -101,13 +101,15 @@ fn only_possible_in_column(square: &Square, col: usize, mark: Mark) -> bool {
     return in_col > 0;
 }
 
+#[inline]
 fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     let row_start = square.row;
     let row_index = row_start + row;
     let row_data = grid.get_row(row_index);
 
     //Unset the row but not in the square
-    for c in row_data.iter_coords() {
+    for index in row_data.iter() {
+        let c = row_data.get_coord(index);
         if square.is_column_in_square(c.col) {
             continue;
         }
@@ -116,18 +118,21 @@ fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     }
 }
 
+#[inline]
 fn mark_off_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
     let col_start = square.col;
     let col_index = col_start + col;
     let column = grid.get_column(col_index);
 
     //Unset the column but not in the square
-    for r in column.iter_coords() {
-        if square.is_row_in_square(r.row) {
+    for index in column.iter() {
+        let c = column.get_coord(index);
+
+        if square.is_row_in_square(c.row) {
             continue;
         }
 
-        grid.unset_possible_at(r, mark)
+        grid.unset_possible_at(c, mark)
     }
 }
 
