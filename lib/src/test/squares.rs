@@ -39,7 +39,7 @@ mod test {
         let sq = grid.get_square(row, col);
         for index in sq.iter() {
             let coord = sq.get_coord(index);
-            grid.set_cell_at(coord, &Cell::new_with_value(0));
+            grid.set_cell_at(coord, Cell::new_with_value(0));
         }
     }
 }

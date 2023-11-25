@@ -39,10 +39,10 @@ impl Solver for MarkSurvivor {
                     continue;
                 }
 
-                match cell.possibilities.iter_possible().next() {
+                match cell.iter_possible().next() {
                     Some(value) => {
                         let c = Cell::new_with_value(value.to_value());
-                        current.set_cell_at(coord, &c);
+                        current.set_cell_at(coord, c);
                         changed = true;
                     }
                     None => {}

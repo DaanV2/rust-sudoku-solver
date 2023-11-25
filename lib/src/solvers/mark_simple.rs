@@ -27,8 +27,8 @@ impl Solver for MarkSimple {
             let cell = current.get_cell(i);
 
             //If the cell is determined, mark off that square, row and column
-            if cell.is_determined() {
-                let turnoff = Mark::from_value(cell.value as u8);
+            if let Some(value) = cell.value() {
+                let turnoff = Mark::from_value(value);
                 let coord = current.get_coord(i);
 
                 //Mark off the row
@@ -71,7 +71,7 @@ mod test {
         let mut grid = Grid::new();
         let coord = Coord::new(4, 3);
 
-        grid.set_cell_at(coord, &Cell::new_with_value(5));
+        grid.set_cell_at(coord, Cell::new_with_value(5));
 
         let solver = super::MarkSimple::new();
         let result = solver.solve(grid);

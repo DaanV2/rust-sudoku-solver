@@ -47,18 +47,18 @@ impl<T: RngCore> Generator<T> {
                 break;
             }
 
-            let iter = cell.possibilities.iter_possible();
+            let iter = cell.iter_possible();
             if let Some(value) = iter.choose(&mut self.rng) {
-                let c = Cell::new_from_mark(value);
+                let c = Cell::new_from_mark_as_value(value);
 
-                result.grid.set_cell(index, &c);
+                result.grid.set_cell(index, c);
 
                 // Solve some cells, if it fails, remove the cell
                 let mut r = self.solvers.pre_solve(result);
                 r = self.solvers.solve_round(r);
                 match r.result {
                     SolveResult::Error => {
-                        result.grid.set_cell(index, &Cell::new());
+                        result.grid.set_cell(index, Cell::new());
                     }
                     _ => {
                         result = r;
@@ -96,7 +96,7 @@ impl<T: RngCore> Generator<T> {
             let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set_cell(index, &Cell::new());
+                grid.set_cell(index, Cell::new());
                 removed += 1;
             }
         }

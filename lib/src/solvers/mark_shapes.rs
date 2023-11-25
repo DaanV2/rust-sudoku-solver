@@ -223,16 +223,16 @@ mod test {
         );
 
         let solver = MarkShapes::new();
-        let solved = solver.solve(processed.copy()).grid;
+        let solved = solver.solve(processed.clone()).grid;
         println!("{}", solved);
 
         //Empty grids should still be possible for only 5
         for coord in solved.iter_coords() {
             let c = solved.get_cell_at(coord);
             if !c.is_determined() {
-                let p = c.possibilities.get_value();
+                let p = c.is_possible(Mark::N5);
 
-                assert_eq!(p, Mark::N5 as u16, "Coord: {}", coord);
+                assert_eq!(p, true, "Coord: {}", coord);
             }
         }
     }

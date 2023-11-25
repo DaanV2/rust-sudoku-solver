@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::{
-        grid::{coords::Coord, mark::Mark, possibility::Possibility, utility::utility},
+        grid::{cell::Cell, coords::Coord, mark::Mark, utility::utility},
         solvers::solver_manager::SolverManager,
     };
 
@@ -24,7 +24,7 @@ mod test {
         let solver = SolverManager::new();
         let result = solver.solve(grid).grid;
 
-        let mut pos = Possibility::new();
+        let mut pos = Cell::new();
         pos.unset_possible(Mark::N9);
 
         // Col 2 should have no possible 9
@@ -35,11 +35,7 @@ mod test {
                 continue;
             }
 
-            assert_eq!(
-                cell.possibilities, pos,
-                "Cell at {} should have no possible 9",
-                c
-            );
+            assert_eq!(cell, pos, "Cell at {} should have no possible 9", c);
         }
 
         // Row 4 should have no possible 9
@@ -50,11 +46,7 @@ mod test {
                 continue;
             }
 
-            assert_eq!(
-                cell.possibilities, pos,
-                "Cell at {} should have no possible 9",
-                c
-            );
+            assert_eq!(cell, pos, "Cell at {} should have no possible 9", c);
         }
 
         // Square at (row 1, col 0) should have no possible 9
@@ -66,11 +58,7 @@ mod test {
                     continue;
                 }
 
-                assert_eq!(
-                    cell.possibilities, pos,
-                    "Cell at {} should have no possible 9",
-                    c
-                );
+                assert_eq!(cell, pos, "Cell at {} should have no possible 9", c);
             }
         }
     }

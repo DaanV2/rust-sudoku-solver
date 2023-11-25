@@ -40,21 +40,21 @@ pub mod general_tests {
             let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set_cell(index, &Cell::new());
+                grid.set_cell(index, Cell::new());
                 removed += 1;
             }
         }
     }
 
     /// Removes a number from the grid
-    pub fn remove_number(grid: &mut Grid, number: u8) {
+    pub fn remove_number(grid: &mut Grid, number: usize) {
         let mark = Mark::from_value(number);
 
         //Reset all cells with nr 5 to empty
         for i in grid.iter() {
             let cell = grid.get_cell(i);
-            if cell.value == number {
-                let c = &mut Cell::new_with_value(0);
+            if cell.get_value() == number {
+                let mut c = Cell::new_with_value(0);
                 c.set_possible(mark);
 
                 grid.set_cell(i, c);
@@ -101,9 +101,9 @@ pub mod general_tests {
                 let coord = Coord::new(row, col);
                 let cell = grid.get_cell_at(coord);
 
-                match cell.is_determined() {
-                    true => result.push_str(&cell.value.to_string()),
-                    false => result.push_str("."),
+                match cell.value() {
+                    Some(value) => result.push_str(&value.to_string()),
+                    None => result.push_str("."),
                 }
             }
         }

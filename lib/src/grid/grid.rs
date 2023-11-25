@@ -30,92 +30,101 @@ impl Grid {
         Grid { cells: cells }
     }
 
-    pub fn copy(&self) -> Grid {
-        Grid {
-            cells: self.cells.clone(),
-        }
-    }
-
     /// Retrieves the cell at the given index
-    pub fn get_cell(&self, index: usize) -> &Cell {
-        &self.cells[index]
+    pub fn get_cell(&self, index: usize) -> Cell {
+        self.cells[index]
     }
 
     /// Sets the cell at the given index
-    pub fn set_cell(&mut self, index: usize, cell: &Cell) {
-        self.cells[index] = *cell;
+    pub fn set_cell(&mut self, index: usize, cell: Cell) {
+        self.cells[index] = cell;
     }
 
     /// Retrieves the cell at the given coordinate
-    pub fn get_cell_at(&self, coord: Coord) -> &Cell {
-        &self.get_cell(get_index(&coord))
+    pub fn get_cell_at(self, coord: Coord) -> Cell {
+        self.get_cell(get_index(coord))
     }
 
     /// Sets the cell at the given coordinate
-    pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
-        self.set_cell(get_index(&coord), cell);
+    pub fn set_cell_at(&mut self, coord: Coord, cell: Cell) {
+        self.set_cell(get_index(coord), cell);
     }
 
+    /// Retrieves the row at the given index
     pub fn get_row(&self, row: usize) -> Row {
         Row::new(row, self.cells)
     }
 
+    /// Retrieves the column at the given index
     pub fn get_column(&self, col: usize) -> Column {
         Column::new(col, self.cells)
     }
 
+    /// Retrieves the square at the given row and column
     pub fn get_square_at(&self, coord: Coord) -> Square {
         Square::from(coord.row, coord.col, self.cells)
     }
 
+    /// Retrieves the square at the given row and column
     pub fn get_square(&self, row: usize, col: usize) -> Square {
         Square::from(row, col, self.cells)
     }
 
+    /// Returns true if the given value is present in this collection
     pub fn is_possible_at(&self, coord: Coord, mark: Mark) -> bool {
         self.get_cell_at(coord).is_possible(mark)
     }
 
+    /// Returns true if the given value is possible for this cell
     pub fn is_possible(&self, index: usize, mark: Mark) -> bool {
         self.get_cell(index).is_possible(mark)
     }
 
+    /// Returns true if the given value is possible for this cell
     pub fn set_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.set_possible(get_index(&coord), mark);
+        self.set_possible(get_index(coord), mark);
     }
 
+    /// Un sets the given value as possible for this cell
     pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.unset_possible(get_index(&coord), mark);
+        self.unset_possible(get_index(coord), mark);
     }
 
+    /// Returns true if the given value is present in this collection
     pub fn set_possible(&mut self, index: usize, mark: Mark) {
-        let new_cell: &mut Cell = &mut self.get_cell(index).clone();
-        if new_cell.is_determined() {
+        let old_cell = self.get_cell(index);
+        if old_cell.is_determined() {
             return;
         }
 
+        let mut new_cell = old_cell.clone();
         new_cell.set_possible(mark);
-        self.set_cell(index, &new_cell);
+        self.set_cell(index, new_cell);
     }
 
+    /// Un sets the given value as possible for this cell
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
-        let new_cell: &mut Cell = &mut self.get_cell(index).clone();
-        if new_cell.is_determined() || new_cell.possibilities.is_empty() {
+        let old_cell = self.get_cell(index);
+        if old_cell.is_determined() {
             return;
         }
 
+        let mut new_cell = old_cell.clone();
         new_cell.unset_possible(mark);
-        self.set_cell(index, &new_cell);
+        self.set_cell(index, new_cell);
     }
 
+    /// Iterates over all rows
     pub fn iter_rows(&self) -> impl Iterator<Item = Row> + '_ {
         (0..9).map(move |row| self.get_row(row))
     }
 
+    /// Iterates over all columns
     pub fn iter_columns(&self) -> impl Iterator<Item = Column> + '_ {
         (0..9).map(move |col| self.get_column(col))
     }
 
+    /// Iterates over all squares
     pub fn iter_squares(&self) -> impl Iterator<Item = Square> + '_ {
         Square::iter_square_coords().map(move |coord| self.get_square_at(coord))
     }
@@ -128,8 +137,8 @@ impl Default for Grid {
 }
 
 impl CellCollection for Grid {
-    fn get_cell(&self, index: usize) -> &Cell {
-        &self.cells[index]
+    fn get_cell(&self, index: usize) -> Cell {
+        self.cells[index]
     }
 
     fn get_coord(&self, index: usize) -> Coord {

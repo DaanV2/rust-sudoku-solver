@@ -22,8 +22,8 @@ impl Column {
 }
 
 impl CellCollection for Column {
-    fn get_cell(&self, index: usize) -> &Cell {
-        &self.grid[get_index(&self.get_coord(index))]
+    fn get_cell(&self, index: usize) -> Cell {
+        self.grid[get_index(self.get_coord(index))]
     }
 
     fn get_coord(&self, index: usize) -> Coord {

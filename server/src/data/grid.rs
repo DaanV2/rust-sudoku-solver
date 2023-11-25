@@ -51,14 +51,14 @@ impl GridInput {
         let max = min(self.cells.len(), constants::GRID_SIZE);
 
         for index in 0..max {
-            let v = self.cells[index];
+            let v = self.cells[index] as usize;
             let mut new_cell = Cell::new();
 
             if v != 0 {
-                new_cell.set_value(v as u8);
+                new_cell.set_value(v);
             }
 
-            grid.set_cell(index, &new_cell);
+            grid.set_cell(index, new_cell);
         }
 
         grid
@@ -86,16 +86,16 @@ impl GridOutput {
 }
 
 impl CellOutput {
-    pub fn from_cell(cell: &Cell) -> CellOutput {
+    pub fn from_cell(cell: Cell) -> CellOutput {
         CellOutput {
-            value: cell.value,
+            value: cell.get_value() as u8,
             possible: Possible::from_cell(cell),
         }
     }
 }
 
 impl Possible {
-    pub fn from_cell(cell: &Cell) -> Possible {
+    pub fn from_cell(cell: Cell) -> Possible {
         Possible {
             p1: cell.is_possible(Mark::N1),
             p2: cell.is_possible(Mark::N2),
