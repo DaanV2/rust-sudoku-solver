@@ -3,7 +3,7 @@ use super::{cell::Cell, coords::Coord, mark::Mark};
 /// A trait for collection of cells
 pub trait CellCollection {
     /// Returns the cell at the given index
-    fn get_cell(&self, index: usize) -> &Cell;
+    fn get_cell(&self, index: usize) -> Cell;
     /// Sets the cell at the given index
     fn get_coord(&self, index: usize) -> Coord;
 
@@ -13,9 +13,9 @@ pub trait CellCollection {
     }
 
     /// Finds the first cell with the given value
-    fn find_value(&self, value: u8) -> Option<usize> {
+    fn find_value(&self, value: usize) -> Option<usize> {
         for i in 0..self.max() {
-            if self.get_cell(i).value == value {
+            if self.get_cell(i).get_value() == value {
                 return Some(i);
             }
         }
@@ -23,7 +23,7 @@ pub trait CellCollection {
     }
 
     /// Returns true if the given value is present in this collection
-    fn has_value(&self, value: u8) -> bool {
+    fn has_value(&self, value: usize) -> bool {
         match self.find_value(value) {
             Some(_) => true,
             None => false,
@@ -73,7 +73,7 @@ pub trait CellCollection {
     }
 
     /// Returns a new iterator over the cells in this collection
-    fn iter_cells(&self) -> Box<dyn Iterator<Item = &Cell> + '_> {
+    fn iter_cells(&self) -> Box<dyn Iterator<Item = Cell> + '_> {
         Box::new((0..self.max()).into_iter().map(move |i| self.get_cell(i)))
     }
 }

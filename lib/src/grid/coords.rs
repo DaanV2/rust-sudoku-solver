@@ -1,7 +1,5 @@
 use std::fmt::{self, Display, Formatter};
 
-use super::format::{get_index, to_row_col};
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Coord {
     pub row: usize,
@@ -9,26 +7,32 @@ pub struct Coord {
 }
 
 impl Coord {
+    /// Creates a new coord
     pub fn new(row: usize, col: usize) -> Self {
         Self { row, col }
     }
 
+    /// Creates a new coord from an index
     pub fn from_index(index: usize) -> Self {
-        to_row_col(index)
+        super::format::to_row_col(index)
     }
 
-    pub fn get_row(&self) -> usize {
+    /// Returns the index of the coord
+    pub fn get_row(self) -> usize {
         self.row
     }
 
-    pub fn get_col(&self) -> usize {
+    /// Returns the index of the coord
+    pub fn get_col(self) -> usize {
         self.col
     }
 
-    pub fn get_index(&self) -> usize {
-        get_index(self)
+    /// Returns the index of the coord
+    pub fn get_index(self) -> usize {
+        super::format::get_index(self)
     }
 
+    /// Returns the row and column of the coord
     pub fn get_row_col(&self) -> (usize, usize) {
         (self.row, self.col)
     }
@@ -57,7 +61,7 @@ mod test {
     fn test_coord_from_index() {
         for row in GRID_HEIGHT_RANGE {
             for col in GRID_HEIGHT_RANGE {
-                let index = get_index(&Coord::new(row, col));
+                let index = Coord::new(row, col).get_index();
                 let coord = Coord::from_index(index);
                 assert_eq!(coord.get_row(), row);
                 assert_eq!(coord.get_col(), col);

@@ -6,7 +6,6 @@ pub mod coords;
 pub mod format;
 pub mod grid;
 pub mod mark;
-pub mod possibility;
 pub mod row;
 pub mod square;
 pub mod utility;

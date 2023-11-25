@@ -86,15 +86,14 @@ fn set_if_possible<T: CellCollection>(
     cell: &Cell,
     index: usize,
 ) -> bool {
-    let p = cell.possibilities;
-    for mark in p.iter_possible() {
+    for mark in cell.iter_possible() {
         //Loop through the rest of the area to see if the mark is possible anywhere else
         if is_only_possible_at(area, mark, index) {
             let coord = area.get_coord(index);
             let value = mark.to_value();
             let new_cell = Cell::new_with_value(value);
 
-            grid.set_cell_at(coord, &new_cell);
+            grid.set_cell_at(coord, new_cell);
             return true;
         }
     }
@@ -112,10 +111,11 @@ fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) ->
 
         let cell = area.get_cell(other_index);
 
-        if cell.value == mark_value {
-            return false;
-        }
-        if cell.is_possible(mark) {
+        if let Some(value) = cell.value() {
+            if value == mark_value {
+                return false;
+            }
+        } else if cell.is_possible(mark) {
             return false;
         }
     }
@@ -126,36 +126,38 @@ fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) ->
 #[cfg(test)]
 mod test {
     use crate::{
-        grid::{cell::Cell, cell_collection::CellCollection, mark::Mark, possibility::Possibility},
+        grid::{cell::Cell, cell_collection::CellCollection, mark::Mark},
         solvers::solver::{SolveResult, Solver},
         test::util::general_tests,
     };
 
     #[test]
     fn test_can_solve() {
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
 
         let index = 64;
         let coord = grid.get_coord(index);
 
         let cell = grid.get_cell_at(coord);
-        let value = cell.value;
+        let mut new_cell;
 
-        let new_cell = Cell {
-            value: 0,
-            possibilities: Possibility::from(Mark::from_value(value)),
-        };
+        if let Some(value) = cell.value() {
+            new_cell = Cell::new_empty();
+            new_cell.set_possible(Mark::from_value(value));
+        } else {
+            panic!("Cell should be determined");
+        }
 
-        grid.set_cell_at(coord, &new_cell);
+        grid.set_cell_at(coord, new_cell);
 
         let solver = super::DeterminedSolver::new();
-        let output = solver.solve(grid);
+        let output = solver.solve(grid.clone());
 
         assert_eq!(output.result, SolveResult::Updated);
 
         let check_cell = output.grid.get_cell_at(coord);
 
-        assert_eq!(check_cell.value, value);
+        assert_eq!(check_cell, cell);
     }
 
     #[test]
@@ -173,10 +175,8 @@ mod test {
         //Check that all cells with value 5 are determined
         for index in result.grid.iter() {
             let cell = result.grid.get_cell(index);
-            assert_ne!(cell.value, 0);
-            if cell.value == 5 {
-                assert!(cell.is_determined());
-            }
+
+            assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
     }
 
@@ -187,17 +187,19 @@ mod test {
         general_tests::remove_number(&mut grid, 5);
         general_tests::remove_number(&mut grid, 1);
 
+        println!("{}", grid);
+
         let result = super::DeterminedSolver::new().solve(grid);
+
+        println!("{}", result.grid);
 
         assert_eq!(result.result, SolveResult::Updated);
 
         //Check that all cells with value 5 are determined
         for index in result.grid.iter() {
             let cell = result.grid.get_cell(index);
-            assert_ne!(cell.value, 0);
-            if cell.value == 5 {
-                assert!(cell.is_determined());
-            }
+
+            assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
     }
 
@@ -218,7 +220,8 @@ mod test {
         //Check that all cells with value 5 are determined
         for index in result.grid.iter() {
             let cell = result.grid.get_cell(index);
-            assert_ne!(cell.value, 0);
+
+            assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
     }
 }

@@ -87,20 +87,21 @@ impl MarkAreaCountInstance {
         for i in 0..self.data.len() {
             let coord = area.get_coord(i);
             let cell = area.get_cell(i);
+            let mut check = false;
 
             //Already defined, nothing to do
-            if cell.value == mark_value {
-                return SolveResult::Nothing;
-            }
-            let mut check = false;
-            if cell.is_possible(mark) {
+            if let Some(value) = cell.value() {
+                if value == mark_value {
+                    return SolveResult::Nothing;
+                }
+            } else if cell.is_possible(mark) {
                 count += 1;
                 check = true;
             }
 
             self.data[i] = MarkAreaCountDataItem {
                 check: check,
-                cell: *cell,
+                cell: cell,
                 coord,
             };
         }

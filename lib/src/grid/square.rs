@@ -26,9 +26,9 @@ impl Square {
         Square::new(row_offset, col_offset, grid)
     }
 
-    pub fn get_cell_at(&self, coord: Coord) -> &Cell {
-        let c = &Coord::new(self.row + coord.row, self.col + coord.col);
-        &self.grid[get_index(c)]
+    pub fn get_cell_at(&self, coord: Coord) -> Cell {
+        let c = Coord::new(self.row + coord.row, self.col + coord.col);
+        self.grid[get_index(c)]
     }
 
     pub fn get_coord_at(&self, row: usize, col: usize) -> Coord {
@@ -65,9 +65,9 @@ impl Square {
 }
 
 impl CellCollection for Square {
-    fn get_cell(&self, index: usize) -> &Cell {
-        let coord = &self.get_coord(index);
-        &self.grid[get_index(coord)]
+    fn get_cell(&self, index: usize) -> Cell {
+        let coord = self.get_coord(index);
+        self.grid[get_index(coord)]
     }
 
     fn get_coord(&self, index: usize) -> Coord {

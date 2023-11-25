@@ -43,7 +43,7 @@ fn main() {
     //Solve all of them
     for i in 0..grids.len() {
         println!("Solving grid {}...", i);
-        let grid = grids.get(i).unwrap().copy();
+        let grid = grids.get(i).unwrap().clone();
         solver.solve(grid);
     }
 

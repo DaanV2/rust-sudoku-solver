@@ -9,7 +9,7 @@ pub fn remove_cells_amount(rng: &mut ThreadRng, grid: &mut Grid, amount: usize) 
         let cell = &grid.get_cell(index);
 
         if cell.is_determined() {
-            grid.set_cell(index, &Cell::new());
+            grid.set_cell(index, Cell::new());
             removed += 1;
         }
     }

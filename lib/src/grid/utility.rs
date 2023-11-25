@@ -8,6 +8,7 @@ pub mod utility {
         square::Square,
     };
 
+    /// Returns a string representation of a grid
     pub fn ascii_grid(grid: &Grid) -> String {
         let mut result = String::new();
 
@@ -15,9 +16,9 @@ pub mod utility {
             for row in GRID_WIDTH_RANGE {
                 let coord = Coord::new(row, col);
                 let cell = grid.get_cell_at(coord);
-                let value = cell.value;
 
                 if cell.is_determined() {
+                    let value = cell.get_value();
                     result.push_str(&format!("{} ", value));
                 } else {
                     result.push_str(". ");
@@ -36,6 +37,7 @@ pub mod utility {
         result
     }
 
+    /// Returns a string representation of a square
     pub fn ascii_square(square: &Square) -> String {
         let mut result = String::new();
 
@@ -44,9 +46,9 @@ pub mod utility {
             for col in 0..3 {
                 let coord = Coord::new(row, col);
                 let cell = square.get_cell_at(coord);
-                let value = cell.value;
 
                 if cell.is_determined() {
+                    let value = cell.get_value();
                     result.push_str(&format!("{} ", value));
                 } else {
                     result.push_str(". ");
@@ -58,6 +60,7 @@ pub mod utility {
         result
     }
 
+    /// Returns the ASCII representation of a grid
     pub fn parse_from_ascii(ascii: &str) -> Grid {
         let mut grid = Grid::new();
         let mut index = 0;
@@ -66,11 +69,11 @@ pub mod utility {
             for char in line.chars() {
                 if char == '.' || char == '0' {
                     let c = Cell::new();
-                    grid.set_cell(index, &c);
+                    grid.set_cell(index, c);
                     index += 1;
                 } else if let Some(value) = char.to_digit(10) {
-                    let c = Cell::new_with_value(value as u8);
-                    grid.set_cell(index, &c);
+                    let c = Cell::new_with_value(value as usize);
+                    grid.set_cell(index, c);
                     index += 1;
                 }
             }
@@ -79,6 +82,7 @@ pub mod utility {
         grid
     }
 
+    /// Returns a grid with all cells set to the given value
     pub fn filled_sudoku() -> Grid {
         parse_from_ascii(
             "4 3 5 | 2 6 9 | 7 8 1\n\

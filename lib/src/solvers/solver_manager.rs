@@ -126,11 +126,11 @@ impl SolverManager {
                 continue;
             }
 
-            for mark in cell.possibilities.iter_possible() {
+            for mark in cell.iter_possible() {
                 let mut new_grid = grid.clone();
                 let c = Cell::new_with_value(mark.to_value());
 
-                new_grid.set_cell(index, &c);
+                new_grid.set_cell(index, c);
 
                 let result = self.solve_internal(new_grid, start_iteration);
 
