@@ -1,5 +1,12 @@
 {
     "[rust]": {
         "editor.formatOnSave": true
-    }
+    },
+    "rust-analyzer.linkedProjects": [
+        ".\\lib\\Cargo.toml"
+    ],
+    "cSpell.words": [
+        "rngs",
+        "Seedable"
+    ]
 }

@@ -60,6 +60,24 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Run Benchmarks",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=sudoku-benchmark",
+                    "--package=sudoku-benchmark",
+                ],
+                "filter": {
+                    "name": "sudoku-benchmark",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

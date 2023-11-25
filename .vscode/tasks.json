@@ -38,7 +38,9 @@
         {
             "label": "build all",
             "dependsOrder": "sequence",
-            "problemMatcher": "$rustc",
+            "problemMatcher": [
+                "$rustc"
+            ],
             "dependsOn": [
                 "build lib",
                 "build server"
