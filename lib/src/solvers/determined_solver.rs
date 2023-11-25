@@ -126,7 +126,7 @@ fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) ->
 #[cfg(test)]
 mod test {
     use crate::{
-        grid::{cell::Cell, cell_collection::CellCollection},
+        grid::{cell::Cell, cell_collection::CellCollection, mark::Mark},
         solvers::solver::{SolveResult, Solver},
         test::util::general_tests,
     };
@@ -139,10 +139,11 @@ mod test {
         let coord = grid.get_coord(index);
 
         let cell = grid.get_cell_at(coord);
-        let new_cell;
+        let mut new_cell;
 
         if let Some(value) = cell.value() {
-            new_cell = Cell::new_with_value(value);
+            new_cell = Cell::new_empty();
+            new_cell.set_possible(Mark::from_value(value));
         } else {
             panic!("Cell should be determined");
         }
@@ -174,9 +175,8 @@ mod test {
         //Check that all cells with value 5 are determined
         for index in result.grid.iter() {
             let cell = result.grid.get_cell(index);
-            if let Some(value) = cell.value() {
-                assert_ne!(value, 5);
-            }
+
+            assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
     }
 
@@ -187,16 +187,19 @@ mod test {
         general_tests::remove_number(&mut grid, 5);
         general_tests::remove_number(&mut grid, 1);
 
+        println!("{}", grid);
+
         let result = super::DeterminedSolver::new().solve(grid);
+
+        println!("{}", result.grid);
 
         assert_eq!(result.result, SolveResult::Updated);
 
         //Check that all cells with value 5 are determined
         for index in result.grid.iter() {
             let cell = result.grid.get_cell(index);
-            if let Some(value) = cell.value() {
-                assert_ne!(value, 5);
-            }
+
+            assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
     }
 
@@ -217,9 +220,8 @@ mod test {
         //Check that all cells with value 5 are determined
         for index in result.grid.iter() {
             let cell = result.grid.get_cell(index);
-            if let Some(value) = cell.value() {
-                assert_ne!(value, 5);
-            }
+
+            assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
     }
 }

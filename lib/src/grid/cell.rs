@@ -42,6 +42,11 @@ impl Cell {
     }
 
     /// Creates a new cell with a value, and all possibilities off
+    pub fn new_empty() -> Cell {
+        Cell { data: 0 }
+    }
+
+    /// Creates a new cell with a value, and all possibilities off
     /// Assumes the value is between 1 and 9
     pub fn new_with_value(value: usize) -> Cell {
         Cell { data: value as u16 }
@@ -122,6 +127,10 @@ impl Cell {
     /// Iterates over all possible values for this cell
     pub fn iter_possible(self) -> impl Iterator<Item = Mark> {
         let mut value = self.data;
+        if self.is_determined() {
+            value = 0;
+        }
+
         std::iter::from_fn(move || {
             if value == 0 {
                 return None;
