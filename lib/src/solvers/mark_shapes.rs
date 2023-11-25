@@ -227,7 +227,8 @@ mod test {
         println!("{}", solved);
 
         //Empty grids should still be possible for only 5
-        for coord in solved.iter_coords() {
+        for index in solved.iter() {
+            let coord = solved.get_coord(index);
             let c = solved.get_cell_at(coord);
             if !c.is_determined() {
                 let p = c.is_possible(Mark::N5);

@@ -63,7 +63,8 @@ mod test {
         for c in GRID_WIDTH_RANGE {
             let column = grid.get_column(c);
 
-            for coord in column.iter_coords() {
+            for index in column.iter() {
+                let coord = column.get_coord(index);
                 assert_eq!(coord.get_col(), c);
             }
         }

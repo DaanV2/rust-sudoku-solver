@@ -4,6 +4,7 @@ use crate::grid::{
     constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
     grid::Grid,
     mark::Mark,
+    square::Square,
 };
 
 use super::solver::{SolveResult, Solver, SolverResult};
@@ -32,13 +33,10 @@ impl Solver for DeterminedSolver {
         let mut changed = false;
 
         //For each square
-        for row in 0..3 {
-            for col in 0..3 {
-                let square = current.get_square(row * 3, col * 3);
-
-                let r = check_searchable(current, &square);
-                changed = changed | r;
-            }
+        for coord in Square::iter_square_coords() {
+            let sqr = current.get_square_at(coord);
+            let r = check_searchable(current, &sqr);
+            changed = changed | r;
         }
 
         //For each row
@@ -105,6 +103,7 @@ fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) ->
     let mark_value = mark.to_value();
 
     for other_index in area.iter() {
+        //Skip the current cell
         if other_index == index {
             continue;
         }

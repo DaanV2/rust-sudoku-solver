@@ -114,7 +114,8 @@ mod test {
             for col in GRID_WIDTH_RANGE {
                 let square = grid.get_square(row, col);
 
-                for c in square.iter_coords() {
+                for index in square.iter() {
+                    let c = square.get_coord(index);
                     assert!(square.is_coord_in_square(c));
 
                     //is coord within the square

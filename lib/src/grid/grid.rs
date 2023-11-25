@@ -54,7 +54,8 @@ impl Grid {
 
     /// Retrieves the square at the given row and column
     pub fn get_square_at(&self, coord: Coord) -> Square {
-        Square::from(coord.get_row(), coord.get_col(), self.cells)
+        let (row, col) = coord.get_row_col();
+        Square::from(row, col, self.cells)
     }
 
     /// Retrieves the square at the given row and column

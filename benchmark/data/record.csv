@@ -2,3 +2,4 @@ Amount,Generation time [ms],Solve time [ms],Generation time per grid [ms],Solve 
 200,2112,18432,10,92
 200,1899,20118,9,100,Reduced cell size in memory
 200,1628,19967,8,99,Reduced coords memory size, also now its the index in the background
+200,380,2695,1,13,Better iteration over areas

@@ -32,18 +32,14 @@ impl Solver for MarkSimple {
                 let coord = current.get_coord(i);
 
                 //Mark off the row
-                for j in current.get_row(coord.get_row()).iter_coords() {
-                    current.unset_possible_at(j, turnoff);
-                }
+                let row = current.get_row(coord.get_row());
+                let col = current.get_column(coord.get_col());
+                let square = current.get_square_at(coord);
 
-                //Mark off the column
-                for j in current.get_column(coord.get_col()).iter_coords() {
-                    current.unset_possible_at(j, turnoff);
-                }
-
-                //Mark off the square
-                for j in current.get_square_at(coord).iter_coords() {
-                    current.unset_possible_at(j, turnoff);
+                for i in 0..9 {
+                    current.unset_possible_at(row.get_coord(i), turnoff);
+                    current.unset_possible_at(col.get_coord(i), turnoff);
+                    current.unset_possible_at(square.get_coord(i), turnoff);
                 }
             }
         }
@@ -99,7 +95,8 @@ mod test {
 
         //Check that the square is marked off
         let square = modified.get_square_at(coord);
-        for c in square.iter_coords() {
+        for index in square.iter() {
+            let c = square.get_coord(index);
             if coord == c {
                 continue;
             }

@@ -59,7 +59,8 @@ mod test {
         for row_index in GRID_HEIGHT_RANGE {
             let row = grid.get_row(row_index);
 
-            for coord in row.iter_coords() {
+            for c in row.iter() {
+                let coord = row.get_coord(c);
                 assert_eq!(coord.get_row(), row_index, "coord: {:?}", coord);
             }
         }
