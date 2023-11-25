@@ -26,7 +26,8 @@ impl Solver for MarkShapes {
         let current = &mut grid.clone();
 
         for mark in Mark::iter() {
-            for square in grid.iter_squares() {
+            for coord in Square::iter_square_coords() {
+                let square = current.get_square_at(coord);
                 check_square(&square, current, mark);
             }
         }
@@ -36,71 +37,62 @@ impl Solver for MarkShapes {
 }
 
 fn check_square(square: &Square, grid: &mut Grid, mark: Mark) {
-    for row in 0..3 {
-        if only_possible_in_row(square, row, mark) {
-            mark_off_rows(square, grid, row, mark);
-            break;
-        }
+    let mut row_0 = false;
+    let mut row_1 = false;
+    let mut row_2 = false;
+    let mut col_0 = false;
+    let mut col_1 = false;
+    let mut col_2 = false;
+
+    let coord = square.get_coord(0);
+
+    //Row 1
+    (row_0, col_0) = check_cell(grid, mark, coord.offset(0, 0), row_0, col_0);
+    (row_0, col_1) = check_cell(grid, mark, coord.offset(0, 1), row_0, col_1);
+    (row_0, col_2) = check_cell(grid, mark, coord.offset(0, 2), row_0, col_2);
+
+    //Row 2
+    (row_1, col_0) = check_cell(grid, mark, coord.offset(1, 0), row_1, col_0);
+    (row_1, col_1) = check_cell(grid, mark, coord.offset(1, 1), row_1, col_1);
+    (row_1, col_2) = check_cell(grid, mark, coord.offset(1, 2), row_1, col_2);
+
+    //Row 3
+    (row_2, col_0) = check_cell(grid, mark, coord.offset(2, 0), row_2, col_0);
+    (row_2, col_1) = check_cell(grid, mark, coord.offset(2, 1), row_2, col_1);
+    (row_2, col_2) = check_cell(grid, mark, coord.offset(2, 2), row_2, col_2);
+
+    //If a row is certain, mark off the other squares, and the other are not possible
+    let index = match (row_0, row_1, row_2) {
+        (true, false, false) => 0,
+        (false, true, false) => 1,
+        (false, false, true) => 2,
+        _ => -1,
+    };
+    if index >= 0 {
+        mark_off_rows(square, grid, index as usize, mark);
     }
 
-    for col in 0..3 {
-        if only_possible_in_column(square, col, mark) {
-            mark_off_columns(square, grid, col, mark);
-            break;
-        }
+    //If a col is certain, mark off the other squares, and the other are not possible
+    let index = match (col_0, col_1, col_2) {
+        (true, false, false) => 0,
+        (false, true, false) => 1,
+        (false, false, true) => 2,
+        _ => -1,
+    };
+    if index >= 0 {
+        mark_off_columns(square, grid, index as usize, mark);
     }
 }
 
-fn only_possible_in_row(square: &Square, row: usize, mark: Mark) -> bool {
-    let mut in_row = 0;
-    for r in 0..3 {
-        for c in 0..3 {
-            let coord = Coord::new(r, c);
-            let cell = square.get_cell_at(coord);
-            let is_possible = cell.is_possible(mark);
+#[inline(always)]
+fn check_cell(grid: &Grid, mark: Mark, coord: Coord, row: bool, col: bool) -> (bool, bool) {
+    let cell = grid.get_cell_at(coord);
+    let p = cell.is_possible(mark);
 
-            //If in the row then its where we want it
-            if r == row {
-                if is_possible {
-                    in_row += 1;
-                }
-            //If not in the row then only possible in the row is a problem
-            } else {
-                if is_possible {
-                    return false;
-                }
-            }
-        }
-    }
-
-    return in_row > 0;
+    (row | p, col | p)
 }
 
-fn only_possible_in_column(square: &Square, col: usize, mark: Mark) -> bool {
-    let mut in_col = 0;
-    for r in 0..3 {
-        for c in 0..3 {
-            let coord = Coord::new(r, c);
-            let cell = square.get_cell_at(coord);
-            let is_possible = cell.is_possible(mark);
-
-            //If in the column then its where we want it
-            if c == col {
-                if is_possible {
-                    in_col += 1;
-                }
-            //If not in the column then only possible in the column is a problem
-            } else {
-                if is_possible {
-                    return false;
-                }
-            }
-        }
-    }
-
-    return in_col > 0;
-}
-
+/// Marks off the rows except for the square
 #[inline]
 fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     let row_start = square.row;
@@ -118,6 +110,7 @@ fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     }
 }
 
+/// Marks off the columns except for the square
 #[inline]
 fn mark_off_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
     let col_start = square.col;
