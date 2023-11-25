@@ -1,0 +1,3 @@
+
+benchmark:
+	cargo run --release

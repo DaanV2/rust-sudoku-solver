@@ -53,7 +53,7 @@ fn main() {
     println!("  Generation time: {}ms", generation_time.as_millis());
     println!("  Solve time: {}ms", solve_time.as_millis());
     println!(
-        "csv: {}\t{}\t{}",
+        "csv: {},{},{}",
         SIZE,
         generation_time.as_millis(),
         solve_time.as_millis()
