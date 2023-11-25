@@ -63,17 +63,7 @@ pub trait CellCollection {
     }
 
     /// Returns a new iterator over the cells in this collection
-    fn iter(&self) -> Box<dyn Iterator<Item = usize>> {
-        Box::new((0..self.max()).into_iter())
-    }
-
-    /// Returns a new iterator over the coordinates in this collection
-    fn iter_coords(&self) -> Box<dyn Iterator<Item = Coord> + '_> {
-        Box::new((0..self.max()).into_iter().map(move |i| self.get_coord(i)))
-    }
-
-    /// Returns a new iterator over the cells in this collection
-    fn iter_cells(&self) -> Box<dyn Iterator<Item = Cell> + '_> {
-        Box::new((0..self.max()).into_iter().map(move |i| self.get_cell(i)))
+    fn iter(&self) -> std::ops::Range<usize> {
+        (0..self.max()).into_iter()
     }
 }

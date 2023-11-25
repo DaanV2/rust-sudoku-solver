@@ -32,18 +32,14 @@ impl Solver for MarkSimple {
                 let coord = current.get_coord(i);
 
                 //Mark off the row
-                for j in current.get_row(coord.row).iter_coords() {
-                    current.unset_possible_at(j, turnoff);
-                }
+                let row = current.get_row(coord.get_row());
+                let col = current.get_column(coord.get_col());
+                let square = current.get_square_at(coord);
 
-                //Mark off the column
-                for j in current.get_column(coord.col).iter_coords() {
-                    current.unset_possible_at(j, turnoff);
-                }
-
-                //Mark off the square
-                for j in current.get_square(coord.row, coord.col).iter_coords() {
-                    current.unset_possible_at(j, turnoff);
+                for i in 0..9 {
+                    current.unset_possible_at(row.get_coord(i), turnoff);
+                    current.unset_possible_at(col.get_coord(i), turnoff);
+                    current.unset_possible_at(square.get_coord(i), turnoff);
                 }
             }
         }
@@ -79,7 +75,7 @@ mod test {
 
         //Check that the row is marked off
         for row in GRID_HEIGHT_RANGE {
-            if row == coord.row {
+            if row == coord.get_row() {
                 continue;
             }
 
@@ -89,7 +85,7 @@ mod test {
 
         //Check that the column is marked off
         for col in GRID_WIDTH_RANGE {
-            if col == coord.col {
+            if col == coord.get_col() {
                 continue;
             }
 
@@ -98,9 +94,10 @@ mod test {
         }
 
         //Check that the square is marked off
-        let square = modified.get_square(coord.row, coord.col);
-        for c in square.iter_coords() {
-            if coord.row == c.row && coord.row == c.col {
+        let square = modified.get_square_at(coord);
+        for index in square.iter() {
+            let c = square.get_coord(index);
+            if coord == c {
                 continue;
             }
 

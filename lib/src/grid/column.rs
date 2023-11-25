@@ -50,8 +50,8 @@ mod test {
 
             for row_index in GRID_HEIGHT_RANGE {
                 let coord = row.get_coord(row_index);
-                assert_eq!(coord.row, row_index);
-                assert_eq!(coord.col, col_index);
+                assert_eq!(coord.get_row(), row_index);
+                assert_eq!(coord.get_col(), col_index);
             }
         }
     }
@@ -63,8 +63,9 @@ mod test {
         for c in GRID_WIDTH_RANGE {
             let column = grid.get_column(c);
 
-            for coord in column.iter_coords() {
-                assert_eq!(coord.col, c);
+            for index in column.iter() {
+                let coord = column.get_coord(index);
+                assert_eq!(coord.get_col(), c);
             }
         }
     }
@@ -78,7 +79,7 @@ mod test {
 
             for index in column.iter() {
                 let coord = column.get_coord(index);
-                assert_eq!(coord.col, c);
+                assert_eq!(coord.get_col(), c);
             }
         }
     }

@@ -27,7 +27,7 @@ impl Square {
     }
 
     pub fn get_cell_at(&self, coord: Coord) -> Cell {
-        let c = Coord::new(self.row + coord.row, self.col + coord.col);
+        let c = coord.offset(self.row, self.col);
         self.grid[get_index(c)]
     }
 
@@ -44,20 +44,20 @@ impl Square {
     }
 
     pub fn is_coord_in_square(&self, coord: Coord) -> bool {
-        self.is_row_in_square(coord.row) && self.is_column_in_square(coord.col)
+        self.is_row_in_square(coord.get_row()) && self.is_column_in_square(coord.get_col())
     }
 
     pub fn iter_square_coords() -> impl Iterator<Item = Coord> {
         static COORDS: [Coord; 9] = [
-            Coord { row: 0, col: 0 },
-            Coord { row: 0, col: 3 },
-            Coord { row: 0, col: 6 },
-            Coord { row: 3, col: 0 },
-            Coord { row: 3, col: 3 },
-            Coord { row: 3, col: 6 },
-            Coord { row: 6, col: 0 },
-            Coord { row: 6, col: 3 },
-            Coord { row: 6, col: 6 },
+            Coord::new(0, 0),
+            Coord::new(0, 3),
+            Coord::new(0, 6),
+            Coord::new(3, 0),
+            Coord::new(3, 3),
+            Coord::new(3, 6),
+            Coord::new(6, 0),
+            Coord::new(6, 3),
+            Coord::new(6, 6),
         ];
 
         COORDS.iter().map(move |x| *x)
@@ -67,7 +67,7 @@ impl Square {
 impl CellCollection for Square {
     fn get_cell(&self, index: usize) -> Cell {
         let coord = self.get_coord(index);
-        self.grid[get_index(coord)]
+        self.grid[coord.get_index()]
     }
 
     fn get_coord(&self, index: usize) -> Coord {
@@ -98,6 +98,13 @@ mod test {
     use crate::{grid::cell_collection::CellCollection, test::util::general_tests};
 
     #[test]
+    fn test_iter_square_coords() {
+        for (i, coord) in super::Square::iter_square_coords().enumerate() {
+            println!("{}: {} -> {}", i, coord, coord.get_index());
+        }
+    }
+
+    #[test]
     fn test_square_iter_coords() {
         use crate::grid::constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE};
 
@@ -107,12 +114,13 @@ mod test {
             for col in GRID_WIDTH_RANGE {
                 let square = grid.get_square(row, col);
 
-                for c in square.iter_coords() {
+                for index in square.iter() {
+                    let c = square.get_coord(index);
                     assert!(square.is_coord_in_square(c));
 
                     //is coord within the square
-                    assert!(c.row >= square.row && c.row < square.row + 3);
-                    assert!(c.col >= square.col && c.col < square.col + 3);
+                    assert!(c.get_row() >= square.row && c.get_row() < square.row + 3);
+                    assert!(c.get_col() >= square.col && c.get_col() < square.col + 3);
                 }
             }
         }
