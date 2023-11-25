@@ -1,46 +1,63 @@
 use std::fmt::{self, Display, Formatter};
 
+use super::constants::GRID_WIDTH;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Coord {
-    pub row: usize,
-    pub col: usize,
+    index: usize,
 }
 
 impl Coord {
     /// Creates a new coord
-    pub fn new(row: usize, col: usize) -> Self {
-        Self { row, col }
+    pub const fn new(row: usize, col: usize) -> Self {
+        let index = super::format::get_index_from(row, col);
+        Coord::from_index(index)
     }
 
     /// Creates a new coord from an index
-    pub fn from_index(index: usize) -> Self {
-        super::format::to_row_col(index)
+    pub const fn from_index(index: usize) -> Self {
+        Coord { index: index }
     }
 
     /// Returns the index of the coord
-    pub fn get_row(self) -> usize {
-        self.row
+    pub const fn get_row(self) -> usize {
+        self.index / GRID_WIDTH
     }
 
     /// Returns the index of the coord
-    pub fn get_col(self) -> usize {
-        self.col
+    pub const fn get_col(self) -> usize {
+        self.index % GRID_WIDTH
     }
 
     /// Returns the index of the coord
     pub fn get_index(self) -> usize {
-        super::format::get_index(self)
+        self.index
     }
 
     /// Returns the row and column of the coord
     pub fn get_row_col(&self) -> (usize, usize) {
-        (self.row, self.col)
+        (self.get_row(), self.get_col())
+    }
+
+    /// Returns a new coord with the row and column offset by the given amount
+    pub fn offset_row(self, offset: usize) -> Self {
+        Coord::new(self.get_row() + offset, self.get_col())
+    }
+
+    /// Returns a new coord with the row and column offset by the given amount
+    pub fn offset_col(self, offset: usize) -> Self {
+        Coord::new(self.get_row(), self.get_col() + offset)
+    }
+
+    /// Returns a new coord with the row and column offset by the given amount
+    pub fn offset(self, row_offset: usize, col_offset: usize) -> Self {
+        Coord::new(self.get_row() + row_offset, self.get_col() + col_offset)
     }
 }
 
 impl Display for Coord {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "[{}, {}]", self.row, self.col)
+        write!(f, "[{}, {}]", self.get_row(), self.get_col())
     }
 }
 

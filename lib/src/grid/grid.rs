@@ -1,16 +1,8 @@
 use std::fmt::Display;
 
 use super::{
-    cell::Cell,
-    cell_collection::CellCollection,
-    column::Column,
-    constants::GRID_SIZE,
-    coords::Coord,
-    format::{get_index, to_row_col},
-    mark::Mark,
-    row::Row,
-    square::Square,
-    utility::utility,
+    cell::Cell, cell_collection::CellCollection, column::Column, constants::GRID_SIZE,
+    coords::Coord, mark::Mark, row::Row, square::Square, utility::utility,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -42,12 +34,12 @@ impl Grid {
 
     /// Retrieves the cell at the given coordinate
     pub fn get_cell_at(self, coord: Coord) -> Cell {
-        self.get_cell(get_index(coord))
+        self.get_cell(coord.get_index())
     }
 
     /// Sets the cell at the given coordinate
     pub fn set_cell_at(&mut self, coord: Coord, cell: Cell) {
-        self.set_cell(get_index(coord), cell);
+        self.set_cell(coord.get_index(), cell);
     }
 
     /// Retrieves the row at the given index
@@ -62,7 +54,7 @@ impl Grid {
 
     /// Retrieves the square at the given row and column
     pub fn get_square_at(&self, coord: Coord) -> Square {
-        Square::from(coord.row, coord.col, self.cells)
+        Square::from(coord.get_row(), coord.get_col(), self.cells)
     }
 
     /// Retrieves the square at the given row and column
@@ -82,12 +74,12 @@ impl Grid {
 
     /// Returns true if the given value is possible for this cell
     pub fn set_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.set_possible(get_index(coord), mark);
+        self.set_possible(coord.get_index(), mark);
     }
 
     /// Un sets the given value as possible for this cell
     pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
-        self.unset_possible(get_index(coord), mark);
+        self.unset_possible(coord.get_index(), mark);
     }
 
     /// Returns true if the given value is present in this collection
@@ -142,7 +134,7 @@ impl CellCollection for Grid {
     }
 
     fn get_coord(&self, index: usize) -> Coord {
-        to_row_col(index)
+        Coord::from_index(index)
     }
 
     fn max(&self) -> usize {
@@ -207,7 +199,7 @@ mod tests {
 
                 let row_cell = row.get_cell(col_index);
                 assert_eq!(cell, row_cell);
-                assert_eq!(coord.row, row_index);
+                assert_eq!(coord.get_row(), row_index);
             }
         }
     }
@@ -224,7 +216,7 @@ mod tests {
 
                 let column_cell = column.get_cell(row_index);
                 assert_eq!(cell, column_cell);
-                assert_eq!(coord.col, col_index);
+                assert_eq!(coord.get_col(), col_index);
             }
         }
     }

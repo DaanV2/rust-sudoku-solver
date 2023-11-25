@@ -110,7 +110,7 @@ fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     //Unset the row but not in the square
     for index in row_data.iter() {
         let c = row_data.get_coord(index);
-        if square.is_column_in_square(c.col) {
+        if square.is_column_in_square(c.get_col()) {
             continue;
         }
 
@@ -128,7 +128,7 @@ fn mark_off_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
     for index in column.iter() {
         let c = column.get_coord(index);
 
-        if square.is_row_in_square(c.row) {
+        if square.is_row_in_square(c.get_row()) {
             continue;
         }
 
