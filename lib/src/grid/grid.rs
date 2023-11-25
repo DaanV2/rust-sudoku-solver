@@ -33,7 +33,7 @@ impl Grid {
     }
 
     /// Retrieves the cell at the given coordinate
-    pub fn get_cell_at(self, coord: Coord) -> Cell {
+    pub fn get_cell_at(&self, coord: Coord) -> Cell {
         self.get_cell(coord.get_index())
     }
 

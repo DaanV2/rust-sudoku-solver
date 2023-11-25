@@ -158,6 +158,11 @@ mod test {
     use super::Cell;
 
     #[test]
+    pub fn test_print_objsize() {
+        println!("Cell: {}", std::mem::size_of::<Cell>());
+    }
+
+    #[test]
     pub fn test_possible_to_bit() {
         assert_eq!(Cell::possible_to_bit(1), 0b0000_0000_1000_0000);
         assert_eq!(Cell::possible_to_bit(2), 0b0000_0001_0000_0000);
