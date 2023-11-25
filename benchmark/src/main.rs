@@ -51,13 +51,13 @@ fn main() {
     let size = SIZE as u128;
 
     println!("Results:");
-    println!("  Generation time: {}ms", generation_time.as_nanos());
+    println!("  Generation time: {}ns", generation_time.as_nanos());
     println!(
-        "  Generation time per: {}ms",
+        "  Generation time per: {}ns",
         (generation_time.as_nanos() / size)
     );
-    println!("  Solve time: {}ms", solve_time.as_nanos());
-    println!("  Solve time per: {}ms", solve_time.as_nanos() / size);
+    println!("  Solve time: {}ns", solve_time.as_nanos());
+    println!("  Solve time per: {}ns", solve_time.as_nanos() / size);
     println!(
         "csv: {},{},{},{},{}",
         size,
