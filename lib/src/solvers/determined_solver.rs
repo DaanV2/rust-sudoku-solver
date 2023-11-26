@@ -1,11 +1,4 @@
-use crate::grid::{
-    cell::Cell,
-    cell_collection::CellCollection,
-    constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
-    grid::Grid,
-    mark::Mark,
-    square::Square,
-};
+use crate::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark};
 
 use super::solver::{SolveResult, Solver, SolverResult};
 
@@ -28,29 +21,25 @@ impl Solver for DeterminedSolver {
         "Determined Solver"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
+    fn solve(&self, grid: &Grid) -> SolverResult {
         let current: &mut Grid = &mut grid.clone();
         let mut changed = false;
 
         //For each square
-        for coord in Square::iter_square_coords() {
+        for index in current.iter() {
+            let cell = current.get_cell(index);
+            if cell.is_determined() {
+                continue;
+            }
+
+            let coord = current.get_coord(index);
+
             let sqr = current.get_square_at(coord);
-            let r = check_searchable(current, &sqr);
-            changed = changed | r;
-        }
-
-        //For each row
-        for row_index in GRID_HEIGHT_RANGE {
-            let row = current.get_row(row_index);
-            let r = check_searchable(current, &row);
-            changed = changed | r;
-        }
-
-        //For each column
-        for col in GRID_WIDTH_RANGE {
-            let col = current.get_column(col);
-            let r = check_searchable(current, &col);
-            changed = changed | r;
+            changed |= set_if_possible(current, &sqr, cell, coord.get_index());
+            let row = current.get_row(coord.get_row());
+            changed |= set_if_possible(current, &row, cell, coord.get_col());
+            let col = current.get_column(coord.get_col());
+            changed |= set_if_possible(current, &col, cell, coord.get_row());
         }
 
         let mut result = SolverResult::nothing(*current);
@@ -63,27 +52,7 @@ impl Solver for DeterminedSolver {
     }
 }
 
-fn check_searchable<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
-    let mut result = false;
-
-    for index in area.iter() {
-        let cell = area.get_cell(index);
-        if cell.is_determined() {
-            continue;
-        }
-
-        result |= set_if_possible(grid, area, &cell, index);
-    }
-
-    result
-}
-
-fn set_if_possible<T: CellCollection>(
-    grid: &mut Grid,
-    area: &T,
-    cell: &Cell,
-    index: usize,
-) -> bool {
+fn set_if_possible<T: CellCollection>(grid: &mut Grid, area: &T, cell: Cell, index: usize) -> bool {
     for mark in cell.iter_possible() {
         //Loop through the rest of the area to see if the mark is possible anywhere else
         if is_only_possible_at(area, mark, index) {
@@ -150,7 +119,7 @@ mod test {
         grid.set_cell_at(coord, new_cell);
 
         let solver = super::DeterminedSolver::new();
-        let output = solver.solve(grid.clone());
+        let output = solver.solve(&grid);
 
         assert_eq!(output.result, SolveResult::Updated);
 
@@ -167,7 +136,7 @@ mod test {
 
         println!("{}", grid);
         let solver = super::DeterminedSolver::new();
-        let result = solver.solve(grid);
+        let result = solver.solve(&grid);
 
         assert_eq!(result.result, SolveResult::Updated);
 
@@ -188,7 +157,7 @@ mod test {
 
         println!("{}", grid);
 
-        let result = super::DeterminedSolver::new().solve(grid);
+        let result = super::DeterminedSolver::new().solve(&grid);
 
         println!("{}", result.grid);
 
@@ -211,7 +180,7 @@ mod test {
         }
 
         println!("{}", grid);
-        let result = super::DeterminedSolver::new().solve(grid);
+        let result = super::DeterminedSolver::new().solve(&grid);
 
         println!("{}", result.grid);
         assert_eq!(result.result, SolveResult::Updated);

@@ -226,4 +226,27 @@ mod test {
         assert_eq!(iter.next(), Some(Mark::N9));
         assert_eq!(iter.next(), None);
     }
+
+    #[test]
+    pub fn test_determined() {
+        for i in 1..=9 {
+            let cell = Cell::new_with_value(i);
+
+            assert!(cell.is_determined());
+            assert_eq!(cell.get_value(), i);
+        }
+    }
+
+    #[test]
+    pub fn test_not_determined() {
+        let cell = Cell::new();
+
+        assert!(!cell.is_determined());
+
+        for i in 1..=9 {
+            let mark = Mark::from_index(i - 1);
+            assert!(cell.is_possible(mark));
+            assert!(!cell.is_determined());
+        }
+    }
 }

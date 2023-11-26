@@ -20,7 +20,7 @@ impl Solver for MarkSimple {
         "Mark Simple"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
+    fn solve(&self, grid: &Grid) -> SolverResult {
         let mut current = grid.clone();
 
         for i in grid.iter() {
@@ -70,7 +70,7 @@ mod test {
         grid.set_cell_at(coord, Cell::new_with_value(5));
 
         let solver = super::MarkSimple::new();
-        let result = solver.solve(grid);
+        let result = solver.solve(&grid);
         let modified = result.grid;
 
         //Check that the row is marked off

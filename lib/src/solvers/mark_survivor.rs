@@ -25,7 +25,7 @@ impl Solver for MarkSurvivor {
         "Mark Shapes"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
+    fn solve(&self, grid: &Grid) -> SolverResult {
         let mut current = grid.clone();
         let mut changed = false;
 

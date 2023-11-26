@@ -23,8 +23,8 @@ impl Solver for MarkAreaCount {
         "Mark Area Count"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
-        let instance = &mut MarkAreaCountInstance::new(grid);
+    fn solve(&self, grid: &Grid) -> SolverResult {
+        let instance = &mut MarkAreaCountInstance::new(*grid);
         let result = instance.check_marks_area();
 
         SolverResult::new(instance.grid, result)
@@ -63,8 +63,8 @@ impl MarkAreaCountInstance {
     }
 
     pub fn check_marks_area(&mut self) -> SolveResult {
-        for mark in Mark::iter() {
-            for sq in Square::iter_square_coords() {
+        for sq in Square::iter_square_coords() {
+            for mark in Mark::iter() {
                 let square = self.grid.get_square_at(sq);
                 let result = self.check_area(square, mark);
                 if result != SolveResult::Nothing {
@@ -110,6 +110,8 @@ impl MarkAreaCountInstance {
         if count == 0 {
             return SolveResult::Error;
         }
+
+        // TODO something with the count
 
         return SolveResult::Nothing;
     }

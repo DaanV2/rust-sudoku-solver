@@ -19,12 +19,11 @@ impl Solver for IsSolved {
         "Is Solved"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
-        let current: Grid = grid.clone();
+    fn solve(&self, grid: &Grid) -> SolverResult {
         let mut result = SolveResult::Solved;
 
         for i in grid.iter() {
-            let cell = current.get_cell(i);
+            let cell = grid.get_cell(i);
 
             // If the cell is not determined, then we need to reset the marks
             if !cell.is_determined() {
@@ -35,7 +34,7 @@ impl Solver for IsSolved {
 
         SolverResult {
             result,
-            grid: current,
+            grid: *grid,
         }
     }
 }

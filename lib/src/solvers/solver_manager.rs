@@ -1,13 +1,6 @@
 use super::solver::{AnnotatedSolverResult, SolveResult, Solver, SolverResult};
 use crate::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid};
 
-pub struct SolverManager {
-    pub pre_solvers: Vec<Box<dyn Solver>>,
-    pub solvers: Vec<Box<dyn Solver>>,
-
-    pub config: SolverManagerConfig,
-}
-
 pub struct SolverManagerConfig {
     pub max_iterations: usize,
 }
@@ -18,6 +11,18 @@ impl SolverManagerConfig {
             max_iterations: 100,
         }
     }
+}
+
+pub struct SolverManager {
+    pub config: SolverManagerConfig,
+
+    determined_solver: super::determined_solver::DeterminedSolver,
+    is_solved: super::is_solved::IsSolved,
+    mark_area_count: super::mark_area_count::MarkAreaCount,
+    mark_reset: super::mark_reset::MarkReset,
+    mark_shapes: super::mark_shapes::MarkShapes,
+    mark_simple: super::mark_simple::MarkSimple,
+    mark_survivor: super::mark_survivor::MarkSurvivor,
 }
 
 impl SolverManager {
@@ -32,30 +37,57 @@ impl SolverManager {
     pub fn new_with_config(config: SolverManagerConfig) -> Self {
         Self {
             config: config,
-            pre_solvers: vec![
-                // Setups for other solvers
-                super::mark_reset::MarkReset::new_box(),
-            ],
-            solvers: vec![
-                //Markers
-                super::mark_simple::MarkSimple::new_box(),
-                super::mark_shapes::MarkShapes::new_box(),
-                super::mark_area_count::MarkAreaCount::new_box(),
-                super::mark_survivor::MarkSurvivor::new_box(),
-                // Solvers
-                super::determined_solver::DeterminedSolver::new_box(),
-                //Finalizers
-                super::is_solved::IsSolved::new_box(),
-            ],
+            determined_solver: super::determined_solver::DeterminedSolver::new(),
+            is_solved: super::is_solved::IsSolved::new(),
+            mark_area_count: super::mark_area_count::MarkAreaCount::new(),
+            mark_reset: super::mark_reset::MarkReset::new(),
+            mark_shapes: super::mark_shapes::MarkShapes::new(),
+            mark_simple: super::mark_simple::MarkSimple::new(),
+            mark_survivor: super::mark_survivor::MarkSurvivor::new(),
         }
     }
 
     pub fn pre_solve(&self, current: SolverResult) -> SolverResult {
-        apply_solvers(current, &self.pre_solvers)
+        let mut current = current;
+        current.result = SolveResult::Nothing;
+        let current = apply_solver(&current, &self.mark_reset);
+
+        return current;
     }
 
     pub fn solve_round(&self, current: SolverResult) -> SolverResult {
-        return apply_solvers(current, &self.solvers);
+        let mut current = current;
+        current.result = SolveResult::Nothing;
+
+        //Markers
+        let current = apply_solver(&current, &self.mark_simple);
+        if current.result == SolveResult::Solved {
+            return current;
+        }
+        let current = apply_solver(&current, &self.mark_shapes);
+        if current.result == SolveResult::Solved {
+            return current;
+        }
+        let current = apply_solver(&current, &self.mark_area_count);
+        if current.result == SolveResult::Solved {
+            return current;
+        }
+        let current = apply_solver(&current, &self.mark_survivor);
+        if current.result == SolveResult::Solved {
+            return current;
+        }
+        // Solvers
+        let current = apply_solver(&current, &self.determined_solver);
+        if current.result == SolveResult::Solved {
+            return current;
+        }
+        //Finalizers
+        let current = apply_solver(&current, &self.is_solved);
+        if current.result == SolveResult::Solved {
+            return current;
+        }
+
+        return current;
     }
 
     pub fn solve(&self, grid: Grid) -> AnnotatedSolverResult {
@@ -157,20 +189,10 @@ impl SolverManager {
 }
 
 #[inline(always)]
-fn apply_solvers(mut current: SolverResult, solvers: &Vec<Box<dyn Solver>>) -> SolverResult {
-    //Reset the result
-    current.result = SolveResult::Nothing;
+fn apply_solver<T: Solver>(current: &SolverResult, solver: &T) -> SolverResult {
+    let old_result = current.result;
+    let mut new = solver.solve(&current.grid);
+    new.result = old_result.combine(new.result);
 
-    for solver in solvers {
-        //println!("Solver: {}", solver.name());
-        let old_result = current.result;
-        current = solver.solve(current.grid);
-        current.result = old_result.combine(current.result);
-
-        if current.result == SolveResult::Solved {
-            break;
-        }
-    }
-
-    return current;
+    return new;
 }

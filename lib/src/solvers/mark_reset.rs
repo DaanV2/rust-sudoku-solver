@@ -18,7 +18,7 @@ impl Solver for MarkReset {
         "Mark Resetter"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
+    fn solve(&self, grid: &Grid) -> SolverResult {
         let mut current = grid.clone();
 
         for i in grid.iter() {
@@ -53,7 +53,7 @@ mod test {
         assert_eq!(original.get_count(), 0, "Cell should be empty");
 
         let solver = MarkReset::new();
-        let result = solver.solve(grid);
+        let result = solver.solve(&grid);
 
         //Checking it has been reset
         let set = result.grid.get_cell(index);

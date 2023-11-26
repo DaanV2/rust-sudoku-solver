@@ -63,11 +63,11 @@ pub mod general_tests {
     }
 
     /// Solves the grid with the given solvers
-    pub fn process_through(grid: &mut Grid, solves: Vec<Box<dyn Solver>>) -> Grid {
-        let mut result = grid.clone();
+    pub fn process_through(grid: &Grid, solves: Vec<Box<dyn Solver>>) -> Grid {
+        let mut result = *grid;
 
         for solver in solves {
-            let output = solver.solve(result);
+            let output = solver.solve(&result);
             result = output.grid;
         }
 

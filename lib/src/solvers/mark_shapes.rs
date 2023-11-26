@@ -22,7 +22,7 @@ impl Solver for MarkShapes {
         "Mark Shapes"
     }
 
-    fn solve(&self, grid: Grid) -> SolverResult {
+    fn solve(&self, grid: &Grid) -> SolverResult {
         let current = &mut grid.clone();
 
         for mark in Mark::iter() {
@@ -216,7 +216,7 @@ mod test {
         );
 
         let solver = MarkShapes::new();
-        let solved = solver.solve(processed.clone()).grid;
+        let solved = solver.solve(processed).grid;
         println!("{}", solved);
 
         //Empty grids should still be possible for only 5

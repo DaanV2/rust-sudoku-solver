@@ -1,9 +1,11 @@
+use std::fmt::{Display, Formatter};
+
 use crate::grid::grid::Grid;
 
 pub trait Solver {
     fn name(&self) -> &'static str;
     /// Solves the given grid and returns the result.
-    fn solve(&self, grid: Grid) -> SolverResult;
+    fn solve(&self, grid: &Grid) -> SolverResult;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -70,5 +72,57 @@ impl SolveResult {
             SolveResult::Solved | SolveResult::Error => true,
             _ => false,
         }
+    }
+}
+
+impl Display for SolveResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SolveResult::Nothing => write!(f, "Nothing"),
+            SolveResult::Updated => write!(f, "Updated"),
+            SolveResult::Solved => write!(f, "Solved"),
+            SolveResult::Error => write!(f, "Error"),
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::solvers::solver::SolveResult;
+
+    #[test]
+    pub fn test_combine_nothing() {
+        let current = SolveResult::Nothing;
+        assert_eq!(current.combine(SolveResult::Nothing), SolveResult::Nothing);
+        assert_eq!(current.combine(SolveResult::Updated), SolveResult::Updated);
+        assert_eq!(current.combine(SolveResult::Solved), SolveResult::Solved);
+        assert_eq!(current.combine(SolveResult::Error), SolveResult::Error);
+    }
+
+    #[test]
+    pub fn test_combine_updated() {
+        let current = SolveResult::Updated;
+        assert_eq!(current.combine(SolveResult::Nothing), SolveResult::Updated);
+        assert_eq!(current.combine(SolveResult::Updated), SolveResult::Updated);
+        assert_eq!(current.combine(SolveResult::Solved), SolveResult::Solved);
+        assert_eq!(current.combine(SolveResult::Error), SolveResult::Error);
+    }
+
+    #[test]
+    pub fn test_combine_solved() {
+        let current = SolveResult::Solved;
+        assert_eq!(current.combine(SolveResult::Nothing), SolveResult::Solved);
+        assert_eq!(current.combine(SolveResult::Updated), SolveResult::Solved);
+        assert_eq!(current.combine(SolveResult::Solved), SolveResult::Solved);
+        assert_eq!(current.combine(SolveResult::Error), SolveResult::Error);
+    }
+
+    #[test]
+    pub fn test_combine_error() {
+        let current = SolveResult::Error;
+        assert_eq!(current.combine(SolveResult::Nothing), SolveResult::Error);
+        assert_eq!(current.combine(SolveResult::Updated), SolveResult::Error);
+        assert_eq!(current.combine(SolveResult::Solved), SolveResult::Error);
+        assert_eq!(current.combine(SolveResult::Error), SolveResult::Error);
     }
 }

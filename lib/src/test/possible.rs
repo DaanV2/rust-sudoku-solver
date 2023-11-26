@@ -22,7 +22,7 @@ mod test {
         );
 
         let solver = SolverManager::new();
-        let result = solver.solve(grid).grid;
+        let result = solver.solve_simple(grid).grid;
 
         let mut pos = Cell::new();
         pos.unset_possible(Mark::N9);
