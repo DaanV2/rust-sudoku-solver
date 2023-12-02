@@ -25,21 +25,20 @@ impl Solver for DeterminedSolver {
         let current: &mut Grid = &mut grid.clone();
         let mut changed = false;
 
-        //For each square
         for index in current.iter() {
-            let cell = current.get_cell(index);
+            let coord = current.get_coord(index);
+            let cell = current.get_cell_at(coord);
             if cell.is_determined() {
                 continue;
             }
-
-            let coord = current.get_coord(index);
+            let (r, c) = coord.get_row_col();
 
             let sqr = current.get_square_at(coord);
-            changed |= set_if_possible(current, &sqr, cell, coord.get_index());
-            let row = current.get_row(coord.get_row());
-            changed |= set_if_possible(current, &row, cell, coord.get_col());
-            let col = current.get_column(coord.get_col());
-            changed |= set_if_possible(current, &col, cell, coord.get_row());
+            changed |= set_if_possible(current, &sqr, cell, index);
+            let row = current.get_row(r);
+            changed |= set_if_possible(current, &row, cell, c);
+            let col = current.get_column(c);
+            changed |= set_if_possible(current, &col, cell, r);
         }
 
         let mut result = SolverResult::nothing(*current);

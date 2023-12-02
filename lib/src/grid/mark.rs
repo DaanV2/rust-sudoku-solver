@@ -47,73 +47,26 @@ impl Mark {
 
     // Returns the index of the given value
     pub fn to_index(self) -> usize {
-        match self {
-            Mark::N1 => 0,
-            Mark::N2 => 1,
-            Mark::N3 => 2,
-            Mark::N4 => 3,
-            Mark::N5 => 4,
-            Mark::N6 => 5,
-            Mark::N7 => 6,
-            Mark::N8 => 7,
-            Mark::N9 => 8,
-        }
+        Mark::to_value(self) - 1
     }
 
     // Returns the value of the given index
     pub fn from_index(index: usize) -> Mark {
-        match index {
-            0 => Mark::N1,
-            1 => Mark::N2,
-            2 => Mark::N3,
-            3 => Mark::N4,
-            4 => Mark::N5,
-            5 => Mark::N6,
-            6 => Mark::N7,
-            7 => Mark::N8,
-            8 => Mark::N9,
-            _ => Mark::N1,
-        }
+        Mark::from_value(index + 1)
     }
 
     pub fn to_value(self) -> usize {
-        match self {
-            Mark::N1 => 1,
-            Mark::N2 => 2,
-            Mark::N3 => 3,
-            Mark::N4 => 4,
-            Mark::N5 => 5,
-            Mark::N6 => 6,
-            Mark::N7 => 7,
-            Mark::N8 => 8,
-            Mark::N9 => 9,
-        }
+        ((self as usize).trailing_zeros() - 6) as usize
     }
 
     pub fn from_value(value: usize) -> Mark {
-        match value {
-            1 => Mark::N1,
-            2 => Mark::N2,
-            3 => Mark::N3,
-            4 => Mark::N4,
-            5 => Mark::N5,
-            6 => Mark::N6,
-            7 => Mark::N7,
-            8 => Mark::N8,
-            9 => Mark::N9,
-            _ => Mark::N1,
-        }
+        let v = (1 << (value + 6)) as usize;
+        unsafe { std::mem::transmute(v) }
     }
 
     // Returns raw data of the mark
     pub fn to_data(self) -> usize {
         self as usize
-    }
-}
-
-impl From<u32> for Mark {
-    fn from(value: u32) -> Self {
-        Mark::from_value(value as usize)
     }
 }
 
@@ -144,13 +97,35 @@ mod tests {
     }
 
     #[test]
+    fn test_value_fixed() {
+        assert_eq!(Mark::N1.to_value(), 1);
+        assert_eq!(Mark::N2.to_value(), 2);
+    }
+
+    #[test]
     fn test_value() {
         for (index, mark) in Mark::iter().enumerate() {
             let value = mark.to_value();
             let mark2 = Mark::from_value(value);
 
-            assert_eq!(mark2, mark);
-            assert_eq!(value, index as usize + 1);
+            assert_eq!(value, index as usize + 1, "from mark to value");
+            assert_eq!(mark2, mark, "from mark to mark");
+        }
+    }
+
+    #[test]
+    fn test_index_fixed() {
+        assert_eq!(Mark::N1.to_index(), 0);
+        assert_eq!(Mark::N2.to_index(), 1);
+    }
+
+    #[test]
+    fn test_index_value() {
+        for index in 0..9 {
+            let mark = Mark::from_index(index);
+            let value = mark.to_index();
+
+            assert_eq!(value, index);
         }
     }
 

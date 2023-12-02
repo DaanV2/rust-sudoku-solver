@@ -3,10 +3,13 @@
         "editor.formatOnSave": true
     },
     "rust-analyzer.linkedProjects": [
-        ".\\lib\\Cargo.toml"
+        ".\\lib\\Cargo.toml",
+        ".\\wasm\\Cargo.toml",
+        ".\\wasm\\Cargo.toml"
     ],
     "cSpell.words": [
         "rngs",
         "Seedable"
-    ]
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
 }

@@ -24,12 +24,14 @@ impl Grid {
 
     /// Retrieves the cell at the given index
     pub fn get_cell(&self, index: usize) -> Cell {
-        self.cells[index]
+        return self.cells[index];
     }
 
     /// Sets the cell at the given index
     pub fn set_cell(&mut self, index: usize, cell: Cell) {
-        self.cells[index] = cell;
+        if index < self.cells.len() {
+            self.cells[index] = cell;
+        }
     }
 
     /// Retrieves the cell at the given coordinate

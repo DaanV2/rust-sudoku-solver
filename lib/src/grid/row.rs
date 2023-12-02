@@ -22,10 +22,12 @@ impl Row {
 }
 
 impl CellCollection for Row {
+    #[inline]
     fn get_cell(&self, index: usize) -> Cell {
         self.grid[get_index(self.get_coord(index))]
     }
 
+    #[inline]
     fn get_coord(&self, index: usize) -> Coord {
         Coord::new(self.row, index)
     }

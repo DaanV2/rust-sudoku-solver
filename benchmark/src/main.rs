@@ -21,7 +21,9 @@ fn main() {
     let mut count = 0;
 
     while count < SIZE {
-        println!("--- Generating a grid {} ---", count);
+        if count % 100 == 0 {
+            println!("Generated {} grids", count);
+        }
         if let Some(grid) = generator.generate() {
             for _ in 0..10 {
                 let g: &mut Grid = &mut grid.clone();
@@ -48,7 +50,9 @@ fn main() {
 
     //Solve all of them
     for i in 0..grids.len() {
-        println!("Solving grid {}...", i);
+        if i % 100 == 0 {
+            println!("Solving grid {}...", i);
+        }
         let grid = grids.get(i).unwrap().clone();
         let r = solver.solve(grid);
 

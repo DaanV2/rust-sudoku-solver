@@ -30,7 +30,7 @@ impl Coord {
     }
 
     /// Returns the index of the coord
-    pub fn get_index(self) -> usize {
+    pub const fn get_index(self) -> usize {
         self.index
     }
 
