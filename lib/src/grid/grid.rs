@@ -1,8 +1,15 @@
 use std::fmt::Display;
 
 use super::{
-    cell::Cell, cell_collection::CellCollection, column::Column, constants::GRID_SIZE,
-    coords::Coord, mark::Mark, row::Row, square::Square, utility::utility,
+    cell::Cell,
+    cell_collection::CellCollection,
+    column::Column,
+    constants::{GRID_HEIGHT_RANGE, GRID_SIZE, GRID_WIDTH_RANGE},
+    coords::Coord,
+    mark::Mark,
+    row::Row,
+    square::Square,
+    utility::utility,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -46,23 +53,23 @@ impl Grid {
 
     /// Retrieves the row at the given index
     pub fn get_row(&self, row: usize) -> Row {
-        Row::new(row, self.cells)
+        Row::new(row)
     }
 
     /// Retrieves the column at the given index
     pub fn get_column(&self, col: usize) -> Column {
-        Column::new(col, self.cells)
+        Column::new(col)
     }
 
     /// Retrieves the square at the given row and column
     pub fn get_square_at(&self, coord: Coord) -> Square {
         let (row, col) = coord.get_row_col();
-        Square::from(row, col, self.cells)
+        Square::from(row, col)
     }
 
     /// Retrieves the square at the given row and column
     pub fn get_square(&self, row: usize, col: usize) -> Square {
-        Square::from(row, col, self.cells)
+        Square::from(row, col)
     }
 
     /// Returns true if the given value is present in this collection
@@ -111,17 +118,29 @@ impl Grid {
 
     /// Iterates over all rows
     pub fn iter_rows(&self) -> impl Iterator<Item = Row> + '_ {
-        (0..9).map(move |row| self.get_row(row))
+        GRID_HEIGHT_RANGE.map(move |row| self.get_row(row))
     }
 
     /// Iterates over all columns
     pub fn iter_columns(&self) -> impl Iterator<Item = Column> + '_ {
-        (0..9).map(move |col| self.get_column(col))
+        GRID_WIDTH_RANGE.map(move |col| self.get_column(col))
     }
 
     /// Iterates over all squares
     pub fn iter_squares(&self) -> impl Iterator<Item = Square> + '_ {
-        Square::iter_square_coords().map(move |coord| self.get_square_at(coord))
+        Square::iter_coords().map(move |coord| self.get_square_at(coord))
+    }
+
+    /// Iterates over all cells and counts the determined cells
+    pub fn count_determined(&self) -> usize {
+        let mut sum: usize = 0;
+        for c in self.cells {
+            if c.is_determined() {
+                sum += 1;
+            }
+        }
+
+        sum
     }
 }
 
@@ -132,16 +151,16 @@ impl Default for Grid {
 }
 
 impl CellCollection for Grid {
-    fn get_cell(&self, index: usize) -> Cell {
-        self.cells[index]
-    }
-
     fn get_coord(&self, index: usize) -> Coord {
         Coord::from_index(index)
     }
 
     fn max(&self) -> usize {
-        self.cells.len()
+        GRID_SIZE
+    }
+
+    fn iter(&self) -> std::ops::Range<usize> {
+        0..GRID_SIZE
     }
 }
 
@@ -158,20 +177,10 @@ mod tests {
         grid::{
             cell_collection::CellCollection,
             constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
-            mark::Mark,
         },
         test::util::general_tests,
     };
     use std::mem::size_of_val;
-
-    #[test]
-    fn it_works() {
-        let grid = Grid::new();
-
-        if !grid.get_row(3).has_possible(Mark::N1) {
-            panic!("Row 3 should have 1 as a possible value");
-        }
-    }
 
     #[test]
     fn output_gridsize_obj() {
@@ -200,7 +209,8 @@ mod tests {
                 let coord = row.get_coord(col_index);
                 let cell = grid.get_cell_at(coord);
 
-                let row_cell = row.get_cell(col_index);
+                let row_cell = grid.get_cell_at(coord);
+
                 assert_eq!(cell, row_cell);
                 assert_eq!(coord.get_row(), row_index);
             }
@@ -217,7 +227,7 @@ mod tests {
                 let coord = column.get_coord(row_index);
                 let cell = grid.get_cell_at(coord);
 
-                let column_cell = column.get_cell(row_index);
+                let column_cell = grid.get_cell_at(coord);
                 assert_eq!(cell, column_cell);
                 assert_eq!(coord.get_col(), col_index);
             }

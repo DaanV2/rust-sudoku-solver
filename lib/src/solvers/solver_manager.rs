@@ -8,7 +8,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 100,
+            max_iterations: 200,
         }
     }
 }

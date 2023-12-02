@@ -43,7 +43,7 @@ impl<T: RngCore> Generator<T> {
             }
 
             let determined = result.grid.count_determined();
-            if determined > (GRID_SIZE / 3) as u32 {
+            if determined > (GRID_SIZE / 3) {
                 break;
             }
 

@@ -1,4 +1,6 @@
-use crate::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark};
+use crate::grid::{
+    cell::Cell, cell_collection::CellCollection, coords::Coord, grid::Grid, mark::Mark,
+};
 
 use super::solver::{SolveResult, Solver, SolverResult};
 
@@ -31,14 +33,7 @@ impl Solver for DeterminedSolver {
             if cell.is_determined() {
                 continue;
             }
-            let (r, c) = coord.get_row_col();
-
-            let sqr = current.get_square_at(coord);
-            changed |= set_if_possible(current, &sqr, cell, index);
-            let row = current.get_row(r);
-            changed |= set_if_possible(current, &row, cell, c);
-            let col = current.get_column(c);
-            changed |= set_if_possible(current, &col, cell, r);
+            changed |= set_if_possible_all(current, cell, coord);
         }
 
         let mut result = SolverResult::nothing(*current);
@@ -51,32 +46,57 @@ impl Solver for DeterminedSolver {
     }
 }
 
-fn set_if_possible<T: CellCollection>(grid: &mut Grid, area: &T, cell: Cell, index: usize) -> bool {
-    for mark in cell.iter_possible() {
-        //Loop through the rest of the area to see if the mark is possible anywhere else
-        if is_only_possible_at(area, mark, index) {
-            let coord = area.get_coord(index);
-            let value = mark.to_value();
-            let new_cell = Cell::new_with_value(value);
+fn set_if_possible_all(grid: &mut Grid, cell: Cell, current: Coord) -> bool {
+    let (r, c) = current.get_row_col();
 
-            grid.set_cell_at(coord, new_cell);
+    for mark in cell.iter_possible() {
+        if set_if_possible(grid, &grid.get_row(r), current, mark) {
             return true;
         }
+        if set_if_possible(grid, &grid.get_column(c), current, mark) {
+            return true;
+        }
+        if set_if_possible(grid, &grid.get_square_at(current), current, mark) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+fn set_if_possible<T: CellCollection>(
+    grid: &mut Grid,
+    area: &T,
+    current: Coord,
+    mark: Mark,
+) -> bool {
+    //Loop through the rest of the area to see if the mark is possible anywhere else
+    if is_only_possible_at(grid, area, mark, current) {
+        let value = mark.to_value();
+        let new_cell = Cell::new_with_value(value);
+
+        grid.set_cell_at(current, new_cell);
+        return true;
     }
 
     false
 }
 
-fn is_only_possible_at<T: CellCollection>(area: &T, mark: Mark, index: usize) -> bool {
+fn is_only_possible_at<T: CellCollection>(
+    grid: &Grid,
+    area: &T,
+    mark: Mark,
+    current: Coord,
+) -> bool {
     let mark_value = mark.to_value();
 
-    for other_index in area.iter() {
+    for coord in area.iter().map(|c| area.get_coord(c)) {
         //Skip the current cell
-        if other_index == index {
+        if coord == current {
             continue;
         }
 
-        let cell = area.get_cell(other_index);
+        let cell = grid.get_cell_at(coord);
 
         if let Some(value) = cell.value() {
             if value == mark_value {

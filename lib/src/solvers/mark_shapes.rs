@@ -26,7 +26,7 @@ impl Solver for MarkShapes {
         let current = &mut grid.clone();
 
         for mark in Mark::iter() {
-            for coord in Square::iter_square_coords() {
+            for coord in Square::iter_coords() {
                 let square = current.get_square_at(coord);
                 check_square(&square, current, mark);
             }
@@ -165,41 +165,38 @@ mod test {
         );
 
         //Top row should not have 4 5 6
-        let sq1 = grid.get_square(0, 0);
         for c in 0..3 {
             let coord = Coord::new(0, c);
-            let cell = sq1.get_cell_at(coord);
+            let cell = grid.get_cell_at(coord);
             assert!(!cell.is_possible(Mark::N4));
             assert!(!cell.is_possible(Mark::N5));
             assert!(!cell.is_possible(Mark::N6));
         }
 
         //Top row should not have 4, 5 6
-        let sq3 = grid.get_square(0, 6);
         for c in 0..3 {
-            let coord = Coord::new(0, c);
-            let cell = sq3.get_cell_at(coord);
+            let coord = Coord::new(0, c + 6);
+            let cell = grid.get_cell_at(coord);
             assert!(!cell.is_possible(Mark::N4));
             assert!(!cell.is_possible(Mark::N5));
             assert!(!cell.is_possible(Mark::N6));
         }
 
-        //Top row should have 4, 5, 6 and only those
-        let sq2 = grid.get_square(0, 3);
+        //Middle square, Top row should have 4, 5, 6 and only those
         for c in 0..3 {
-            let coord = Coord::new(0, c);
-            let cell = sq2.get_cell_at(coord);
-            assert!(cell.is_possible(Mark::N4));
-            assert!(cell.is_possible(Mark::N5));
-            assert!(cell.is_possible(Mark::N6));
+            let coord = Coord::new(0, c + 3);
+            let cell = grid.get_cell_at(coord);
+            assert!(cell.is_possible(Mark::N4), "Coord: {}", coord);
+            assert!(cell.is_possible(Mark::N5), "Coord: {}", coord);
+            assert!(cell.is_possible(Mark::N6), "Coord: {}", coord);
 
             //Make sure the other numbers are not possible
-            assert!(!cell.is_possible(Mark::N1));
-            assert!(!cell.is_possible(Mark::N2));
-            assert!(!cell.is_possible(Mark::N3));
-            assert!(!cell.is_possible(Mark::N7));
-            assert!(!cell.is_possible(Mark::N8));
-            assert!(!cell.is_possible(Mark::N9));
+            assert!(!cell.is_possible(Mark::N1), "Coord: {}", coord);
+            assert!(!cell.is_possible(Mark::N2), "Coord: {}", coord);
+            assert!(!cell.is_possible(Mark::N3), "Coord: {}", coord);
+            assert!(!cell.is_possible(Mark::N7), "Coord: {}", coord);
+            assert!(!cell.is_possible(Mark::N8), "Coord: {}", coord);
+            assert!(!cell.is_possible(Mark::N9), "Coord: {}", coord);
         }
     }
 

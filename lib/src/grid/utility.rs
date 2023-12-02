@@ -38,14 +38,13 @@ pub mod utility {
     }
 
     /// Returns a string representation of a square
-    pub fn ascii_square(square: &Square) -> String {
+    pub fn ascii_square(grid: &Grid, square: &Square) -> String {
         let mut result = String::new();
 
-        // 3x3 square
         for row in 0..3 {
             for col in 0..3 {
-                let coord = Coord::new(row, col);
-                let cell = square.get_cell_at(coord);
+                let coord = square.get_coord_at(row, col);
+                let cell = grid.get_cell_at(coord);
 
                 if cell.is_determined() {
                     let value = cell.get_value();

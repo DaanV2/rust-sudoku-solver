@@ -1,35 +1,34 @@
 use super::{
-    cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, coords::Coord,
-    format::get_index, square::Square,
+    cell_collection::CellCollection, constants::GRID_HEIGHT, coords::Coord, square::Square,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Row {
     //The row index
     row: usize,
-    //The entire grid
-    grid: [Cell; GRID_SIZE],
 }
 
 impl Row {
-    pub fn new(row: usize, grid: [Cell; GRID_SIZE]) -> Self {
-        Self { row, grid }
+    pub fn new(row: usize) -> Self {
+        Self { row }
     }
 
     pub fn get_square(&self, index: usize) -> Square {
-        Square::from(self.row, index, self.grid)
+        Square::from(self.row, index)
     }
 }
 
 impl CellCollection for Row {
-    #[inline]
-    fn get_cell(&self, index: usize) -> Cell {
-        self.grid[get_index(self.get_coord(index))]
-    }
-
-    #[inline]
     fn get_coord(&self, index: usize) -> Coord {
         Coord::new(self.row, index)
+    }
+
+    fn iter(&self) -> std::ops::Range<usize> {
+        0..GRID_HEIGHT
+    }
+
+    fn max(&self) -> usize {
+        GRID_HEIGHT
     }
 }
 
@@ -37,14 +36,14 @@ impl CellCollection for Row {
 mod test {
     use super::Row;
     use crate::{
-        grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE},
+        grid::{cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE},
         test::util::general_tests,
     };
 
     #[test]
     fn test_coords() {
         for row_index in GRID_HEIGHT_RANGE {
-            let row = Row::new(row_index, [Cell::new(); 81]);
+            let row = Row::new(row_index);
 
             for col_index in GRID_HEIGHT_RANGE {
                 let coord = row.get_coord(col_index);

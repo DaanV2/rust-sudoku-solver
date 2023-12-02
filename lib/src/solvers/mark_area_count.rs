@@ -63,7 +63,7 @@ impl MarkAreaCountInstance {
     }
 
     pub fn check_marks_area(&mut self) -> SolveResult {
-        for sq in Square::iter_square_coords() {
+        for sq in Square::iter_coords() {
             for mark in Mark::iter() {
                 let square = self.grid.get_square_at(sq);
                 let result = self.check_area(square, mark);
@@ -86,7 +86,7 @@ impl MarkAreaCountInstance {
         //Transfer data
         for i in 0..self.data.len() {
             let coord = area.get_coord(i);
-            let cell = area.get_cell(i);
+            let cell = self.grid.get_cell(i);
             let mut check = false;
 
             //Already defined, nothing to do

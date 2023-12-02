@@ -3,59 +3,23 @@ use crate::grid::square::Square;
 pub fn get_square_row_neighbors(square: &Square) -> Option<[Square; 2]> {
     let row = square.row;
     let col: usize = square.col;
-    let result: [Square; 2];
 
-    match col {
-        0 => {
-            result = [
-                Square::new(row, 3, square.grid),
-                Square::new(row, 6, square.grid),
-            ];
-        }
-        3 => {
-            result = [
-                Square::new(row, 0, square.grid),
-                Square::new(row, 6, square.grid),
-            ];
-        }
-        6 => {
-            result = [
-                Square::new(row, 0, square.grid),
-                Square::new(row, 3, square.grid),
-            ];
-        }
-        _ => return None,
-    }
-
-    Some(result)
+    return match col {
+        0 => Some([Square::new(row, 3), Square::new(row, 6)]),
+        3 => Some([Square::new(row, 0), Square::new(row, 6)]),
+        6 => Some([Square::new(row, 0), Square::new(row, 3)]),
+        _ => None,
+    };
 }
 
 pub fn get_square_col_neighbors(square: &Square) -> Option<[Square; 2]> {
     let row: usize = square.row;
     let col = square.col;
-    let result: [Square; 2];
 
-    match row {
-        0 => {
-            result = [
-                Square::new(3, col, square.grid),
-                Square::new(6, col, square.grid),
-            ];
-        }
-        3 => {
-            result = [
-                Square::new(0, col, square.grid),
-                Square::new(6, col, square.grid),
-            ];
-        }
-        6 => {
-            result = [
-                Square::new(0, col, square.grid),
-                Square::new(3, col, square.grid),
-            ];
-        }
+    return match row {
+        0 => Some([Square::new(3, col), Square::new(6, col)]),
+        3 => Some([Square::new(0, col), Square::new(6, col)]),
+        6 => Some([Square::new(0, col), Square::new(3, col)]),
         _ => return None,
-    }
-
-    Some(result)
+    };
 }
