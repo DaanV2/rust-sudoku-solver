@@ -25,8 +25,8 @@ impl Solver for MarkShapes {
     fn solve(&self, grid: &Grid) -> SolverResult {
         let current = &mut grid.clone();
 
-        for mark in Mark::iter() {
-            for coord in Square::iter_coords() {
+        for coord in Square::iter_coords() {
+            for mark in Mark::iter() {
                 let square = current.get_square_at(coord);
                 check_square(&square, current, mark);
             }

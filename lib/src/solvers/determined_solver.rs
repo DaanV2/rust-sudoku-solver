@@ -25,7 +25,7 @@ impl Solver for DeterminedSolver {
 
     fn solve(&self, grid: &Grid) -> SolverResult {
         let current: &mut Grid = &mut grid.clone();
-        let mut changed = false;
+        let mut result = SolveResult::Nothing;
 
         for index in current.iter() {
             let coord = current.get_coord(index);
@@ -33,16 +33,12 @@ impl Solver for DeterminedSolver {
             if cell.is_determined() {
                 continue;
             }
-            changed |= set_if_possible_all(current, cell, coord);
+            if set_if_possible_all(current, cell, coord) {
+                result = SolveResult::Updated;
+            }
         }
 
-        let mut result = SolverResult::nothing(*current);
-
-        if changed {
-            result.result = SolveResult::Updated;
-        }
-
-        result
+        SolverResult::new(*current, result)
     }
 }
 
@@ -76,15 +72,18 @@ fn set_if_possible<T: CellCollection>(grid: &mut Grid, area: &T, coord: Coord, m
 }
 
 fn is_only_possible_at<T: CellCollection>(grid: &Grid, area: &T, coord: Coord, mark: Mark) -> bool {
-    let amount = area
-        .iter()
-        .map(|c| area.get_coord(c))
-        .filter(|c| c != &coord)
-        .map(|c| grid.get_cell_at(c).is_possible(mark))
-        .filter(|c| *c)
-        .count();
+    for i in area.iter().rev() {
+        let c = area.get_coord(i);
+        if c == coord {
+            continue;
+        }
+        let cell = grid.get_cell_at(c);
+        if cell.is_possible(mark) {
+            return false;
+        }
+    }
 
-    amount == 0
+    true
 }
 
 #[cfg(test)]

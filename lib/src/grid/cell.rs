@@ -35,14 +35,14 @@ impl Cell {
     }
 
     /// Creates a new empty cell, with all possibilities on
-    pub fn new() -> Cell {
+    pub const fn new() -> Cell {
         Cell {
             data: DEFAULT_CELL_VALUE,
         }
     }
 
     /// Creates a new cell with a value, and all possibilities off
-    pub fn new_empty() -> Cell {
+    pub const fn new_empty() -> Cell {
         Cell { data: 0 }
     }
 

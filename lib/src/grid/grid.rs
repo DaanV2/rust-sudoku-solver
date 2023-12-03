@@ -36,9 +36,7 @@ impl Grid {
 
     /// Sets the cell at the given index
     pub fn set_cell(&mut self, index: usize, cell: Cell) {
-        if index < self.cells.len() {
-            self.cells[index] = cell;
-        }
+        self.cells[index] = cell;
     }
 
     /// Retrieves the cell at the given coordinate
@@ -94,24 +92,16 @@ impl Grid {
 
     /// Returns true if the given value is present in this collection
     pub fn set_possible(&mut self, index: usize, mark: Mark) {
-        let old_cell = self.get_cell(index);
-        if old_cell.is_determined() {
-            return;
-        }
-
-        let mut new_cell = old_cell.clone();
+        let mut new_cell = self.get_cell(index).clone();
         new_cell.set_possible(mark);
-        self.set_cell(index, new_cell);
+        if !new_cell.is_determined() {
+            self.set_cell(index, new_cell);
+        }
     }
 
     /// Un sets the given value as possible for this cell
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
-        let old_cell = self.get_cell(index);
-        if old_cell.is_determined() {
-            return;
-        }
-
-        let mut new_cell = old_cell.clone();
+        let mut new_cell = self.get_cell(index).clone();
         new_cell.unset_possible(mark);
         self.set_cell(index, new_cell);
     }
@@ -143,29 +133,37 @@ impl Grid {
         sum
     }
 
+    #[inline(always)]
     pub fn place_value(&mut self, index: usize, value: usize) {
         let coord = Coord::from_index(index);
         self.place_value_at(coord, value);
     }
 
+    #[inline(always)]
     pub fn place_value_at(&mut self, coord: Coord, value: usize) {
         self.set_cell_at(coord, Cell::new_with_value(value));
+
+        self.mark_off(coord);
+    }
+
+    #[inline(always)]
+    pub fn mark_off(&mut self, coord: Coord) {
+        let mark = Mark::from_value(self.get_cell_at(coord).get_value());
         let (row, col) = coord.get_row_col();
-        let mark = Mark::from_value(value);
 
         // Mark off row
-        for c in GRID_WIDTH_RANGE {
+        for c in GRID_WIDTH_RANGE.rev() {
             self.unset_possible_at(Coord::new(row, c), mark);
         }
 
         // Mark off column
-        for r in GRID_HEIGHT_RANGE {
+        for r in GRID_HEIGHT_RANGE.rev() {
             self.unset_possible_at(Coord::new(r, col), mark);
         }
 
         // Mark off square
         let square = self.get_square_at(coord);
-        for c in square.iter() {
+        for c in square.iter().rev() {
             self.unset_possible_at(square.get_coord(c), mark);
         }
     }

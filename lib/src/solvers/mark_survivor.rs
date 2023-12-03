@@ -26,7 +26,7 @@ impl Solver for MarkSurvivor {
 
     fn solve(&self, grid: &Grid) -> SolverResult {
         let mut current = grid.clone();
-        let mut changed = false;
+        let mut result = SolveResult::Nothing;
 
         //Loop through all the cells
         for row in GRID_HEIGHT_RANGE {
@@ -41,17 +41,12 @@ impl Solver for MarkSurvivor {
                 match cell.iter_possible().next() {
                     Some(mark) => {
                         current.place_value_at(coord, mark.to_value());
-                        changed = true;
+                        result = SolveResult::Updated;
                     }
                     None => {}
                 }
             }
         }
-
-        let result = match changed {
-            false => SolveResult::Nothing,
-            true => SolveResult::Updated,
-        };
 
         SolverResult::new(current, result)
     }

@@ -11,7 +11,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 500,
+            max_iterations: 1000,
         }
     }
 }

@@ -1,4 +1,4 @@
-use crate::grid::{cell_collection::CellCollection, grid::Grid, mark::Mark};
+use crate::grid::{cell_collection::CellCollection, coords::Coord, grid::Grid};
 
 use super::solver::{Solver, SolverResult};
 
@@ -23,24 +23,12 @@ impl Solver for MarkSimple {
     fn solve(&self, grid: &Grid) -> SolverResult {
         let mut current = grid.clone();
 
-        for i in grid.iter() {
+        for i in grid.iter().rev() {
             let cell = current.get_cell(i);
 
             //If the cell is determined, mark off that square, row and column
-            if let Some(value) = cell.value() {
-                let turnoff = Mark::from_value(value);
-                let coord = current.get_coord(i);
-
-                //Mark off the row
-                let row = current.get_row(coord.get_row());
-                let col = current.get_column(coord.get_col());
-                let square = current.get_square_at(coord);
-
-                for i in 0..9 {
-                    current.unset_possible_at(row.get_coord(i), turnoff);
-                    current.unset_possible_at(col.get_coord(i), turnoff);
-                    current.unset_possible_at(square.get_coord(i), turnoff);
-                }
+            if cell.is_determined() {
+                current.mark_off(Coord::from_index(i));
             }
         }
 
