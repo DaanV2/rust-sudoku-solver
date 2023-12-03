@@ -142,6 +142,33 @@ impl Grid {
 
         sum
     }
+
+    pub fn place_value(&mut self, index: usize, value: usize) {
+        let coord = Coord::from_index(index);
+        self.place_value_at(coord, value);
+    }
+
+    pub fn place_value_at(&mut self, coord: Coord, value: usize) {
+        self.set_cell_at(coord, Cell::new_with_value(value));
+        let (row, col) = coord.get_row_col();
+        let mark = Mark::from_value(value);
+
+        // Mark off row
+        for c in GRID_WIDTH_RANGE {
+            self.unset_possible_at(Coord::new(row, c), mark);
+        }
+
+        // Mark off column
+        for r in GRID_HEIGHT_RANGE {
+            self.unset_possible_at(Coord::new(r, col), mark);
+        }
+
+        // Mark off square
+        let square = self.get_square_at(coord);
+        for c in square.iter() {
+            self.unset_possible_at(square.get_coord(c), mark);
+        }
+    }
 }
 
 impl Default for Grid {

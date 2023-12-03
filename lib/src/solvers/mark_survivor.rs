@@ -1,5 +1,4 @@
 use crate::grid::{
-    cell::Cell,
     constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
     coords::Coord,
     grid::Grid,
@@ -40,9 +39,8 @@ impl Solver for MarkSurvivor {
                 }
 
                 match cell.iter_possible().next() {
-                    Some(value) => {
-                        let c = Cell::new_with_value(value.to_value());
-                        current.set_cell_at(coord, c);
+                    Some(mark) => {
+                        current.place_value_at(coord, mark.to_value());
                         changed = true;
                     }
                     None => {}

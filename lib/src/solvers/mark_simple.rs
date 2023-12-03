@@ -52,57 +52,114 @@ impl Solver for MarkSimple {
 mod test {
     use crate::{
         grid::{
-            cell::Cell,
-            cell_collection::CellCollection,
-            constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
-            coords::Coord,
-            grid::Grid,
-            mark::Mark,
+            cell::Cell, cell_collection::CellCollection, coords::Coord, grid::Grid, mark::Mark,
+            utility::utility,
         },
         solvers::solver::Solver,
+        test::util::general_tests::get_url,
     };
 
     #[test]
-    fn test_solve() {
-        let mut grid = Grid::new();
+    fn test_solve_square_1() {
+        let coord = Coord::new(1, 1);
+        test_at_coord(coord, Mark::N1);
+    }
+
+    #[test]
+    fn test_solve_square_2() {
+        let coord = Coord::new(2, 4);
+        test_at_coord(coord, Mark::N2);
+    }
+
+    #[test]
+    fn test_solve_square_3() {
+        let coord = Coord::new(0, 7);
+        test_at_coord(coord, Mark::N3);
+    }
+
+    #[test]
+    fn test_solve_square_4() {
+        let coord = Coord::new(3, 1);
+        test_at_coord(coord, Mark::N4);
+    }
+
+    #[test]
+    fn test_solve_square_5() {
         let coord = Coord::new(4, 3);
+        test_at_coord(coord, Mark::N5);
+    }
 
-        grid.set_cell_at(coord, Cell::new_with_value(5));
+    #[test]
+    fn test_solve_square_6() {
+        let coord = Coord::new(5, 8);
+        test_at_coord(coord, Mark::N6);
+    }
 
+    #[test]
+    fn test_solve_square_7() {
+        let coord = Coord::new(7, 1);
+        test_at_coord(coord, Mark::N7);
+    }
+
+    #[test]
+    fn test_solve_square_8() {
+        let coord = Coord::new(8, 3);
+        test_at_coord(coord, Mark::N8);
+    }
+
+    #[test]
+    fn test_solve_square_9() {
+        let coord = Coord::new(6, 8);
+        test_at_coord(coord, Mark::N9);
+    }
+
+    fn test_at_coord(coord: Coord, mark: Mark) {
+        let mut grid = Grid::new();
+
+        grid.set_cell_at(coord, Cell::new_with_value(mark.to_value()));
+
+        println!("{}\n{}", get_url(&grid), utility::ascii_grid(&grid));
         let solver = super::MarkSimple::new();
         let result = solver.solve(&grid);
         let modified = result.grid;
 
-        //Check that the row is marked off
-        for row in GRID_HEIGHT_RANGE {
-            if row == coord.get_row() {
-                continue;
-            }
+        // Checks the rows
+        for row in modified.iter_rows() {
+            let row_index = row.row_index();
+            let possible = row.count_possible(&modified, mark);
 
-            let c = modified.get_cell_at(Coord::new(row, 3));
-            assert_eq!(c.is_possible(Mark::N5), false);
+            if row_index == coord.get_row() {
+                assert_eq!(possible, 0, "Row {} is not marked off", row_index);
+            } else {
+                assert!(possible > 0, "Row {} should be still possible", row_index);
+            }
         }
 
-        //Check that the column is marked off
-        for col in GRID_WIDTH_RANGE {
-            if col == coord.get_col() {
-                continue;
-            }
+        // Checks the columns
+        for col in modified.iter_columns() {
+            let col_index = col.col_index();
+            let possible = col.count_possible(&modified, mark);
 
-            let c = modified.get_cell_at(Coord::new(4, col));
-            assert_eq!(c.is_possible(Mark::N5), false);
+            if col_index == coord.get_col() {
+                assert_eq!(possible, 0, "Column {} is not marked off", col_index);
+            } else {
+                assert!(
+                    possible > 0,
+                    "Column {} should be still possible",
+                    col_index
+                );
+            }
         }
 
-        //Check that the square is marked off
-        let square = modified.get_square_at(coord);
-        for index in square.iter() {
-            let c = square.get_coord(index);
-            if coord == c {
-                continue;
-            }
+        // Checks the squares
+        for square in modified.iter_squares() {
+            let possible = square.count_possible(&modified, mark);
 
-            let c = modified.get_cell_at(c);
-            assert_eq!(c.is_possible(Mark::N5), false);
+            if square.is_coord_in_square(coord) {
+                assert_eq!(possible, 0, "Square is not marked off");
+            } else {
+                assert!(possible > 0, "Square should be still possible");
+            }
         }
     }
 }

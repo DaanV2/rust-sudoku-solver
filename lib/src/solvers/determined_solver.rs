@@ -64,50 +64,27 @@ fn set_if_possible_all(grid: &mut Grid, cell: Cell, current: Coord) -> bool {
     return false;
 }
 
-fn set_if_possible<T: CellCollection>(
-    grid: &mut Grid,
-    area: &T,
-    current: Coord,
-    mark: Mark,
-) -> bool {
+fn set_if_possible<T: CellCollection>(grid: &mut Grid, area: &T, coord: Coord, mark: Mark) -> bool {
     //Loop through the rest of the area to see if the mark is possible anywhere else
-    if is_only_possible_at(grid, area, mark, current) {
+    if is_only_possible_at(grid, area, coord, mark) {
         let value = mark.to_value();
-        let new_cell = Cell::new_with_value(value);
-
-        grid.set_cell_at(current, new_cell);
+        grid.place_value_at(coord, value);
         return true;
     }
 
     false
 }
 
-fn is_only_possible_at<T: CellCollection>(
-    grid: &Grid,
-    area: &T,
-    mark: Mark,
-    current: Coord,
-) -> bool {
-    let mark_value = mark.to_value();
+fn is_only_possible_at<T: CellCollection>(grid: &Grid, area: &T, coord: Coord, mark: Mark) -> bool {
+    let amount = area
+        .iter()
+        .map(|c| area.get_coord(c))
+        .filter(|c| c != &coord)
+        .map(|c| grid.get_cell_at(c).is_possible(mark))
+        .filter(|c| *c)
+        .count();
 
-    for coord in area.iter().map(|c| area.get_coord(c)) {
-        //Skip the current cell
-        if coord == current {
-            continue;
-        }
-
-        let cell = grid.get_cell_at(coord);
-
-        if let Some(value) = cell.value() {
-            if value == mark_value {
-                return false;
-            }
-        } else if cell.is_possible(mark) {
-            return false;
-        }
-    }
-
-    true
+    amount == 0
 }
 
 #[cfg(test)]

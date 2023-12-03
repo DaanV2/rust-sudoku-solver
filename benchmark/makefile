@@ -1,3 +1,5 @@
+build:
+	cargo build --release
 
-benchmark:
+benchmark: build
 	cargo run --release

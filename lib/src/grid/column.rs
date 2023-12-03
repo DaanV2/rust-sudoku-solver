@@ -16,6 +16,10 @@ impl Column {
     pub fn get_square(&self, index: usize) -> Square {
         Square::from(index, self.col)
     }
+
+    pub fn col_index(&self) -> usize {
+        self.col
+    }
 }
 
 impl CellCollection for Column {

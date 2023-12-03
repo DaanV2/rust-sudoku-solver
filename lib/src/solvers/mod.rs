@@ -8,3 +8,4 @@ pub mod mark_survivor;
 pub mod solver;
 pub mod solver_manager;
 pub mod util;
+pub mod validator;

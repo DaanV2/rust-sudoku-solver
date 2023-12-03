@@ -1,7 +1,6 @@
 pub mod utility {
 
     use crate::grid::{
-        cell::Cell,
         constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
         coords::Coord,
         grid::Grid,
@@ -12,8 +11,8 @@ pub mod utility {
     pub fn ascii_grid(grid: &Grid) -> String {
         let mut result = String::new();
 
-        for col in GRID_HEIGHT_RANGE {
-            for row in GRID_WIDTH_RANGE {
+        for row in GRID_WIDTH_RANGE {
+            for col in GRID_HEIGHT_RANGE {
                 let coord = Coord::new(row, col);
                 let cell = grid.get_cell_at(coord);
 
@@ -23,13 +22,13 @@ pub mod utility {
                 } else {
                     result.push_str(". ");
                 }
-                if row == 2 || row == 5 {
+                if col == 2 || col == 5 {
                     result.push_str("| ");
                 }
             }
             result.push_str("\n");
 
-            if col == 2 || col == 5 {
+            if row == 2 || row == 5 {
                 result.push_str("------|-------|------\n");
             }
         }
@@ -67,12 +66,9 @@ pub mod utility {
         for line in ascii.lines() {
             for char in line.chars() {
                 if char == '.' || char == '0' {
-                    let c = Cell::new();
-                    grid.set_cell(index, c);
                     index += 1;
                 } else if let Some(value) = char.to_digit(10) {
-                    let c = Cell::new_with_value(value as usize);
-                    grid.set_cell(index, c);
+                    grid.place_value(index, value as usize);
                     index += 1;
                 }
             }

@@ -49,9 +49,7 @@ impl<T: RngCore> Generator<T> {
 
             let iter = cell.iter_possible();
             if let Some(value) = iter.choose(&mut self.rng) {
-                let c = Cell::new_from_mark_as_value(value);
-
-                result.grid.set_cell(index, c);
+                result.grid.place_value(index, value.to_value());
 
                 // Solve some cells, if it fails, remove the cell
                 let mut r = self.solvers.pre_solve(result);

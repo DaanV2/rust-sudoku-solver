@@ -12,6 +12,7 @@ pub mod general_tests {
     use crate::grid::utility::utility::{self, parse_from_ascii};
     use crate::solvers::solver::{SolveResult, Solver};
     use crate::solvers::solver_manager::SolverManager;
+    use crate::solvers::validator::validate_grid;
 
     /// Tests that the grid should be solved
     pub fn test_should_solve(grid: Grid) {
@@ -28,6 +29,7 @@ pub mod general_tests {
         );
 
         assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
+        validate_grid(&output.grid);
     }
 
     /// Removes a random amount of cells from the grid

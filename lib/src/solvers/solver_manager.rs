@@ -1,5 +1,8 @@
-use super::solver::{AnnotatedSolverResult, SolveResult, Solver, SolverResult};
-use crate::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid};
+use super::{
+    solver::{AnnotatedSolverResult, SolveResult, Solver, SolverResult},
+    validator::is_valid,
+};
+use crate::grid::{cell_collection::CellCollection, grid::Grid};
 
 pub struct SolverManagerConfig {
     pub max_iterations: usize,
@@ -8,7 +11,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 200,
+            max_iterations: 500,
         }
     }
 }
@@ -160,16 +163,14 @@ impl SolverManager {
 
             for mark in cell.iter_possible() {
                 let mut new_grid = grid.clone();
-                let c = Cell::new_with_value(mark.to_value());
-
-                new_grid.set_cell(index, c);
+                new_grid.place_value(index, mark.to_value());
 
                 let result = self.solve_internal(new_grid, start_iteration);
-
-                match result.result {
-                    SolveResult::Solved => return result,
-                    SolveResult::Error => continue,
-                    _ => {}
+                if result.result == SolveResult::Error || !is_valid(&result.grid) {
+                    continue;
+                }
+                if result.result == SolveResult::Solved {
+                    return result;
                 }
 
                 if result.grid.count_determined() > solved_amount {

@@ -2,7 +2,9 @@ use std::time::Instant;
 
 use rand::{rngs::StdRng, SeedableRng};
 use sudoku_solver_lib::{
-    generators::generators::Generator, grid::grid::Grid, solvers::solver_manager::SolverManager,
+    generators::generators::Generator,
+    grid::grid::Grid,
+    solvers::{solver_manager::SolverManager, validator::validate_grid},
 };
 
 pub mod setup;
@@ -25,6 +27,8 @@ fn main() {
             println!("Generated {} grids", count);
         }
         if let Some(grid) = generator.generate() {
+            // println!("{}", grid);
+            validate_grid(&grid);
             for _ in 0..10 {
                 let g: &mut Grid = &mut grid.clone();
 
