@@ -20,6 +20,10 @@ impl Row {
     pub fn row_index(&self) -> usize {
         self.row
     }
+
+    pub fn iter_row() -> impl Iterator<Item = Row> {
+        (0..GRID_HEIGHT).map(|i| Row::new(i))
+    }
 }
 
 impl CellCollection for Row {

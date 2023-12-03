@@ -72,6 +72,28 @@ impl Square {
             Some(coord)
         })
     }
+
+    pub fn iter_squares() -> impl Iterator<Item = Square> {
+        let mut row = 0;
+        let mut col = 0;
+
+        std::iter::from_fn(move || {
+            if row > 6 {
+                return None;
+            }
+
+            let square = Square::new(row, col);
+
+            if col >= 6 {
+                col = 0;
+                row += 3;
+            } else {
+                col += 3;
+            }
+
+            Some(square)
+        })
+    }
 }
 
 impl CellCollection for Square {
@@ -100,6 +122,8 @@ impl Default for Square {
 mod test {
     use crate::{grid::cell_collection::CellCollection, test::util::general_tests};
 
+    use super::Square;
+
     #[test]
     fn test_iter_coords() {
         for (i, coord) in super::Square::iter_coords().enumerate() {
@@ -126,6 +150,14 @@ mod test {
                     assert!(c.get_col() >= square.col && c.get_col() < square.col + 3);
                 }
             }
+        }
+    }
+
+    #[test]
+    fn test_iter_square() {
+        for sqr in Square::iter_squares() {
+            assert_eq!(sqr.row % 3, 0);
+            assert_eq!(sqr.col % 3, 0);
         }
     }
 }

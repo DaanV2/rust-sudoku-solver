@@ -20,6 +20,10 @@ impl Column {
     pub fn col_index(&self) -> usize {
         self.col
     }
+
+    pub fn iter_col() -> impl Iterator<Item = Column> {
+        (0..GRID_WIDTH).map(|i| Column::new(i))
+    }
 }
 
 impl CellCollection for Column {

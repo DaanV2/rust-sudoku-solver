@@ -1,8 +1,4 @@
-use crate::grid::{
-    constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
-    coords::Coord,
-    grid::Grid,
-};
+use crate::grid::{cell_collection::CellCollection, grid::Grid};
 
 use super::solver::{SolveResult, Solver, SolverResult};
 
@@ -29,22 +25,19 @@ impl Solver for MarkSurvivor {
         let mut result = SolveResult::Nothing;
 
         //Loop through all the cells
-        for row in GRID_HEIGHT_RANGE {
-            for col in GRID_WIDTH_RANGE {
-                let coord = Coord::new(row, col);
-                let cell = current.get_cell_at(coord);
+        for i in current.iter().rev() {
+            let coord = current.get_coord(i);
+            let cell = current.get_cell_at(coord);
+            if cell.get_count() != 1 {
+                continue;
+            }
 
-                if cell.get_count() != 1 {
-                    continue;
+            match cell.iter_possible().next() {
+                Some(mark) => {
+                    current.place_value_at(coord, mark.to_value());
+                    result = SolveResult::Updated;
                 }
-
-                match cell.iter_possible().next() {
-                    Some(mark) => {
-                        current.place_value_at(coord, mark.to_value());
-                        result = SolveResult::Updated;
-                    }
-                    None => {}
-                }
+                None => {}
             }
         }
 

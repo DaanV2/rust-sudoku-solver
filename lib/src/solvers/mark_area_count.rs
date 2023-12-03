@@ -33,8 +33,11 @@ impl Solver for MarkAreaCount {
 
 #[derive(Copy, Clone)]
 struct MarkAreaCountDataItem {
+    #[allow(dead_code)]
     pub check: bool,
+    #[allow(dead_code)]
     pub cell: Cell,
+    #[allow(dead_code)]
     pub coord: Coord,
 }
 

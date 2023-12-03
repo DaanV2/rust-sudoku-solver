@@ -6,3 +6,4 @@ pub const GRID_SIZE: usize = GRID_HEIGHT * GRID_WIDTH;
 
 pub const GRID_HEIGHT_RANGE: Range<usize> = 0..GRID_HEIGHT;
 pub const GRID_WIDTH_RANGE: Range<usize> = 0..GRID_WIDTH;
+pub const GRID_SQUARE: Range<usize> = 0..9;

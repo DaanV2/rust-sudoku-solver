@@ -7,5 +7,6 @@ pub mod format;
 pub mod grid;
 pub mod mark;
 pub mod row;
+pub mod slice;
 pub mod square;
 pub mod utility;

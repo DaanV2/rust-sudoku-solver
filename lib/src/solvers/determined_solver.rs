@@ -1,5 +1,6 @@
 use crate::grid::{
-    cell::Cell, cell_collection::CellCollection, coords::Coord, grid::Grid, mark::Mark,
+    cell_collection::CellCollection, column::Column, grid::Grid, mark::Mark, row::Row,
+    slice::Slice, square::Square,
 };
 
 use super::solver::{SolveResult, Solver, SolverResult};
@@ -25,65 +26,66 @@ impl Solver for DeterminedSolver {
 
     fn solve(&self, grid: &Grid) -> SolverResult {
         let current: &mut Grid = &mut grid.clone();
-        let mut result = SolveResult::Nothing;
+        let mut changed = false;
 
-        for index in current.iter() {
-            let coord = current.get_coord(index);
-            let cell = current.get_cell_at(coord);
-            if cell.is_determined() {
-                continue;
-            }
-            if set_if_possible_all(current, cell, coord) {
-                result = SolveResult::Updated;
-            }
+        // Check rows
+        for row in Row::iter_row() {
+            changed |= set_if_possible_area(current, &row);
         }
+
+        // Check columns
+        for col in Column::iter_col() {
+            changed |= set_if_possible_area(current, &col);
+        }
+
+        // Check squares
+        for sq in Square::iter_squares() {
+            changed |= set_if_possible_area(current, &sq);
+        }
+
+        // for index in current.iter() {
+        //     let coord = current.get_coord(index);
+        //     let cell = current.get_cell_at(coord);
+        //     if cell.is_determined() {
+        //         continue;
+        //     }
+        //     if set_if_possible_all(current, cell, coord) {
+        //         result = SolveResult::Updated;
+        //     }
+        // }
+
+        let result = match changed {
+            true => SolveResult::Updated,
+            false => SolveResult::Nothing,
+        };
 
         SolverResult::new(*current, result)
     }
 }
 
-fn set_if_possible_all(grid: &mut Grid, cell: Cell, current: Coord) -> bool {
-    let (r, c) = current.get_row_col();
+fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
+    let slice = Slice::from(grid, area);
+    let mut determined = slice.count_determined();
+    if determined == 9 {
+        return false;
+    }
+    let mut changed = false;
 
-    for mark in cell.iter_possible() {
-        if set_if_possible(grid, &grid.get_row(r), current, mark) {
-            return true;
-        }
-        if set_if_possible(grid, &grid.get_column(c), current, mark) {
-            return true;
-        }
-        if set_if_possible(grid, &grid.get_square_at(current), current, mark) {
-            return true;
+    for mark in Mark::iter() {
+        let (index, count) = slice.search_count_possible(mark);
+        if count == 1 {
+            let coord = area.get_coord(index);
+            let value = mark.to_value();
+            grid.place_value_at(coord, value);
+            changed = true;
+            determined += 1;
+            if determined == 9 {
+                break;
+            }
         }
     }
 
-    return false;
-}
-
-fn set_if_possible<T: CellCollection>(grid: &mut Grid, area: &T, coord: Coord, mark: Mark) -> bool {
-    //Loop through the rest of the area to see if the mark is possible anywhere else
-    if is_only_possible_at(grid, area, coord, mark) {
-        let value = mark.to_value();
-        grid.place_value_at(coord, value);
-        return true;
-    }
-
-    false
-}
-
-fn is_only_possible_at<T: CellCollection>(grid: &Grid, area: &T, coord: Coord, mark: Mark) -> bool {
-    for i in area.iter().rev() {
-        let c = area.get_coord(i);
-        if c == coord {
-            continue;
-        }
-        let cell = grid.get_cell_at(c);
-        if cell.is_possible(mark) {
-            return false;
-        }
-    }
-
-    true
+    return changed;
 }
 
 #[cfg(test)]
