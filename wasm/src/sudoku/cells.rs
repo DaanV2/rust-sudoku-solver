@@ -18,7 +18,7 @@ pub struct Possibilities {
 #[derive(Clone, Copy, Debug)]
 #[wasm_bindgen]
 pub struct Cell {
-    pub value: i32,
+    pub value: usize,
     pub possibilities: Possibilities,
 }
 
@@ -40,7 +40,7 @@ impl Cell {
         }
     }
 
-    pub fn to_sudoku_grid(cells: Vec<Cell>) -> sudoku_solver_lib::grid::grid::Grid {
+    pub fn to_sudoku_grid(cells: Vec<i32>) -> sudoku_solver_lib::grid::grid::Grid {
         let mut grid = sudoku_solver_lib::grid::grid::Grid::new();
 
         // Check cells is 81
@@ -48,9 +48,8 @@ impl Cell {
             panic!("Cells must be 81");
         }
 
-        for (i, cell) in cells.iter().enumerate() {
-            let c = cell.to_sudoku();
-            grid.set_cell(i as usize, c);
+        for (i, v) in cells.iter().enumerate() {
+            grid.place_value(i as usize, (*v) as usize);
         }
 
         return grid;
@@ -69,7 +68,7 @@ impl Cell {
     }
 
     pub fn to_sudoku(&self) -> sudoku_solver_lib::grid::cell::Cell {
-        if self.value >= 0 {
+        if self.value > 0 {
             return sudoku_solver_lib::grid::cell::Cell::new_with_value(self.value as usize);
         }
 
@@ -110,37 +109,19 @@ impl Cell {
         let mut cell = Cell::new();
 
         if c.is_determined() {
-            cell.value = c.get_value() as i32;
+            cell.value = c.get_value() as usize;
             return cell;
         }
 
-        if c.is_possible(Mark::N1) {
-            cell.possibilities.p1 = true;
-        }
-        if c.is_possible(Mark::N2) {
-            cell.possibilities.p2 = true;
-        }
-        if c.is_possible(Mark::N3) {
-            cell.possibilities.p3 = true;
-        }
-        if c.is_possible(Mark::N4) {
-            cell.possibilities.p4 = true;
-        }
-        if c.is_possible(Mark::N5) {
-            cell.possibilities.p5 = true;
-        }
-        if c.is_possible(Mark::N6) {
-            cell.possibilities.p6 = true;
-        }
-        if c.is_possible(Mark::N7) {
-            cell.possibilities.p7 = true;
-        }
-        if c.is_possible(Mark::N8) {
-            cell.possibilities.p8 = true;
-        }
-        if c.is_possible(Mark::N9) {
-            cell.possibilities.p9 = true;
-        }
+        cell.possibilities.p1 = c.is_possible(Mark::N1);
+        cell.possibilities.p2 = c.is_possible(Mark::N2);
+        cell.possibilities.p3 = c.is_possible(Mark::N3);
+        cell.possibilities.p4 = c.is_possible(Mark::N4);
+        cell.possibilities.p5 = c.is_possible(Mark::N5);
+        cell.possibilities.p6 = c.is_possible(Mark::N6);
+        cell.possibilities.p7 = c.is_possible(Mark::N7);
+        cell.possibilities.p8 = c.is_possible(Mark::N8);
+        cell.possibilities.p9 = c.is_possible(Mark::N9);
 
         return cell;
     }

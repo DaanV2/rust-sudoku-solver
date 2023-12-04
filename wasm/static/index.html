@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Title</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <div class="horizontal-center">
+    </div class="empty">
+    <div id="playground">
+        <table id="sudoku">
+        </table>
+        <div id="buttons">
+            <button type="button" id="solve">Solve</button>
+            <button type="button" id="solve_once">Solve Once</button>
+            <button type="button" id="generate">Generate</button>
+        </div>
+        <div style="margin-top: 5px;">
+            <label>Difficulty:</label>
+            <input type="range" id="difficulty" name="difficulty" min="1" max="72" value="48">
+        </div>
+        <div>
+            <label>Hints:</label>
+            <input type="checkbox" id="hints" name="hints" title="hints" checked>
+        </div>
+        <div id="text" hidden="true"></div>
+    </div>
+    </div class="empty">
+    </div>
+</body>
+<script src="main.js"></script>
+
+</html>

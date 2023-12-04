@@ -49,6 +49,16 @@ pub struct AnnotatedSolverResult {
     pub iterations: usize,
 }
 
+impl Display for AnnotatedSolverResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "result: {}, iters: {}\n{}",
+            self.result, self.iterations, self.grid
+        )
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[repr(u8)]
 pub enum SolveResult {

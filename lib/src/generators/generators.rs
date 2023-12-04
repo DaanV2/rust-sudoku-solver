@@ -1,4 +1,4 @@
-use rand::{seq::IteratorRandom, Rng, RngCore};
+use rand::{rngs::StdRng, seq::IteratorRandom, Rng, RngCore, SeedableRng};
 
 use crate::{
     grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, grid::Grid},
@@ -98,5 +98,18 @@ impl<T: RngCore> Generator<T> {
                 removed += 1;
             }
         }
+    }
+}
+
+impl Generator<StdRng> {
+    /// Creates a new generator with a random seed
+    pub fn new_random() -> Self {
+        let rng = StdRng::from_entropy();
+        Self::new(rng)
+    }
+
+    pub fn new_with_seed(seed: u64) -> Self {
+        let rng = StdRng::seed_from_u64(seed);
+        Self::new(rng)
     }
 }

@@ -1,6 +1,5 @@
 use std::time::Instant;
 
-use rand::{rngs::StdRng, SeedableRng};
 use sudoku_solver_lib::{
     generators::generators::Generator,
     grid::grid::Grid,
@@ -16,8 +15,7 @@ fn main() {
     let mut start_time = Instant::now();
     let mut grids = Vec::with_capacity(SIZE);
 
-    let rng = StdRng::seed_from_u64(RNG_SEED);
-    let mut generator = Generator::new(rng);
+    let mut generator = Generator::new_with_seed(RNG_SEED);
     println!("Generating {} grids...", SIZE);
 
     let mut count = 0;

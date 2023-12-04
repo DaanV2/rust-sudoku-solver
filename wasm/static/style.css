@@ -118,6 +118,21 @@ button:hover {
   transition: background-color 0.5s;
 }
 
+label {
+  font-size: 24px;
+  height: auto;
+  width: 100%;
+  text-align: center;
+  border: 0px solid transparent;
+  border-radius: 5px;
+  margin: 0;
+  margin-top: 20px;
+  padding: 0;
+  transition: background-color 0.5s;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+}
+
 #text {
     font-size: 24px;
     height: auto;

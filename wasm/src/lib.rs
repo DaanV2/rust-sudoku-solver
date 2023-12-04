@@ -1,9 +1,10 @@
 mod sudoku;
 
 use sudoku::cells::Cell;
-use sudoku_solver_lib::solvers::solver_manager;
+use sudoku_solver_lib::{generators::generators::Generator, solvers::solver_manager};
 use wasm_bindgen::prelude::*;
 
+/// Create a new empty grid.
 #[wasm_bindgen]
 pub fn new_grid() -> Vec<Cell> {
     let mut cells = Vec::new();
@@ -30,8 +31,9 @@ pub fn new_grid() -> Vec<Cell> {
     cells
 }
 
+/// Solve a grid.
 #[wasm_bindgen]
-pub fn solve_once(grid: Vec<Cell>) -> Vec<Cell> {
+pub fn solve_once(grid: Vec<i32>) -> Vec<Cell> {
     let grid = Cell::to_sudoku_grid(grid);
 
     let solver = solver_manager::SolverManager::new();
@@ -40,12 +42,68 @@ pub fn solve_once(grid: Vec<Cell>) -> Vec<Cell> {
     Cell::from_grid(result.grid)
 }
 
+/// Solve a sudoku grid.
 #[wasm_bindgen]
-pub fn solve(grid: Vec<Cell>) -> Vec<Cell> {
+pub fn solve(grid: Vec<i32>) -> Vec<Cell> {
     let grid = Cell::to_sudoku_grid(grid);
 
     let solver = solver_manager::SolverManager::new();
     let result = solver.solve(grid);
+    println!("Solved: {}", result);
 
     Cell::from_grid(result.grid)
+}
+
+/// Generate a new grid with a random seed and difficulty.
+#[wasm_bindgen]
+pub fn generate() -> Vec<Cell> {
+    let mut generator = Generator::new_random();
+
+    loop {
+        if let Some(grid) = generator.generate() {
+            let mut g = grid.clone();
+            generator.remove_cells(&mut g);
+
+            return Cell::from_grid(g);
+        }
+    }
+}
+
+/// Generate a new grid with a specific difficulty and seed. If the difficulty is 0, it will be a full grid.
+#[wasm_bindgen]
+pub fn generate_with(difficulty: i32, seed: u64) -> Vec<Cell> {
+    let mut generator = Generator::new_with_seed(seed);
+
+    loop {
+        if let Some(grid) = generator.generate() {
+            let mut g = grid.clone();
+
+            if difficulty != 0 {
+                generator.remove_cells_amount(&mut g, difficulty as usize);
+            }
+
+            return Cell::from_grid(g);
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::solve;
+
+    #[test]
+    pub fn test_solve() {
+        let input = vec![
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+
+        let output = solve(input);
+
+        for c in output.iter() {
+            println!("{:?}", c);
+            assert_ne!(c.value, 0);
+        }
+    }
 }

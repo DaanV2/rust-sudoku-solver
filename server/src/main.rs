@@ -19,19 +19,33 @@ async fn main() -> io::Result<()> {
         .unwrap();
 
     println!("Starting server at http://{}:{}/", host, port);
+
     HttpServer::new(|| {
-        App::new()
+        let mut app = App::new()
             .wrap(Logger::default())
             .wrap(Logger::new("%a %{User-Agent}i"))
             .service(routes::solver::solve)
             .service(routes::solver::solve_once)
-            .service(routes::solver::filled)
-            .service(
+            .service(routes::solver::filled);
+
+        // If environment is wasm, serve static files
+        if env::var("WASM").is_ok() {
+            app = app.service(
+                fs::Files::new("/", "./wasm/static/")
+                    .prefer_utf8(true)
+                    .show_files_listing()
+                    .index_file("index.html"),
+            );
+        } else {
+            app = app.service(
                 fs::Files::new("/", "./static/")
                     .prefer_utf8(true)
                     .show_files_listing()
                     .index_file("index.html"),
-            )
+            );
+        }
+
+        return app;
     })
     .bind((host, port))?
     .workers(4)
