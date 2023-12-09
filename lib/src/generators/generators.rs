@@ -52,7 +52,7 @@ impl<T: RngCore> Generator<T> {
                 result = self.solvers.solve_round(grid);
                 match result {
                     SolveResult::Error => {
-                        grid.set_cell(index, Cell::new());
+                        grid.set_cell(index, &Cell::new());
                     }
                     _ => {}
                 }
@@ -90,7 +90,7 @@ impl<T: RngCore> Generator<T> {
             let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set_cell(index, Cell::new());
+                grid.set_cell(index, &Cell::new());
                 removed += 1;
             }
         }

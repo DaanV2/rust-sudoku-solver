@@ -28,10 +28,14 @@ impl Solver for MarkSurvivor {
         for i in current.iter().rev() {
             let coord = current.get_coord(i);
             let cell = current.get_cell_at(coord);
-            if cell.get_count() != 1 {
+            if cell.is_determined() {
+                continue;
+            }
+            if cell.possible_count() != 1 {
                 continue;
             }
 
+            //If there is only one possible value, set it
             match cell.iter_possible().next() {
                 Some(mark) => {
                     current.place_value_at(coord, mark.to_value());

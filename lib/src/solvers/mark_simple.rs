@@ -102,7 +102,7 @@ mod test {
     fn test_at_coord(coord: Coord, mark: Mark) {
         let grid = &mut Grid::new();
 
-        grid.set_cell_at(coord, Cell::new_with_value(mark.to_value()));
+        grid.set_cell_at(coord, &Cell::new_with_value(mark.to_value()));
 
         println!("{}\n{}", get_url(&grid), utility::ascii_grid(&grid));
         let solver = super::MarkSimple::new();

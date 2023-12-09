@@ -24,7 +24,7 @@ mod test {
         let solver = SolverManager::new();
         let result = solver.solve_simple(grid);
 
-        let mut pos = Cell::new();
+        let pos = &mut Cell::new();
         pos.unset_possible(Mark::N9);
 
         // Col 2 should have no possible 9

@@ -102,7 +102,7 @@ impl MarkAreaCountInstance {
 
             self.data[i] = MarkAreaCountDataItem {
                 check: check,
-                cell: cell,
+                cell: cell.clone(),
                 coord,
             };
         }

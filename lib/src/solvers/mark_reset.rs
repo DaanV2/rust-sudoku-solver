@@ -24,7 +24,7 @@ impl Solver for MarkReset {
 
             // If the cell is not determined, then we need to reset the marks
             if !cell.is_determined() {
-                grid.set_cell(i, Cell::new());
+                grid.set_cell(i, &Cell::new());
             }
         }
 
@@ -44,17 +44,17 @@ mod test {
         let index = 12;
         let cell = Cell::new_with_value(0);
 
-        grid.set_cell(index, cell);
+        grid.set_cell(index, &cell);
 
         let original = grid.get_cell(index);
         //Checking it has been set properly
-        assert_eq!(original.get_count(), 0, "Cell should be empty");
+        assert_eq!(original.possible_count(), 0, "Cell should be empty");
 
         let solver = MarkReset::new();
         solver.solve(grid);
 
         //Checking it has been reset
         let set = grid.get_cell(index);
-        assert_eq!(set.get_count(), 9, "Cell should be set again");
+        assert_eq!(set.possible_count(), 9, "Cell should be set again");
     }
 }

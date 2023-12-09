@@ -105,7 +105,7 @@ impl Cell {
         return c;
     }
 
-    pub fn from_sudoku(c: sudoku_solver_lib::grid::cell::Cell) -> Cell {
+    pub fn from_sudoku(c: &sudoku_solver_lib::grid::cell::Cell) -> Cell {
         let mut cell = Cell::new();
 
         if c.is_determined() {

@@ -24,8 +24,9 @@ impl Solver for MarkShapes {
 
     fn solve(&self, grid: &mut Grid) -> SolveResult {
         for coord in Square::iter_coords() {
+            let square = grid.get_square_at(coord);
+
             for mark in Mark::iter() {
-                let square = grid.get_square_at(coord);
                 check_square(&square, grid, mark);
             }
         }
@@ -42,44 +43,90 @@ fn check_square(square: &Square, grid: &mut Grid, mark: Mark) {
     let mut col_1 = false;
     let mut col_2 = false;
 
-    let coord = square.get_coord(0);
-
     //Row 1
-    (row_0, col_0) = check_cell(grid, mark, coord.offset(0, 0), row_0, col_0);
-    (row_0, col_1) = check_cell(grid, mark, coord.offset(0, 1), row_0, col_1);
-    (row_0, col_2) = check_cell(grid, mark, coord.offset(0, 2), row_0, col_2);
+    (row_0, col_0) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 0, square.col + 0),
+        row_0,
+        col_0,
+    );
+    (row_0, col_1) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 0, square.col + 1),
+        row_0,
+        col_1,
+    );
+    (row_0, col_2) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 0, square.col + 2),
+        row_0,
+        col_2,
+    );
 
     //Row 2
-    (row_1, col_0) = check_cell(grid, mark, coord.offset(1, 0), row_1, col_0);
-    (row_1, col_1) = check_cell(grid, mark, coord.offset(1, 1), row_1, col_1);
-    (row_1, col_2) = check_cell(grid, mark, coord.offset(1, 2), row_1, col_2);
+    (row_1, col_0) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 1, square.col + 0),
+        row_1,
+        col_0,
+    );
+    (row_1, col_1) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 1, square.col + 1),
+        row_1,
+        col_1,
+    );
+    (row_1, col_2) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 1, square.col + 2),
+        row_1,
+        col_2,
+    );
 
     //Row 3
-    (row_2, col_0) = check_cell(grid, mark, coord.offset(2, 0), row_2, col_0);
-    (row_2, col_1) = check_cell(grid, mark, coord.offset(2, 1), row_2, col_1);
-    (row_2, col_2) = check_cell(grid, mark, coord.offset(2, 2), row_2, col_2);
+    (row_2, col_0) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 2, square.col + 0),
+        row_2,
+        col_0,
+    );
+    (row_2, col_1) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 2, square.col + 1),
+        row_2,
+        col_1,
+    );
+    (row_2, col_2) = check_cell(
+        grid,
+        mark,
+        Coord::new(square.row + 2, square.col + 2),
+        row_2,
+        col_2,
+    );
 
     //If a row is certain, mark off the other squares, and the other are not possible
-    let index = match (row_0, row_1, row_2) {
-        (true, false, false) => 0,
-        (false, true, false) => 1,
-        (false, false, true) => 2,
-        _ => -1,
+    match (row_0, row_1, row_2) {
+        (true, false, false) => mark_off_rows(square, grid, 0, mark),
+        (false, true, false) => mark_off_rows(square, grid, 1, mark),
+        (false, false, true) => mark_off_rows(square, grid, 2, mark),
+        _ => {}
     };
-    if index >= 0 {
-        mark_off_rows(square, grid, index as usize, mark);
-    }
 
     //If a col is certain, mark off the other squares, and the other are not possible
-    let index = match (col_0, col_1, col_2) {
-        (true, false, false) => 0,
-        (false, true, false) => 1,
-        (false, false, true) => 2,
-        _ => -1,
+    match (col_0, col_1, col_2) {
+        (true, false, false) => mark_off_columns(square, grid, 0, mark),
+        (false, true, false) => mark_off_columns(square, grid, 1, mark),
+        (false, false, true) => mark_off_columns(square, grid, 2, mark),
+        _ => {}
     };
-    if index >= 0 {
-        mark_off_columns(square, grid, index as usize, mark);
-    }
 }
 
 #[inline(always)]
@@ -98,7 +145,7 @@ fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     let row_data = grid.get_row(row_index);
 
     //Unset the row but not in the square
-    for index in row_data.iter() {
+    for index in row_data.iter().rev() {
         let c = row_data.get_coord(index);
         if square.is_column_in_square(c.get_col()) {
             continue;
@@ -116,7 +163,7 @@ fn mark_off_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
     let column = grid.get_column(col_index);
 
     //Unset the column but not in the square
-    for index in column.iter() {
+    for index in column.iter().rev() {
         let c = column.get_coord(index);
 
         if square.is_row_in_square(c.get_row()) {

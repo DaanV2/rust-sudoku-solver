@@ -36,22 +36,26 @@ impl Grid {
     }
 
     /// Retrieves the cell at the given index
-    pub fn get_cell(&self, index: usize) -> Cell {
-        return self.cells[index];
+    pub fn get_cell(&self, index: usize) -> &Cell {
+        unsafe {
+            return self.cells.get_unchecked(index);
+        }
     }
 
     /// Sets the cell at the given index
-    pub fn set_cell(&mut self, index: usize, cell: Cell) {
-        self.cells[index] = cell;
+    pub fn set_cell(&mut self, index: usize, cell: &Cell) {
+        unsafe {
+            cell.clone_into(self.cells.get_unchecked_mut(index));
+        }
     }
 
     /// Retrieves the cell at the given coordinate
-    pub fn get_cell_at(&self, coord: Coord) -> Cell {
+    pub fn get_cell_at(&self, coord: Coord) -> &Cell {
         self.get_cell(coord.get_index())
     }
 
     /// Sets the cell at the given coordinate
-    pub fn set_cell_at(&mut self, coord: Coord, cell: Cell) {
+    pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
         self.set_cell(coord.get_index(), cell);
     }
 
@@ -101,7 +105,7 @@ impl Grid {
         let mut new_cell = self.get_cell(index).clone();
         new_cell.set_possible(mark);
         if !new_cell.is_determined() {
-            self.set_cell(index, new_cell);
+            self.set_cell(index, &new_cell);
         }
     }
 
@@ -109,7 +113,7 @@ impl Grid {
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
         let mut new_cell = self.get_cell(index).clone();
         new_cell.unset_possible(mark);
-        self.set_cell(index, new_cell);
+        self.set_cell(index, &new_cell);
     }
 
     /// Iterates over all rows
@@ -153,7 +157,7 @@ impl Grid {
 
     #[inline(always)]
     pub fn place_value_at(&mut self, coord: Coord, value: usize) {
-        self.set_cell_at(coord, Cell::new_with_value(value));
+        self.set_cell_at(coord, &Cell::new_with_value(value));
 
         self.mark_off(coord);
     }
@@ -212,8 +216,11 @@ mod tests {
     use super::Grid;
     use crate::{
         grid::{
+            cell::Cell,
             cell_collection::CellCollection,
             constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+            coords::Coord,
+            mark::Mark,
         },
         test::util::general_tests,
     };
@@ -234,6 +241,20 @@ mod tests {
         let coord = grid.get_coord(index);
 
         assert_eq!(grid.get_cell(index), grid.get_cell_at(coord));
+    }
+
+    #[test]
+    fn cell_get_set() {
+        let mut grid = general_tests::filled_sudoku();
+        let index: usize = 64;
+        let mut c = Cell::new_with_value(9);
+        c.set_possible(Mark::N3);
+        c.set_possible(Mark::N4);
+
+        grid.set_cell(index, &c);
+        let t = grid.get_cell(index);
+
+        assert_eq!(t, &c);
     }
 
     #[test]
@@ -268,6 +289,52 @@ mod tests {
                 assert_eq!(cell, column_cell);
                 assert_eq!(coord.get_col(), col_index);
             }
+        }
+    }
+
+    #[test]
+    fn test_place() {
+        let mut grid = Grid::new();
+
+        let index = 64;
+        let coord = grid.get_coord(index);
+
+        grid.place_value_at(coord, 9);
+
+        assert_eq!(grid.get_cell_at(coord).get_value(), 9);
+
+        //Check row
+        for col in GRID_WIDTH_RANGE {
+            let at = Coord::new(coord.get_row(), col);
+            if at == coord {
+                continue;
+            }
+
+            let c = grid.get_cell_at(at);
+            assert_eq!(c.is_possible(Mark::N9), false);
+        }
+
+        //Check column
+        for row in GRID_HEIGHT_RANGE {
+            let at = Coord::new(row, coord.get_col());
+            if at == coord {
+                continue;
+            }
+
+            let c = grid.get_cell_at(at);
+            assert_eq!(c.is_possible(Mark::N9), false);
+        }
+
+        //Check square
+        let square = grid.get_square_at(coord);
+        for c in square.iter() {
+            let at = square.get_coord(c);
+            if at == coord {
+                continue;
+            }
+
+            let c = grid.get_cell_at(at);
+            assert_eq!(c.is_possible(Mark::N9), false);
         }
     }
 }

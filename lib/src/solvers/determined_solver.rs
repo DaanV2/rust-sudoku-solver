@@ -100,7 +100,7 @@ mod test {
         let index = 64;
         let coord = grid.get_coord(index);
 
-        let cell = grid.get_cell_at(coord);
+        let cell = grid.get_cell_at(coord).clone();
         let mut new_cell;
 
         if let Some(value) = cell.value() {
@@ -110,7 +110,7 @@ mod test {
             panic!("Cell should be determined");
         }
 
-        grid.set_cell_at(coord, new_cell);
+        grid.set_cell_at(coord, &new_cell);
 
         let solver = super::DeterminedSolver::new();
         let output = solver.solve(grid);
@@ -119,7 +119,7 @@ mod test {
 
         let check_cell = grid.get_cell_at(coord);
 
-        assert_eq!(check_cell, cell);
+        assert_eq!(check_cell, &cell);
     }
 
     #[test]

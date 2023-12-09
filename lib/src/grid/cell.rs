@@ -13,22 +13,24 @@ use super::mark::Mark;
 // 8 is possible = 0100 0000 0000 0000
 // 9 is possible = 1000 0000 0000 0000
 
+type InnerCell = u16;
+
 /// A cell in the grid
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Cell {
     /// 4 for bits for the value, the rest for the possibilities
-    data: u16,
+    data: InnerCell,
 }
 
 /// The default value for a cell, no value and all possibilities on
-const DEFAULT_CELL_VALUE: u16 = 0b1111_1111_1000_0000;
+const DEFAULT_CELL_VALUE: InnerCell = 0b1111_1111_1000_0000;
 
 /// The mask used to read / write the value
 const CELL_MASK: usize = 0b0000_0000_0000_1111;
 
 impl Cell {
     #[inline(always)]
-    fn possible_to_bit(value: usize) -> usize {
+    pub fn possible_to_bit(value: usize) -> usize {
         // 1 is possible = 0000 0000 1000 0000
 
         1 << (value + 6)
@@ -49,7 +51,9 @@ impl Cell {
     /// Creates a new cell with a value, and all possibilities off
     /// Assumes the value is between 1 and 9
     pub fn new_with_value(value: usize) -> Cell {
-        Cell { data: value as u16 }
+        Cell {
+            data: value as InnerCell,
+        }
     }
 
     /// Creates a new cell with a mark as a value, and all possibilities off
@@ -84,7 +88,7 @@ impl Cell {
     /// Stores the given value in the cell, sets all possibilities off
     /// Assumes the value is between 1 and 9
     pub fn set_value(&mut self, value: usize) {
-        self.data = value as u16;
+        self.data = value as InnerCell;
     }
 
     /// Returns the value of this cell
@@ -107,7 +111,7 @@ impl Cell {
         let v = value.to_data();
         let d = self.data as usize;
 
-        self.data = (d | v) as u16;
+        self.data = (d | v) as InnerCell;
     }
 
     /// Un sets the given value as possible for this cell
@@ -116,11 +120,11 @@ impl Cell {
         let v = value.to_data();
         let d = self.data as usize;
 
-        self.data = (d & !v) as u16;
+        self.data = (d & !v) as InnerCell;
     }
 
-    /// Returns the amount of possibilities for this cell
-    pub fn get_count(self) -> u32 {
+    /// Returns the amount of possibilities for this cell, assumes the cell is not determined
+    pub fn possible_count(self) -> u32 {
         self.data.count_ones()
     }
 
@@ -138,7 +142,7 @@ impl Cell {
 
             let index = value.trailing_zeros() as usize - 7;
             let mark = Mark::from_index(index);
-            let mask = mark as u16;
+            let mask = mark as InnerCell;
             value &= !(mask);
             Some(mark)
         })
@@ -179,34 +183,34 @@ mod test {
     pub fn test_get_count() {
         let mut cell = Cell::new();
 
-        assert_eq!(cell.get_count(), 9);
+        assert_eq!(cell.possible_count(), 9);
 
         cell.unset_possible(Mark::N1);
-        assert_eq!(cell.get_count(), 8);
+        assert_eq!(cell.possible_count(), 8);
 
         cell.unset_possible(Mark::N2);
-        assert_eq!(cell.get_count(), 7);
+        assert_eq!(cell.possible_count(), 7);
 
         cell.unset_possible(Mark::N3);
-        assert_eq!(cell.get_count(), 6);
+        assert_eq!(cell.possible_count(), 6);
 
         cell.unset_possible(Mark::N4);
-        assert_eq!(cell.get_count(), 5);
+        assert_eq!(cell.possible_count(), 5);
 
         cell.unset_possible(Mark::N5);
-        assert_eq!(cell.get_count(), 4);
+        assert_eq!(cell.possible_count(), 4);
 
         cell.unset_possible(Mark::N6);
-        assert_eq!(cell.get_count(), 3);
+        assert_eq!(cell.possible_count(), 3);
 
         cell.unset_possible(Mark::N7);
-        assert_eq!(cell.get_count(), 2);
+        assert_eq!(cell.possible_count(), 2);
 
         cell.unset_possible(Mark::N8);
-        assert_eq!(cell.get_count(), 1);
+        assert_eq!(cell.possible_count(), 1);
 
         cell.unset_possible(Mark::N9);
-        assert_eq!(cell.get_count(), 0);
+        assert_eq!(cell.possible_count(), 0);
     }
 
     #[test]

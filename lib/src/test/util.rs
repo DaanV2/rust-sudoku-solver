@@ -42,7 +42,7 @@ pub mod general_tests {
             let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set_cell(index, Cell::new());
+                grid.set_cell(index, &Cell::new());
                 removed += 1;
             }
         }
@@ -59,7 +59,7 @@ pub mod general_tests {
                 let mut c = Cell::new_with_value(0);
                 c.set_possible(mark);
 
-                grid.set_cell(i, c);
+                grid.set_cell(i, &c);
             }
         }
     }
