@@ -3,7 +3,7 @@ use crate::grid::{
     square::Square,
 };
 
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 /** A solver takes a mark and its areas, and counts and tries to eliminate other marks from that area */
 pub struct MarkAreaCount {}
@@ -23,11 +23,9 @@ impl Solver for MarkAreaCount {
         "Mark Area Count"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
         let instance = &mut MarkAreaCountInstance::new(*grid);
-        let result = instance.check_marks_area();
-
-        SolverResult::new(instance.grid, result)
+        instance.check_marks_area()
     }
 }
 

@@ -34,7 +34,7 @@ pub fn new_grid() -> Vec<Cell> {
 /// Solve a grid.
 #[wasm_bindgen]
 pub fn solve_once(grid: Vec<i32>) -> Vec<Cell> {
-    let grid = Cell::to_sudoku_grid(grid);
+    let grid = &mut Cell::to_sudoku_grid(grid);
 
     let solver = solver_manager::SolverManager::new();
     let result = solver.solve_simple(grid);

@@ -25,6 +25,12 @@ impl Grid {
         }
     }
 
+    pub fn empty() -> Grid {
+        Grid {
+            cells: [Cell::new_empty(); GRID_SIZE],
+        }
+    }
+
     pub fn from(cells: [Cell; GRID_SIZE]) -> Grid {
         Grid { cells: cells }
     }
@@ -131,6 +137,12 @@ impl Grid {
         }
 
         sum
+    }
+
+    pub fn clone_to(&self, to: &mut Grid) {
+        for index in self.iter() {
+            to.set_cell(index, self.get_cell(index));
+        }
     }
 
     #[inline(always)]

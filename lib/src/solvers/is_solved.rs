@@ -1,6 +1,6 @@
 use crate::grid::{cell_collection::CellCollection, grid::Grid};
 
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 pub struct IsSolved {}
 
@@ -19,7 +19,7 @@ impl Solver for IsSolved {
         "Is Solved"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
         let mut result = SolveResult::Solved;
 
         for i in grid.iter() {
@@ -32,9 +32,6 @@ impl Solver for IsSolved {
             }
         }
 
-        SolverResult {
-            result,
-            grid: *grid,
-        }
+        return result;
     }
 }

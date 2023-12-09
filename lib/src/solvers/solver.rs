@@ -5,7 +5,7 @@ use crate::grid::grid::Grid;
 pub trait Solver {
     fn name(&self) -> &'static str;
     /// Solves the given grid and returns the result.
-    fn solve(&self, grid: &Grid) -> SolverResult;
+    fn solve(&self, grid: &mut Grid) -> SolveResult;
 }
 
 #[derive(Debug, Clone, Copy)]

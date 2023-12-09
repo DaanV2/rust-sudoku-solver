@@ -2,7 +2,7 @@ use actix_web::{get, post, web::Json, HttpResponse};
 use sudoku_solver_lib::{
     grid::utility::utility::filled_sudoku,
     solvers::{
-        solver::{AnnotatedSolverResult, SolveResult, SolverResult},
+        solver::{AnnotatedSolverResult, SolveResult},
         solver_manager::SolverManager,
     },
 };
@@ -33,13 +33,12 @@ pub async fn solve_once(input: Json<GridInput>) -> HttpResponse {
     }
 
     println!("Solve once");
-    let grid = input.to_grid();
+    let grid = &mut input.to_grid();
     let solver = SolverManager::new();
-    let wrapped = SolverResult::nothing(grid);
-    let result = solver.solve_round(wrapped);
+    let result = solver.solve_round(grid);
     let annotated = AnnotatedSolverResult {
-        result: result.result,
-        grid: result.grid,
+        result: result,
+        grid: grid.clone(),
         iterations: 1,
     };
     let output = GridOutput::from_grid(annotated);

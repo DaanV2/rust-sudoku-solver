@@ -66,14 +66,13 @@ pub mod general_tests {
 
     /// Solves the grid with the given solvers
     pub fn process_through(grid: &Grid, solves: Vec<Box<dyn Solver>>) -> Grid {
-        let mut result = *grid;
+        let result = &mut grid.clone();
 
         for solver in solves {
-            let output = solver.solve(&result);
-            result = output.grid;
+            solver.solve(result);
         }
 
-        result
+        result.clone()
     }
 
     /// Returns a filled sudoku grid

@@ -7,7 +7,7 @@ mod test {
 
     #[test]
     fn test_possible_when_only_1_item_is_set() {
-        let grid = utility::parse_from_ascii(
+        let grid = &mut utility::parse_from_ascii(
             ". . . | . . . | . . .\n\
              . . . | . . . | . . .\n\
              . . . | . . . | . . .\n\
@@ -22,7 +22,7 @@ mod test {
         );
 
         let solver = SolverManager::new();
-        let result = solver.solve_simple(grid).grid;
+        let result = solver.solve_simple(grid);
 
         let mut pos = Cell::new();
         pos.unset_possible(Mark::N9);
@@ -30,7 +30,7 @@ mod test {
         // Col 2 should have no possible 9
         for r in 0..9 {
             let c = Coord::new(r, 1);
-            let cell = result.get_cell_at(c);
+            let cell = result.grid.get_cell_at(c);
             if cell.is_determined() {
                 continue;
             }
@@ -41,7 +41,7 @@ mod test {
         // Row 4 should have no possible 9
         for c in 0..9 {
             let c = Coord::new(4, c);
-            let cell = result.get_cell_at(c);
+            let cell = result.grid.get_cell_at(c);
             if cell.is_determined() {
                 continue;
             }
@@ -53,7 +53,7 @@ mod test {
         for r in 0..3 {
             for c in 0..3 {
                 let c = Coord::new(r + 3, c);
-                let cell = result.get_cell_at(c);
+                let cell = result.grid.get_cell_at(c);
                 if cell.is_determined() {
                     continue;
                 }

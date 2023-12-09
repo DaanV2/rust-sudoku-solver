@@ -1,6 +1,6 @@
 use crate::grid::{cell_collection::CellCollection, grid::Grid};
 
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 /** MarkSurvivor checks if a there is only one possibility left and turns that into a determined value */
 pub struct MarkSurvivor {}
@@ -20,7 +20,7 @@ impl Solver for MarkSurvivor {
         "Mark Shapes"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
         let mut current = grid.clone();
         let mut result = SolveResult::Nothing;
 
@@ -41,6 +41,6 @@ impl Solver for MarkSurvivor {
             }
         }
 
-        SolverResult::new(current, result)
+        result
     }
 }

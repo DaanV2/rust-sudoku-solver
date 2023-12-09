@@ -2,7 +2,7 @@ use crate::grid::{
     cell_collection::CellCollection, coords::Coord, grid::Grid, mark::Mark, square::Square,
 };
 
-use super::solver::{Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 /** Determines if a row or col in a square is certain reserved, if so, the other squares are marked off */
 pub struct MarkShapes {}
@@ -22,17 +22,15 @@ impl Solver for MarkShapes {
         "Mark Shapes"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
-        let current = &mut grid.clone();
-
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
         for coord in Square::iter_coords() {
             for mark in Mark::iter() {
-                let square = current.get_square_at(coord);
-                check_square(&square, current, mark);
+                let square = grid.get_square_at(coord);
+                check_square(&square, grid, mark);
             }
         }
 
-        SolverResult::nothing(*current)
+        SolveResult::Nothing
     }
 }
 
@@ -213,13 +211,13 @@ mod test {
         );
 
         let solver = MarkShapes::new();
-        let solved = solver.solve(processed).grid;
+        let solved = solver.solve(processed);
         println!("{}", solved);
 
         //Empty grids should still be possible for only 5
-        for index in solved.iter() {
-            let coord = solved.get_coord(index);
-            let c = solved.get_cell_at(coord);
+        for index in grid.iter() {
+            let coord = grid.get_coord(index);
+            let c = grid.get_cell_at(coord);
             if !c.is_determined() {
                 let p = c.is_possible(Mark::N5);
 
