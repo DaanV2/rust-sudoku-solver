@@ -51,7 +51,7 @@ impl GridInput {
         let max = min(self.cells.len(), constants::GRID_SIZE);
 
         for index in 0..max {
-            let v = self.cells[index] as usize;
+            let v = self.cells[index] as u16;
             let new_cell = &mut Cell::new();
 
             if v != 0 {

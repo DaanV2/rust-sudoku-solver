@@ -1,6 +1,6 @@
 use super::{cell_collection::CellCollection, grid::Grid, mark::Mark, slice::Slice};
 
-pub fn count_determine_value<T: CellCollection>(grid: &Grid, area: T, value: usize) -> usize {
+pub fn count_determine_value<T: CellCollection>(grid: &Grid, area: T, value: u16) -> usize {
     if area.max() == 9 {
         let s = Slice::from(grid, &area);
 
@@ -20,7 +20,7 @@ pub fn count_determine_value<T: CellCollection>(grid: &Grid, area: T, value: usi
     count
 }
 
-pub fn any_determined_value<T: CellCollection>(grid: &Grid, area: T, value: usize) -> bool {
+pub fn any_determined_value<T: CellCollection>(grid: &Grid, area: T, value: u16) -> bool {
     if area.max() == 9 {
         let s = Slice::from(grid, &area);
 

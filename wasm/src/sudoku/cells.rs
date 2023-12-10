@@ -49,7 +49,7 @@ impl Cell {
         }
 
         for (i, v) in cells.iter().enumerate() {
-            grid.place_value(i as usize, (*v) as usize);
+            grid.place_value(i as usize, (*v) as u16);
         }
 
         return grid;
@@ -69,7 +69,7 @@ impl Cell {
 
     pub fn to_sudoku(&self) -> sudoku_solver_lib::grid::cell::Cell {
         if self.value > 0 {
-            return sudoku_solver_lib::grid::cell::Cell::new_with_value(self.value as usize);
+            return sudoku_solver_lib::grid::cell::Cell::new_with_value(self.value as u16);
         }
 
         let mut c = sudoku_solver_lib::grid::cell::Cell::new_empty();

@@ -68,7 +68,7 @@ pub mod utility {
                 if char == '.' || char == '0' {
                     index += 1;
                 } else if let Some(value) = char.to_digit(10) {
-                    grid.place_value(index, value as usize);
+                    grid.place_value(index, value as u16);
                     index += 1;
                 }
             }

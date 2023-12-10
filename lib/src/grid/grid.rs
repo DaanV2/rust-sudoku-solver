@@ -37,6 +37,7 @@ impl Grid {
 
     /// Retrieves the cell at the given index
     pub fn get_cell(&self, index: usize) -> &Cell {
+        debug_assert_eq!(index < GRID_SIZE, true, "Index out of bounds");
         unsafe {
             return self.cells.get_unchecked(index);
         }
@@ -44,6 +45,7 @@ impl Grid {
 
     /// Sets the cell at the given index
     pub fn set_cell(&mut self, index: usize, cell: &Cell) {
+        debug_assert_eq!(index < GRID_SIZE, true, "Index out of bounds");
         unsafe {
             cell.clone_into(self.cells.get_unchecked_mut(index));
         }
@@ -150,13 +152,13 @@ impl Grid {
     }
 
     #[inline(always)]
-    pub fn place_value(&mut self, index: usize, value: usize) {
+    pub fn place_value(&mut self, index: usize, value: u16) {
         let coord = Coord::from_index(index);
         self.place_value_at(coord, value);
     }
 
     #[inline(always)]
-    pub fn place_value_at(&mut self, coord: Coord, value: usize) {
+    pub fn place_value_at(&mut self, coord: Coord, value: u16) {
         self.set_cell_at(coord, &Cell::new_with_value(value));
 
         self.mark_off(coord);
@@ -168,20 +170,47 @@ impl Grid {
         let (row, col) = coord.get_row_col();
 
         // Mark off row
-        for c in GRID_WIDTH_RANGE.rev() {
-            self.unset_possible_at(Coord::new(row, c), mark);
-        }
+        self.mark_off_row(row, mark);
+        self.mark_off_column(col, mark);
 
-        // Mark off column
-        for r in GRID_HEIGHT_RANGE.rev() {
-            self.unset_possible_at(Coord::new(r, col), mark);
-        }
-
-        // Mark off square
         let square = self.get_square_at(coord);
-        for c in square.iter().rev() {
-            self.unset_possible_at(square.get_coord(c), mark);
-        }
+        self.mark_off_square(square, mark);
+    }
+
+    pub fn mark_off_row(&mut self, row: usize, mark: Mark) {
+        self.unset_possible_at(Coord::new(row, 0), mark);
+        self.unset_possible_at(Coord::new(row, 1), mark);
+        self.unset_possible_at(Coord::new(row, 2), mark);
+        self.unset_possible_at(Coord::new(row, 3), mark);
+        self.unset_possible_at(Coord::new(row, 4), mark);
+        self.unset_possible_at(Coord::new(row, 5), mark);
+        self.unset_possible_at(Coord::new(row, 6), mark);
+        self.unset_possible_at(Coord::new(row, 7), mark);
+        self.unset_possible_at(Coord::new(row, 8), mark);
+    }
+
+    pub fn mark_off_column(&mut self, col: usize, mark: Mark) {
+        self.unset_possible_at(Coord::new(0, col), mark);
+        self.unset_possible_at(Coord::new(1, col), mark);
+        self.unset_possible_at(Coord::new(2, col), mark);
+        self.unset_possible_at(Coord::new(3, col), mark);
+        self.unset_possible_at(Coord::new(4, col), mark);
+        self.unset_possible_at(Coord::new(5, col), mark);
+        self.unset_possible_at(Coord::new(6, col), mark);
+        self.unset_possible_at(Coord::new(7, col), mark);
+        self.unset_possible_at(Coord::new(8, col), mark);
+    }
+
+    pub fn mark_off_square(&mut self, square: Square, mark: Mark) {
+        self.unset_possible_at(square.get_coord(0), mark);
+        self.unset_possible_at(square.get_coord(1), mark);
+        self.unset_possible_at(square.get_coord(2), mark);
+        self.unset_possible_at(square.get_coord(3), mark);
+        self.unset_possible_at(square.get_coord(4), mark);
+        self.unset_possible_at(square.get_coord(5), mark);
+        self.unset_possible_at(square.get_coord(6), mark);
+        self.unset_possible_at(square.get_coord(7), mark);
+        self.unset_possible_at(square.get_coord(8), mark);
     }
 }
 

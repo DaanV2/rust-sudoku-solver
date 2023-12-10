@@ -49,7 +49,7 @@ pub mod general_tests {
     }
 
     /// Removes a number from the grid
-    pub fn remove_number(grid: &mut Grid, number: usize) {
+    pub fn remove_number(grid: &mut Grid, number: u16) {
         let mark = Mark::from_value(number);
 
         //Reset all cells with nr 5 to empty

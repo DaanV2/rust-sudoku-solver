@@ -46,27 +46,27 @@ impl Mark {
     }
 
     // Returns the index of the given value
-    pub fn to_index(self) -> usize {
+    pub fn to_index(self) -> u16 {
         Mark::to_value(self) - 1
     }
 
     // Returns the value of the given index
-    pub fn from_index(index: usize) -> Mark {
+    pub fn from_index(index: u16) -> Mark {
         Mark::from_value(index + 1)
     }
 
-    pub fn to_value(self) -> usize {
-        ((self as usize).trailing_zeros() - 6) as usize
+    pub fn to_value(self) -> u16 {
+        ((self as usize).trailing_zeros() - 6) as u16
     }
 
-    pub fn from_value(value: usize) -> Mark {
+    pub fn from_value(value: u16) -> Mark {
         let v = (1 << (value + 6)) as usize;
         unsafe { std::mem::transmute(v) }
     }
 
     // Returns raw data of the mark
-    pub fn to_data(self) -> usize {
-        self as usize
+    pub fn to_data(self) -> u16 {
+        self as u16
     }
 }
 
@@ -92,7 +92,7 @@ mod tests {
             let mark2 = Mark::from_index(value);
 
             assert_eq!(mark2, mark);
-            assert_eq!(value, index);
+            assert_eq!(value, index as u16);
         }
     }
 
@@ -108,7 +108,7 @@ mod tests {
             let value = mark.to_value();
             let mark2 = Mark::from_value(value);
 
-            assert_eq!(value, index as usize + 1, "from mark to value");
+            assert_eq!(value, index as u16 + 1, "from mark to value");
             assert_eq!(mark2, mark, "from mark to mark");
         }
     }

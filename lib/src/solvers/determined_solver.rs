@@ -1,6 +1,6 @@
 use crate::grid::{
-    cell_collection::CellCollection, column::Column, grid::Grid, mark::Mark, row::Row,
-    slice::Slice, square::Square,
+    cell_collection::CellCollection, column::Column, grid::Grid, row::Row, slice::Slice,
+    square::Square,
 };
 
 use super::solver::{SolveResult, Solver};
@@ -62,15 +62,19 @@ impl Solver for DeterminedSolver {
 
 fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
     let slice = Slice::from(grid, area);
-    let mut determined = slice.count_determined();
+    let mut determined = slice.only_determined().count();
+    let or = slice.only_possible().or_all();
+
     if determined == 9 {
         return false;
     }
     let mut changed = false;
 
-    for mark in Mark::iter() {
-        let (index, count) = slice.search_count_possible(mark);
+    for mark in or.iter_possible() {
+        let p = slice.only_possible_value(mark);
+        let count = p.count();
         if count == 1 {
+            let index = p.first_possible(mark);
             let coord = area.get_coord(index);
             let value = mark.to_value();
             grid.place_value_at(coord, value);
@@ -97,7 +101,7 @@ mod test {
     fn test_can_solve() {
         let grid = &mut general_tests::filled_sudoku();
 
-        let index = 64;
+        let index = 2;
         let coord = grid.get_coord(index);
 
         let cell = grid.get_cell_at(coord).clone();
@@ -115,11 +119,10 @@ mod test {
         let solver = super::DeterminedSolver::new();
         let output = solver.solve(grid);
 
-        assert_eq!(output, SolveResult::Updated);
-
         let check_cell = grid.get_cell_at(coord);
 
         assert_eq!(check_cell, &cell);
+        assert_eq!(output, SolveResult::Updated);
     }
 
     #[test]
@@ -128,7 +131,6 @@ mod test {
 
         general_tests::remove_number(grid, 5);
 
-        println!("{}", grid);
         let solver = super::DeterminedSolver::new();
         let result = solver.solve(grid);
 
@@ -149,11 +151,7 @@ mod test {
         general_tests::remove_number(grid, 5);
         general_tests::remove_number(grid, 1);
 
-        println!("{}", grid);
-
         let result = super::DeterminedSolver::new().solve(grid);
-
-        println!("{}", grid);
 
         assert_eq!(result, SolveResult::Updated);
 

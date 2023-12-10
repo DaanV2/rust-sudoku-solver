@@ -1,7 +1,12 @@
+use std::{
+    fmt::Display,
+    ops::{BitAnd, BitOr},
+};
+
 use super::mark::Mark;
 
 // If the cell is determined, the value is stored here
-// 0000 0000 0000 vvvv
+// pppp pppp p000 vvvv
 // If the cell is not determined, the possibilities are stored the top
 // 1 is possible = 0000 0000 1000 0000
 // 2 is possible = 0000 0001 0000 0000
@@ -26,11 +31,12 @@ pub struct Cell {
 const DEFAULT_CELL_VALUE: InnerCell = 0b1111_1111_1000_0000;
 
 /// The mask used to read / write the value
-const CELL_MASK: usize = 0b0000_0000_0000_1111;
+const CELL_VALUE_MASK: InnerCell = 0b0000_0000_0000_1111;
+const CELL_POSSIBLE_MASK: InnerCell = DEFAULT_CELL_VALUE;
 
 impl Cell {
     #[inline(always)]
-    pub fn possible_to_bit(value: usize) -> usize {
+    pub const fn possible_to_bit(value: InnerCell) -> InnerCell {
         // 1 is possible = 0000 0000 1000 0000
 
         1 << (value + 6)
@@ -45,15 +51,13 @@ impl Cell {
 
     /// Creates a new cell with a value, and all possibilities off
     pub const fn new_empty() -> Cell {
-        Cell { data: 0 }
+        Cell::new_with_value(0)
     }
 
     /// Creates a new cell with a value, and all possibilities off
     /// Assumes the value is between 1 and 9
-    pub fn new_with_value(value: usize) -> Cell {
-        Cell {
-            data: value as InnerCell,
-        }
+    pub const fn new_with_value(data: InnerCell) -> Cell {
+        Cell { data }
     }
 
     /// Creates a new cell with a mark as a value, and all possibilities off
@@ -63,41 +67,47 @@ impl Cell {
         Self::new_with_value(v)
     }
 
+    /// Returns true if the cell is empty or not
+    pub fn is_empty(self) -> bool {
+        self.data == 0
+    }
+
     /// Returns true if the cell is determined or not
     pub fn is_determined(self) -> bool {
-        (self.data as usize & CELL_MASK) != 0
+        (self.data & CELL_VALUE_MASK) > 0
     }
 
     /// Returns true if the given value is possible for this cell
     pub fn is_possible(self, value: Mark) -> bool {
         let v = value.to_data();
-        let d = self.data as usize;
+        let d = self.data;
 
         d & v == v
     }
 
     /// Returns true if the given value is possible for this cell
     /// Assumes the value is between 1 and 9
-    pub fn is_possible_value(self, value: usize) -> bool {
+    pub fn is_possible_value(self, value: InnerCell) -> bool {
         let b = Cell::possible_to_bit(value);
-        let d = self.data as usize;
+        let d = self.data;
 
         d & b == b
     }
 
     /// Stores the given value in the cell, sets all possibilities off
     /// Assumes the value is between 1 and 9
-    pub fn set_value(&mut self, value: usize) {
+    pub fn set_value(&mut self, value: u16) {
         self.data = value as InnerCell;
     }
 
     /// Returns the value of this cell
     /// Assumes the cell is determined
-    pub fn get_value(self) -> usize {
-        self.data as usize
+    pub fn get_value(self) -> u16 {
+        self.data
     }
 
-    pub fn value(self) -> Option<usize> {
+    /// Returns the value of this cell, if determined
+    pub fn value(self) -> Option<u16> {
         if self.is_determined() {
             Some(self.get_value())
         } else {
@@ -109,7 +119,7 @@ impl Cell {
     /// Assumes the value is between 1 and 9 and the cell is not determined
     pub fn set_possible(&mut self, value: Mark) {
         let v = value.to_data();
-        let d = self.data as usize;
+        let d = self.data;
 
         self.data = (d | v) as InnerCell;
     }
@@ -118,7 +128,7 @@ impl Cell {
     /// Assumes the value is between 1 and 9 and the cell is not determined
     pub fn unset_possible(&mut self, value: Mark) {
         let v = value.to_data();
-        let d = self.data as usize;
+        let d = self.data;
 
         self.data = (d & !v) as InnerCell;
     }
@@ -126,6 +136,16 @@ impl Cell {
     /// Returns the amount of possibilities for this cell, assumes the cell is not determined
     pub fn possible_count(self) -> u32 {
         self.data.count_ones()
+    }
+
+    /// Filters all possibilities from this cell, removing the value
+    pub fn only_possible(&self) -> Self {
+        self.clone() & Cell::new_with_value(CELL_POSSIBLE_MASK)
+    }
+
+    /// Filters out all possibilities from this cell, keeping the value
+    pub fn only_determined(&self) -> Self {
+        self.clone() & Cell::new_with_value(CELL_VALUE_MASK)
     }
 
     /// Iterates over all possible values for this cell
@@ -140,7 +160,7 @@ impl Cell {
                 return None;
             }
 
-            let index = value.trailing_zeros() as usize - 7;
+            let index = value.trailing_zeros() as u16 - 7;
             let mark = Mark::from_index(index);
             let mask = mark as InnerCell;
             value &= !(mask);
@@ -155,9 +175,42 @@ impl Default for Cell {
     }
 }
 
+impl BitOr for Cell {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Cell {
+            data: self.data | rhs.data,
+        }
+    }
+}
+
+impl BitAnd for Cell {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Cell {
+            data: self.data & rhs.data,
+        }
+    }
+}
+
+impl Display for Cell {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[")?;
+
+        for mark in self.only_possible().iter_possible() {
+            write!(f, "{}", mark)?;
+        }
+        write!(f, ",")?;
+        write!(f, "{}", self.only_determined().get_value())?;
+        write!(f, "]")
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::grid::mark::Mark;
+    use crate::grid::{cell::CELL_VALUE_MASK, mark::Mark};
 
     use super::Cell;
 
@@ -237,7 +290,7 @@ mod test {
             let cell = Cell::new_with_value(i);
 
             assert!(cell.is_determined());
-            assert_eq!(cell.get_value(), i);
+            assert_eq!(cell.get_value(), i as u16);
         }
     }
 
@@ -252,5 +305,37 @@ mod test {
             assert!(cell.is_possible(mark));
             assert!(!cell.is_determined());
         }
+    }
+
+    #[test]
+    pub fn test_bit_or() {
+        let c1 = Cell::new();
+        let c2 = Cell::new_with_value(3);
+
+        let c3 = c1 | c2;
+
+        assert_eq!(c3.get_value() & (CELL_VALUE_MASK as u16), 3);
+        assert!(c3.is_possible(Mark::N1), "1");
+        assert!(c3.is_possible(Mark::N2), "2");
+        assert!(c3.is_possible(Mark::N3), "3");
+        assert!(c3.is_possible(Mark::N4), "4");
+        assert!(c3.is_possible(Mark::N5), "5");
+        assert!(c3.is_possible(Mark::N6), "6");
+        assert!(c3.is_possible(Mark::N7), "7");
+        assert!(c3.is_possible(Mark::N8), "8");
+        assert!(c3.is_possible(Mark::N9), "9");
+    }
+
+    #[test]
+    pub fn test_bit_or2() {
+        let mut c1 = Cell::new_empty();
+        c1.set_possible(Mark::N1);
+        let mut c2 = Cell::new_empty();
+        c2.set_possible(Mark::N9);
+
+        let c3 = c1 | c2;
+
+        assert!(c3.is_possible(Mark::N1), "1");
+        assert!(c3.is_possible(Mark::N9), "9");
     }
 }

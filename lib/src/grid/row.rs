@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::{
     cell_collection::CellCollection, constants::GRID_HEIGHT, coords::Coord, square::Square,
 };
@@ -27,8 +29,8 @@ impl Row {
 }
 
 impl CellCollection for Row {
-    fn get_coord(&self, index: usize) -> Coord {
-        Coord::new(self.row, index)
+    fn get_coord(&self, col: usize) -> Coord {
+        Coord::new(self.row, col)
     }
 
     fn iter(&self) -> std::ops::Range<usize> {
@@ -37,6 +39,12 @@ impl CellCollection for Row {
 
     fn max(&self) -> usize {
         GRID_HEIGHT
+    }
+}
+
+impl Display for Row {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[Row {}]", self.row)
     }
 }
 

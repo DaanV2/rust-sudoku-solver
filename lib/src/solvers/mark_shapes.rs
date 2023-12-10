@@ -1,5 +1,6 @@
 use crate::grid::{
-    cell_collection::CellCollection, coords::Coord, grid::Grid, mark::Mark, square::Square,
+    cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark, slice::Slice,
+    square::Square,
 };
 
 use super::solver::{SolveResult, Solver};
@@ -15,6 +16,52 @@ impl MarkShapes {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
+
+    pub fn solve_square(&self, grid: &mut Grid, square: &Square) {
+        let s: Slice = Slice::from(grid, square);
+
+        // Rows
+        let row_0 = or_cells(&s, index(0, 0), index(0, 1), index(0, 2));
+        let row_1 = or_cells(&s, index(1, 0), index(1, 1), index(1, 2));
+        let row_2 = or_cells(&s, index(2, 0), index(2, 1), index(2, 2));
+
+        // Columns
+        let col_0 = or_cells(&s, index(0, 0), index(1, 0), index(2, 0));
+        let col_1 = or_cells(&s, index(0, 1), index(1, 1), index(2, 1));
+        let col_2 = or_cells(&s, index(0, 2), index(1, 2), index(2, 2));
+
+        let or = row_0 | row_1 | row_2 | col_0 | col_1 | col_2;
+
+        for mark in or.only_possible().iter_possible() {
+            //If a row is certain, mark off the other squares, and the other are not possible
+            if let Some(index) = match (
+                row_0.is_possible(mark),
+                row_1.is_possible(mark),
+                row_2.is_possible(mark),
+            ) {
+                (true, false, false) => Some(0),
+                (false, true, false) => Some(1),
+                (false, false, true) => Some(2),
+                _ => None,
+            } {
+                mark_off_rows(&square, grid, index, mark);
+            }
+
+            //If a col is certain, mark off the other squares, and the other are not possible
+            if let Some(index) = match (
+                col_0.is_possible(mark),
+                col_1.is_possible(mark),
+                col_2.is_possible(mark),
+            ) {
+                (true, false, false) => Some(0),
+                (false, true, false) => Some(1),
+                (false, false, true) => Some(2),
+                _ => None,
+            } {
+                mark_off_columns(&square, grid, index, mark);
+            }
+        }
+    }
 }
 
 impl Solver for MarkShapes {
@@ -23,118 +70,22 @@ impl Solver for MarkShapes {
     }
 
     fn solve(&self, grid: &mut Grid) -> SolveResult {
-        for coord in Square::iter_coords() {
-            let square = grid.get_square_at(coord);
-
-            for mark in Mark::iter() {
-                check_square(&square, grid, mark);
-            }
+        for square in Square::iter_squares() {
+            self.solve_square(grid, &square);
         }
 
         SolveResult::Nothing
     }
 }
 
-fn check_square(square: &Square, grid: &mut Grid, mark: Mark) {
-    let mut row_0 = false;
-    let mut row_1 = false;
-    let mut row_2 = false;
-    let mut col_0 = false;
-    let mut col_1 = false;
-    let mut col_2 = false;
-
-    //Row 1
-    (row_0, col_0) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 0, square.col + 0),
-        row_0,
-        col_0,
-    );
-    (row_0, col_1) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 0, square.col + 1),
-        row_0,
-        col_1,
-    );
-    (row_0, col_2) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 0, square.col + 2),
-        row_0,
-        col_2,
-    );
-
-    //Row 2
-    (row_1, col_0) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 1, square.col + 0),
-        row_1,
-        col_0,
-    );
-    (row_1, col_1) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 1, square.col + 1),
-        row_1,
-        col_1,
-    );
-    (row_1, col_2) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 1, square.col + 2),
-        row_1,
-        col_2,
-    );
-
-    //Row 3
-    (row_2, col_0) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 2, square.col + 0),
-        row_2,
-        col_0,
-    );
-    (row_2, col_1) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 2, square.col + 1),
-        row_2,
-        col_1,
-    );
-    (row_2, col_2) = check_cell(
-        grid,
-        mark,
-        Coord::new(square.row + 2, square.col + 2),
-        row_2,
-        col_2,
-    );
-
-    //If a row is certain, mark off the other squares, and the other are not possible
-    match (row_0, row_1, row_2) {
-        (true, false, false) => mark_off_rows(square, grid, 0, mark),
-        (false, true, false) => mark_off_rows(square, grid, 1, mark),
-        (false, false, true) => mark_off_rows(square, grid, 2, mark),
-        _ => {}
-    };
-
-    //If a col is certain, mark off the other squares, and the other are not possible
-    match (col_0, col_1, col_2) {
-        (true, false, false) => mark_off_columns(square, grid, 0, mark),
-        (false, true, false) => mark_off_columns(square, grid, 1, mark),
-        (false, false, true) => mark_off_columns(square, grid, 2, mark),
-        _ => {}
-    };
+#[inline(always)]
+fn index(row: usize, col: usize) -> usize {
+    row * 3 + col
 }
 
 #[inline(always)]
-fn check_cell(grid: &Grid, mark: Mark, coord: Coord, row: bool, col: bool) -> (bool, bool) {
-    let cell = grid.get_cell_at(coord);
-    let p = cell.is_possible(mark);
-
-    (row | p, col | p)
+fn or_cells(slice: &Slice, c1: usize, c2: usize, c3: usize) -> Cell {
+    slice.cells[c1] | slice.cells[c2] | slice.cells[c3]
 }
 
 /// Marks off the rows except for the square
@@ -144,13 +95,14 @@ fn mark_off_rows(square: &Square, grid: &mut Grid, row: usize, mark: Mark) {
     let row_index = row_start + row;
     let row_data = grid.get_row(row_index);
 
+    let skip = square.col..(square.col + 3);
+
     //Unset the row but not in the square
-    for index in row_data.iter().rev() {
-        let c = row_data.get_coord(index);
-        if square.is_column_in_square(c.get_col()) {
+    for col in row_data.iter() {
+        if skip.contains(&col) {
             continue;
         }
-
+        let c = row_data.get_coord(col);
         grid.unset_possible_at(c, mark)
     }
 }
@@ -162,14 +114,14 @@ fn mark_off_columns(square: &Square, grid: &mut Grid, col: usize, mark: Mark) {
     let col_index = col_start + col;
     let column = grid.get_column(col_index);
 
-    //Unset the column but not in the square
-    for index in column.iter().rev() {
-        let c = column.get_coord(index);
+    let skip = square.row..(square.row + 3);
 
-        if square.is_row_in_square(c.get_row()) {
+    //Unset the column but not in the square
+    for row in column.iter() {
+        if skip.contains(&row) {
             continue;
         }
-
+        let c = column.get_coord(row);
         grid.unset_possible_at(c, mark)
     }
 }
@@ -180,7 +132,7 @@ mod test {
 
     use super::*;
     use crate::{
-        grid::utility::utility,
+        grid::{coords::Coord, utility::utility},
         solvers::{mark_reset::MarkReset, mark_simple::MarkSimple},
         test::util::general_tests,
     };
@@ -193,6 +145,51 @@ mod test {
             . . . | 1 2 3 | . . .
             ",
         );
+    }
+
+    #[test]
+    fn test_simple_square() {
+        let square = Square::new(0, 3);
+        let mut grid = base_grid();
+
+        //Run through the basics
+        grid = general_tests::process_through(
+            &mut grid,
+            vec![MarkReset::new_box(), MarkSimple::new_box()],
+        );
+
+        let solver = MarkShapes::new();
+        solver.solve_square(&mut grid, &square);
+
+        //Top row in the middle should not have 4 5 6
+        for c in 0..3 {
+            let coord = Coord::new(0, c + 3);
+            let cell = grid.get_cell_at(coord);
+
+            assert!(cell.is_possible(Mark::N4), "Cell is not still possible: 4");
+            assert!(cell.is_possible(Mark::N5), "Cell is not still possible: 5");
+            assert!(cell.is_possible(Mark::N6), "Cell is not still possible: 6");
+        }
+
+        let s = Slice::from(&grid, &grid.get_row(0));
+        println!("Slice: {}", s);
+
+        //First and last 3 should not have 4 5 6
+        for c in 0..3 {
+            let cell = s.cells[c];
+
+            assert!(!cell.is_possible(Mark::N4), "Cell is still possible: 4");
+            assert!(!cell.is_possible(Mark::N5), "Cell is still possible: 5");
+            assert!(!cell.is_possible(Mark::N6), "Cell is still possible: 6");
+        }
+
+        for c in 6..9 {
+            let cell = s.cells[c];
+
+            assert!(!cell.is_possible(Mark::N4), "Cell is still possible: 4");
+            assert!(!cell.is_possible(Mark::N5), "Cell is still possible: 5");
+            assert!(!cell.is_possible(Mark::N6), "Cell is still possible: 6");
+        }
     }
 
     #[test]
@@ -213,9 +210,12 @@ mod test {
         for c in 0..3 {
             let coord = Coord::new(0, c);
             let cell = grid.get_cell_at(coord);
-            assert!(!cell.is_possible(Mark::N4));
-            assert!(!cell.is_possible(Mark::N5));
-            assert!(!cell.is_possible(Mark::N6));
+
+            println!("Cell: {}", cell);
+
+            assert!(!cell.is_possible(Mark::N4), "Cell is still possible: 4");
+            assert!(!cell.is_possible(Mark::N5), "Cell is still possible: 5");
+            assert!(!cell.is_possible(Mark::N6), "Cell is still possible: 6");
         }
 
         //Top row should not have 4, 5 6

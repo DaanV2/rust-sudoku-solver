@@ -56,4 +56,35 @@ impl DataPoint {
     pub fn csv_headers() -> String {
         "size,generation_time,solve_time,generation_time_per,solve_time_per,iterations,solved,nothing,error,updated".to_string()
     }
+
+    pub fn avg(points: Vec<DataPoint>) -> DataPoint {
+        let mut avg = DataPoint::empty();
+        let size = points.len();
+
+        for point in points {
+            avg.updated += point.updated;
+            avg.solved += point.solved;
+            avg.solve_time += point.solve_time;
+            avg.solve_time_per += point.solve_time_per;
+            avg.size += point.size;
+            avg.nothing += point.nothing;
+            avg.iterations += point.iterations;
+            avg.generation_time += point.generation_time;
+            avg.generation_time_per += point.generation_time_per;
+            avg.error += point.error;
+        }
+
+        avg.updated /= size;
+        avg.solved /= size;
+        avg.solve_time /= size as u128;
+        avg.solve_time_per /= size as u128;
+        avg.size /= size;
+        avg.nothing /= size;
+        avg.iterations /= size;
+        avg.generation_time /= size as u128;
+        avg.generation_time_per /= size as u128;
+        avg.error /= size;
+
+        avg
+    }
 }

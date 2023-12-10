@@ -125,7 +125,7 @@ pub fn is_valid_area<T: CellCollection>(grid: &Grid, area: T) -> bool {
         let cell = slice.cells[index];
 
         if let Some(v) = cell.value() {
-            determined.set_bit(v);
+            determined.set_bit(v as usize);
         } else {
             let f = Flags16::from(cell);
             possible = possible | f;

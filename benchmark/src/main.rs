@@ -24,12 +24,15 @@ fn main() {
     let mut csv = String::new();
     csv.push_str(&DataPoint::csv_headers());
     csv.push('\n');
-    for point in points {
+    for point in points.iter() {
         csv.push_str(&point.to_csv());
         csv.push('\n');
     }
 
     std::fs::write("run.csv", csv).expect("Unable to write file");
+
+    let avg = DataPoint::avg(points);
+    println!("Average:\n{}", avg.to_csv());
 }
 
 #[allow(dead_code)]

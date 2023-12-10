@@ -9,7 +9,7 @@ mod test {
         }
     }
 
-    fn test_missing_specific_number(number: usize) {
+    fn test_missing_specific_number(number: u16) {
         println!("Testing missing number {}", number);
         let mut grid = general_tests::filled_sudoku();
 

@@ -25,7 +25,7 @@ impl Solver for MarkSurvivor {
         let mut result = SolveResult::Nothing;
 
         //Loop through all the cells
-        for i in current.iter().rev() {
+        for i in current.iter() {
             let coord = current.get_coord(i);
             let cell = current.get_cell_at(coord);
             if cell.is_determined() {

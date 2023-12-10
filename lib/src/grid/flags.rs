@@ -12,12 +12,12 @@ impl Flags16 {
     }
 
     pub fn set_bit(&mut self, index: usize) {
-        let bit = Cell::possible_to_bit(index) as u16;
+        let bit = Cell::possible_to_bit(index as u16);
         self.flags |= bit;
     }
 
     pub fn get_bit(&self, index: usize) -> bool {
-        let bit = Cell::possible_to_bit(index) as u16;
+        let bit = Cell::possible_to_bit(index as u16);
         self.flags & bit == bit
     }
 
