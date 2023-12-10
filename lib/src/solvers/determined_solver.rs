@@ -1,6 +1,6 @@
 use crate::grid::{
-    cell_collection::CellCollection, column::Column, constants::GRID_SIZE, coords::Coord,
-    grid::Grid, row::Row, slice::Slice, square::Square,
+    cell_collection::CellCollection, column::Column, grid::Grid, row::Row, slice::Slice,
+    square::Square,
 };
 
 use super::solver::{SolveResult, Solver};
@@ -19,73 +19,59 @@ impl DeterminedSolver {
     }
 }
 
-struct Change {
-    pub coord: Coord,
-    pub value: u16,
-}
-
 impl Solver for DeterminedSolver {
     fn name(&self) -> &'static str {
         "Determined Solver"
     }
 
     fn solve(&self, grid: &mut Grid) -> SolveResult {
-        let changes = &mut Vec::<Change>::with_capacity(GRID_SIZE);
+        let mut changed = false;
 
         // Check rows
         for row in Row::iter_row() {
-            set_if_possible_area(changes, grid, &row);
+            changed |= set_if_possible_area(grid, &row);
         }
 
         // Check columns
         for col in Column::iter_col() {
-            set_if_possible_area(changes, grid, &col);
+            changed |= set_if_possible_area(grid, &col);
         }
 
         // Check squares
         for sq in Square::iter_squares() {
-            set_if_possible_area(changes, grid, &sq);
+            changed |= set_if_possible_area(grid, &sq);
         }
 
-        // for index in current.iter() {
-        //     let coord = current.get_coord(index);
-        //     let cell = current.get_cell_at(coord);
-        //     if cell.is_determined() {
-        //         continue;
-        //     }
-        //     if set_if_possible_all(current, cell, coord) {
-        //         result = SolveResult::Updated;
-        //     }
-        // }
-        for change in changes.iter() {
-            grid.place_value_at(change.coord, change.value);
-        }
-
-        return match changes.len() {
-            0 => SolveResult::Nothing,
+        return match changed {
+            false => SolveResult::Nothing,
             _ => SolveResult::Updated,
         };
     }
 }
 
 #[inline(always)]
-fn set_if_possible_area<T: CellCollection>(vecs: &mut Vec<Change>, grid: &mut Grid, area: &T) {
+fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
     let slice: Slice = Slice::from(grid, area);
     let determined = slice.only_determined().count();
 
     if determined == 9 {
-        return;
+        return false;
     }
     let or = slice.or_all().only_possible();
+    let mut changed = false;
 
     for mark in or.iter_possible() {
         let (index, count) = slice.search_count_possible(mark);
         if count == 1 {
             let coord = area.get_coord(index);
             let value = mark.to_value();
-            vecs.push(Change { coord, value });
+            changed = true;
+
+            grid.place_value_at(coord, value);
         }
     }
+
+    return changed;
 }
 
 #[cfg(test)]

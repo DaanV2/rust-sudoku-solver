@@ -15,7 +15,7 @@ const SIZE: usize = 5000;
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..10 {
+    for _ in 0..1 {
         let point = run_random_test(SIZE);
         points.push(point);
     }
