@@ -1,5 +1,11 @@
 use super::{
-    solver::{AnnotatedSolverResult, SolveResult, Solver},
+    determined_solver::DeterminedSolver,
+    is_solved::IsSolved,
+    mark_reset::MarkReset,
+    mark_shapes::MarkShapes,
+    mark_simple::MarkSimple,
+    mark_survivor::MarkSurvivor,
+    solver::{AnnotatedSolverResult, SolveResult},
     validator::is_valid,
 };
 use crate::grid::{cell_collection::CellCollection, grid::Grid};
@@ -18,14 +24,6 @@ impl SolverManagerConfig {
 
 pub struct SolverManager {
     pub config: SolverManagerConfig,
-
-    determined_solver: super::determined_solver::DeterminedSolver,
-    is_solved: super::is_solved::IsSolved,
-    mark_area_count: super::mark_area_count::MarkAreaCount,
-    mark_reset: super::mark_reset::MarkReset,
-    mark_shapes: super::mark_shapes::MarkShapes,
-    mark_simple: super::mark_simple::MarkSimple,
-    mark_survivor: super::mark_survivor::MarkSurvivor,
 }
 
 impl SolverManager {
@@ -38,44 +36,35 @@ impl SolverManager {
 
     /// Creates a new solver manager with the given config
     pub fn new_with_config(config: SolverManagerConfig) -> Self {
-        Self {
-            config: config,
-            determined_solver: super::determined_solver::DeterminedSolver::new(),
-            is_solved: super::is_solved::IsSolved::new(),
-            mark_area_count: super::mark_area_count::MarkAreaCount::new(),
-            mark_reset: super::mark_reset::MarkReset::new(),
-            mark_shapes: super::mark_shapes::MarkShapes::new(),
-            mark_simple: super::mark_simple::MarkSimple::new(),
-            mark_survivor: super::mark_survivor::MarkSurvivor::new(),
-        }
+        Self { config }
     }
 
     pub fn pre_solve(&self, grid: &mut Grid) -> SolveResult {
-        self.mark_reset.solve(grid)
+        if MarkReset::solve(grid) == SolveResult::Solved {
+            return SolveResult::Solved;
+        }
+
+        MarkSimple::solve(grid)
     }
 
     pub fn solve_round(&self, grid: &mut Grid) -> SolveResult {
         //Markers
-        if self.mark_simple.solve(grid) == SolveResult::Solved {
+
+        if MarkShapes::solve(grid) == SolveResult::Solved {
             return SolveResult::Solved;
         }
-        if self.mark_shapes.solve(grid) == SolveResult::Solved {
-            return SolveResult::Solved;
-        }
-        if self.mark_area_count.solve(grid) == SolveResult::Solved {
-            return SolveResult::Solved;
-        }
+        // if MarkAreaCount::solve(grid) == SolveResult::Solved {
+        //     return SolveResult::Solved;
+        // }
         // Solvers
-        if self.mark_survivor.solve(grid) == SolveResult::Solved {
+        if MarkSurvivor::solve(grid) == SolveResult::Solved {
             return SolveResult::Solved;
         }
-        if self.determined_solver.solve(grid) == SolveResult::Solved {
+        if DeterminedSolver::solve(grid) == SolveResult::Solved {
             return SolveResult::Solved;
         }
         //Finalizers
-        let result = self.is_solved.solve(grid);
-
-        return result;
+        IsSolved::solve(grid)
     }
 
     pub fn solve(&self, grid: Grid) -> AnnotatedSolverResult {

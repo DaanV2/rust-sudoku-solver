@@ -24,7 +24,11 @@ impl Row {
     }
 
     pub fn iter_row() -> impl Iterator<Item = Row> {
-        (0..GRID_HEIGHT).map(|i| Row::new(i))
+        (0..Row::max()).map(|i| Row::new(i))
+    }
+
+    pub fn max() -> usize {
+        GRID_HEIGHT
     }
 }
 
@@ -34,11 +38,11 @@ impl CellCollection for Row {
     }
 
     fn iter(&self) -> std::ops::Range<usize> {
-        0..GRID_HEIGHT
+        0..Row::max()
     }
 
     fn max(&self) -> usize {
-        GRID_HEIGHT
+        Row::max()
     }
 }
 

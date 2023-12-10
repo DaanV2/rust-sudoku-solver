@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::BitOr};
 
 use super::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark};
 
@@ -12,6 +12,20 @@ impl Slice {
         Slice {
             items: [Cell::new_empty(); 9],
         }
+    }
+
+    pub fn from<T: CellCollection>(grid: &Grid, area: &T) -> Slice {
+        if area.max() != 9 {
+            panic!("Slice must be of size 9");
+        }
+        let mut slice = Slice::new();
+
+        for i in area.iter() {
+            let coord = area.get_coord(i);
+            slice.items[i] = grid.get_cell_at(coord).clone()
+        }
+
+        slice
     }
 
     /// Returns the number of cells that are not empty
@@ -84,20 +98,6 @@ impl Slice {
         }
 
         count
-    }
-
-    pub fn from<T: CellCollection>(grid: &Grid, area: &T) -> Slice {
-        if area.max() != 9 {
-            panic!("Slice must be of size 9");
-        }
-        let mut slice = Slice::new();
-
-        for i in area.iter() {
-            let coord = area.get_coord(i);
-            slice.items[i] = grid.get_cell_at(coord).clone()
-        }
-
-        slice
     }
 
     /// Returns the first index of a cell that is possible for the given mark, assumes there is at least one
@@ -229,6 +229,20 @@ impl Display for Slice {
     }
 }
 
+impl BitOr for Slice {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        let mut slice = Slice::new();
+
+        for i in slice.iter() {
+            slice.items[i] = self.items[i] | rhs.items[i];
+        }
+
+        slice
+    }
+}
+
 pub struct SliceValue {
     pub items: [u8; 9],
 }
@@ -240,6 +254,26 @@ impl SliceValue {
 
     pub fn iter(&self) -> std::ops::Range<usize> {
         0..self.items.len()
+    }
+
+    pub fn any(&self) -> bool {
+        for i in self.iter() {
+            if self.items[i] != 0 {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    pub fn all(&self) -> bool {
+        for i in self.iter() {
+            if self.items[i] == 0 {
+                return false;
+            }
+        }
+
+        true
     }
 
     pub fn count(&self) -> usize {
@@ -267,9 +301,26 @@ impl SliceValue {
     }
 }
 
+impl BitOr for SliceValue {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        let mut slice = SliceValue::new();
+
+        for i in slice.iter() {
+            slice.items[i] = self.items[i] | rhs.items[i];
+        }
+
+        slice
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::grid::{cell::Cell, mark::Mark};
+    use crate::{
+        grid::{cell::Cell, coords::Coord, mark::Mark},
+        test::util::general_tests,
+    };
 
     use super::Slice;
 
@@ -281,6 +332,21 @@ mod tests {
         }
 
         s
+    }
+
+    #[test]
+    pub fn test_from() {
+        let grid = general_tests::filled_sudoku();
+
+        let s = Slice::from(&grid, &grid.get_row(0));
+        for i in s.iter() {
+            assert_eq!(s.items[i], *grid.get_cell_at(Coord::new(0, i)));
+        }
+
+        let s = Slice::from(&grid, &grid.get_column(0));
+        for i in s.iter() {
+            assert_eq!(s.items[i], *grid.get_cell_at(Coord::new(i, 0)));
+        }
     }
 
     #[test]

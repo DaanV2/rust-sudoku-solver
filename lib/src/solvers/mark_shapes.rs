@@ -17,7 +17,15 @@ impl MarkShapes {
         Box::new(Self::new())
     }
 
-    pub fn solve_square(&self, grid: &mut Grid, square: &Square) {
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        for square in Square::iter_squares() {
+            MarkShapes::solve_square(grid, &square);
+        }
+
+        SolveResult::Nothing
+    }
+
+    pub fn solve_square(grid: &mut Grid, square: &Square) {
         let s: Slice = Slice::from(grid, square);
 
         // Rows
@@ -70,11 +78,7 @@ impl Solver for MarkShapes {
     }
 
     fn solve(&self, grid: &mut Grid) -> SolveResult {
-        for square in Square::iter_squares() {
-            self.solve_square(grid, &square);
-        }
-
-        SolveResult::Nothing
+        MarkShapes::solve(grid)
     }
 }
 
@@ -153,13 +157,12 @@ mod test {
         let mut grid = base_grid();
 
         //Run through the basics
-        grid = general_tests::process_through(
+        let grid = &mut general_tests::process_through(
             &mut grid,
             vec![MarkReset::new_box(), MarkSimple::new_box()],
         );
 
-        let solver = MarkShapes::new();
-        solver.solve_square(&mut grid, &square);
+        MarkShapes::solve_square(grid, &square);
 
         //Top row in the middle should not have 4 5 6
         for c in 0..3 {

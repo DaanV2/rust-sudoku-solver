@@ -16,6 +16,11 @@ impl MarkAreaCount {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
+
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        let instance = &mut MarkAreaCountInstance::new(*grid);
+        instance.check_marks_area()
+    }
 }
 
 impl Solver for MarkAreaCount {
@@ -24,8 +29,7 @@ impl Solver for MarkAreaCount {
     }
 
     fn solve(&self, grid: &mut Grid) -> SolveResult {
-        let instance = &mut MarkAreaCountInstance::new(*grid);
-        instance.check_marks_area()
+        MarkAreaCount::solve(grid)
     }
 }
 

@@ -11,6 +11,21 @@ impl MarkReset {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
+
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        for i in grid.iter() {
+            let mut cell = *grid.get_cell(i);
+
+            // If the cell is not determined, then we need to reset the marks
+            if !cell.is_determined() {
+                cell = Cell::new();
+            }
+
+            grid.set_cell(i, &cell);
+        }
+
+        SolveResult::Nothing
+    }
 }
 
 impl Solver for MarkReset {
@@ -19,16 +34,7 @@ impl Solver for MarkReset {
     }
 
     fn solve(&self, grid: &mut Grid) -> SolveResult {
-        for i in grid.iter() {
-            let cell = grid.get_cell(i);
-
-            // If the cell is not determined, then we need to reset the marks
-            if !cell.is_determined() {
-                grid.set_cell(i, &Cell::new());
-            }
-        }
-
-        SolveResult::Nothing
+        MarkReset::solve(grid)
     }
 }
 
@@ -50,8 +56,7 @@ mod test {
         //Checking it has been set properly
         assert_eq!(original.possible_count(), 0, "Cell should be empty");
 
-        let solver = MarkReset::new();
-        solver.solve(grid);
+        MarkReset::solve(grid);
 
         //Checking it has been reset
         let set = grid.get_cell(index);

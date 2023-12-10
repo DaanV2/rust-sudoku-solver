@@ -13,14 +13,8 @@ impl MarkSurvivor {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
-}
 
-impl Solver for MarkSurvivor {
-    fn name(&self) -> &'static str {
-        "Mark Shapes"
-    }
-
-    fn solve(&self, grid: &mut Grid) -> SolveResult {
+    pub fn solve(grid: &mut Grid) -> SolveResult {
         let mut current = grid.clone();
         let mut result = SolveResult::Nothing;
 
@@ -46,5 +40,15 @@ impl Solver for MarkSurvivor {
         }
 
         result
+    }
+}
+
+impl Solver for MarkSurvivor {
+    fn name(&self) -> &'static str {
+        "Mark Shapes"
+    }
+
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        MarkSurvivor::solve(grid)
     }
 }

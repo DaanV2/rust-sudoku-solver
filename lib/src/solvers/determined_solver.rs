@@ -17,14 +17,8 @@ impl DeterminedSolver {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
-}
 
-impl Solver for DeterminedSolver {
-    fn name(&self) -> &'static str {
-        "Determined Solver"
-    }
-
-    fn solve(&self, grid: &mut Grid) -> SolveResult {
+    pub fn solve(grid: &mut Grid) -> SolveResult {
         let mut changed = false;
 
         // Check rows
@@ -46,6 +40,16 @@ impl Solver for DeterminedSolver {
             false => SolveResult::Nothing,
             _ => SolveResult::Updated,
         };
+    }
+}
+
+impl Solver for DeterminedSolver {
+    fn name(&self) -> &'static str {
+        "Determined Solver"
+    }
+
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        DeterminedSolver::solve(grid)
     }
 }
 

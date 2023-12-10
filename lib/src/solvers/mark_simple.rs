@@ -13,14 +13,8 @@ impl MarkSimple {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
-}
 
-impl Solver for MarkSimple {
-    fn name(&self) -> &'static str {
-        "Mark Simple"
-    }
-
-    fn solve(&self, grid: &mut Grid) -> SolveResult {
+    pub fn solve(grid: &mut Grid) -> SolveResult {
         for i in grid.iter().rev() {
             let cell = grid.get_cell(i);
 
@@ -31,6 +25,16 @@ impl Solver for MarkSimple {
         }
 
         SolveResult::Nothing
+    }
+}
+
+impl Solver for MarkSimple {
+    fn name(&self) -> &'static str {
+        "Mark Simple"
+    }
+
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        MarkSimple::solve(grid)
     }
 }
 
