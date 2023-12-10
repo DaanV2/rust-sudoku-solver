@@ -122,7 +122,7 @@ pub fn is_valid_area<T: CellCollection>(grid: &Grid, area: T) -> bool {
     let slice = Slice::from(grid, &area);
 
     for index in slice.iter() {
-        let cell = slice.cells[index];
+        let cell = slice.items[index];
 
         if let Some(v) = cell.value() {
             determined.set_bit(v as usize);

@@ -47,7 +47,8 @@ impl Grid {
     pub fn set_cell(&mut self, index: usize, cell: &Cell) {
         debug_assert_eq!(index < GRID_SIZE, true, "Index out of bounds");
         unsafe {
-            cell.clone_into(self.cells.get_unchecked_mut(index));
+            let v = self.cells.get_unchecked_mut(index);
+            *v = *cell;
         }
     }
 

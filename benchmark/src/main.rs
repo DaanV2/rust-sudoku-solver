@@ -20,6 +20,11 @@ fn main() {
         points.push(point);
     }
 
+    // for i in (10..80).step_by(5) {
+    //     let point = run_test(SIZE, i);
+    //     points.push(point);
+    // }
+
     // Output the results to run.csv
     let mut csv = String::new();
     csv.push_str(&DataPoint::csv_headers());

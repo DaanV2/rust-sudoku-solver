@@ -65,10 +65,10 @@ impl SolverManager {
         if self.mark_area_count.solve(grid) == SolveResult::Solved {
             return SolveResult::Solved;
         }
+        // Solvers
         if self.mark_survivor.solve(grid) == SolveResult::Solved {
             return SolveResult::Solved;
         }
-        // Solvers
         if self.determined_solver.solve(grid) == SolveResult::Solved {
             return SolveResult::Solved;
         }

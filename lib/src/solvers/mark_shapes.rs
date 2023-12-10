@@ -85,7 +85,7 @@ fn index(row: usize, col: usize) -> usize {
 
 #[inline(always)]
 fn or_cells(slice: &Slice, c1: usize, c2: usize, c3: usize) -> Cell {
-    slice.cells[c1] | slice.cells[c2] | slice.cells[c3]
+    slice.items[c1] | slice.items[c2] | slice.items[c3]
 }
 
 /// Marks off the rows except for the square
@@ -176,7 +176,7 @@ mod test {
 
         //First and last 3 should not have 4 5 6
         for c in 0..3 {
-            let cell = s.cells[c];
+            let cell = s.items[c];
 
             assert!(!cell.is_possible(Mark::N4), "Cell is still possible: 4");
             assert!(!cell.is_possible(Mark::N5), "Cell is still possible: 5");
@@ -184,7 +184,7 @@ mod test {
         }
 
         for c in 6..9 {
-            let cell = s.cells[c];
+            let cell = s.items[c];
 
             assert!(!cell.is_possible(Mark::N4), "Cell is still possible: 4");
             assert!(!cell.is_possible(Mark::N5), "Cell is still possible: 5");

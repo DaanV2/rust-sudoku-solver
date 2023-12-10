@@ -4,13 +4,13 @@ use super::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark}
 
 #[derive(Clone)]
 pub struct Slice {
-    pub cells: [Cell; 9],
+    pub items: [Cell; 9],
 }
 
 impl Slice {
-    pub fn new() -> Slice {
+    pub fn new() -> Self {
         Slice {
-            cells: [Cell::new_empty(); 9],
+            items: [Cell::new_empty(); 9],
         }
     }
 
@@ -19,7 +19,7 @@ impl Slice {
         let mut count = 0;
 
         for i in self.iter() {
-            if !self.cells[i].is_empty() {
+            if !self.items[i].is_empty() {
                 count += 1;
             }
         }
@@ -29,8 +29,8 @@ impl Slice {
 
     /// Returns if the given value is determined in this slice
     pub fn any_determined_value(&self, value: u16) -> bool {
-        for cell in self.cells.iter() {
-            if cell.get_value() == value {
+        for c in self.items.iter() {
+            if c.get_value() == value {
                 return true;
             }
         }
@@ -38,12 +38,13 @@ impl Slice {
         false
     }
 
+    /// Returns if the given mark is possible in this slice
     pub fn any_possible(&self, mark: Mark) -> bool {
         let mut data: u16 = 0;
         let v = mark.to_data();
 
-        for cell in self.cells.iter() {
-            data |= cell.get_value();
+        for c in self.items.iter() {
+            data |= c.get_value();
         }
 
         data & v == v
@@ -52,8 +53,8 @@ impl Slice {
     pub fn count_possible(&self, mark: Mark) -> usize {
         let mut count = 0;
 
-        for cell in self.cells.iter() {
-            if cell.is_possible(mark) {
+        for c in self.items.iter() {
+            if c.is_possible(mark) {
                 count += 1;
             }
         }
@@ -64,8 +65,8 @@ impl Slice {
     pub fn count_determined(&self) -> usize {
         let mut count = 0;
 
-        for cell in self.cells.iter() {
-            if cell.is_determined() {
+        for c in self.items.iter() {
+            if c.is_determined() {
                 count += 1;
             }
         }
@@ -76,8 +77,8 @@ impl Slice {
     pub fn count_determined_value(&self, value: u16) -> usize {
         let mut count = 0;
 
-        for cell in self.cells.iter() {
-            if cell.get_value() == value {
+        for c in self.items.iter() {
+            if c.get_value() == value {
                 count += 1;
             }
         }
@@ -93,7 +94,7 @@ impl Slice {
 
         for i in area.iter() {
             let coord = area.get_coord(i);
-            slice.cells[i] = grid.get_cell_at(coord).clone();
+            slice.items[i] = grid.get_cell_at(coord).clone()
         }
 
         slice
@@ -102,7 +103,7 @@ impl Slice {
     /// Returns the first index of a cell that is possible for the given mark, assumes there is at least one
     pub fn first_possible(&self, mark: Mark) -> usize {
         for i in self.iter() {
-            if self.cells[i].is_possible(mark) {
+            if self.items[i].is_possible(mark) {
                 return i;
             }
         }
@@ -111,8 +112,8 @@ impl Slice {
     }
 
     pub fn is_determined(&self, value: u16) -> bool {
-        for cell in self.cells.iter() {
-            if cell.get_value() == value {
+        for c in self.items.iter() {
+            if c.get_value() == value {
                 return true;
             }
         }
@@ -123,8 +124,8 @@ impl Slice {
     pub fn is_possible(&self, mark: Mark) -> bool {
         let mut possible = false;
 
-        for cell in self.cells.iter() {
-            possible &= cell.is_possible(mark);
+        for c in self.items.iter() {
+            possible &= c.is_possible(mark);
         }
 
         possible
@@ -133,24 +134,22 @@ impl Slice {
     pub fn is_fully_determined(&self) -> bool {
         let mut determined = true;
 
-        for cell in self.cells.iter() {
-            determined &= cell.is_determined();
+        for c in self.items.iter() {
+            determined &= c.is_determined();
         }
 
         determined
     }
 
     pub fn iter(&self) -> std::ops::Range<usize> {
-        0..self.cells.len()
+        0..self.items.len()
     }
 
     pub fn only_possible(&self) -> Slice {
         let mut slice = self.clone();
 
         for i in slice.iter() {
-            if slice.cells[i].is_determined() {
-                slice.cells[i] = Cell::new_empty();
-            }
+            slice.items[i] = slice.items[i].only_possible();
         }
 
         slice
@@ -160,21 +159,19 @@ impl Slice {
         let mut slice = self.clone();
 
         for i in slice.iter() {
-            if !slice.cells[i].is_possible(mark) {
-                slice.cells[i] = Cell::new_empty();
+            if !slice.items[i].is_possible(mark) {
+                slice.items[i] = Cell::new_empty();
             }
         }
 
         slice
     }
 
-    pub fn only_determined(&self) -> Slice {
-        let mut slice = self.clone();
+    pub fn only_determined(&self) -> SliceValue {
+        let mut slice = SliceValue::new();
 
         for i in slice.iter() {
-            if !slice.cells[i].is_determined() {
-                slice.cells[i] = Cell::new_empty();
-            }
+            slice.items[i] = self.items[i].only_determined().get_value() as u8;
         }
 
         slice
@@ -184,31 +181,32 @@ impl Slice {
         let mut slice = self.clone();
 
         for i in slice.iter() {
-            if slice.cells[i].get_value() != value {
-                slice.cells[i] = Cell::new_empty();
+            if slice.items[i].get_value() != value {
+                slice.items[i] = Cell::new_empty();
             }
         }
 
         slice
     }
 
+    /// Returns a cell that is or'ed with all the cells in the slice
     pub fn or_all(&self) -> Cell {
         let mut data = Cell::new_empty();
 
-        for cell in self.cells.iter() {
-            data = data | cell.clone();
+        for c in self.items.iter() {
+            data = data | c.clone();
         }
 
         data
     }
 
-    /// Returns the first index and
+    /// Returns the first index and count of a cell that is possible for the given mark, assumes there is at least one
     pub fn search_count_possible(&self, mark: Mark) -> (usize, usize) {
         let mut count = 0;
         let mut index = 0;
 
         for i in self.iter() {
-            if self.cells[i].is_possible(mark) {
+            if self.items[i].is_possible(mark) {
                 count += 1;
                 index = i;
             }
@@ -223,11 +221,49 @@ impl Display for Slice {
         let mut s = String::new();
 
         for i in self.iter() {
-            s.push_str(&self.cells[i].to_string());
+            s.push_str(&self.items[i].to_string());
             s.push_str(" ");
         }
 
         write!(f, "{}", s)
+    }
+}
+
+pub struct SliceValue {
+    pub items: [u8; 9],
+}
+
+impl SliceValue {
+    pub fn new() -> Self {
+        SliceValue { items: [0; 9] }
+    }
+
+    pub fn iter(&self) -> std::ops::Range<usize> {
+        0..self.items.len()
+    }
+
+    pub fn count(&self) -> usize {
+        let mut count = 0;
+
+        for i in self.iter() {
+            if self.items[i] != 0 {
+                count += 1;
+            }
+        }
+
+        count
+    }
+
+    pub fn count_value(&self, value: u8) -> usize {
+        let mut count = 0;
+
+        for i in self.iter() {
+            if self.items[i] == value {
+                count += 1;
+            }
+        }
+
+        count
     }
 }
 
@@ -241,7 +277,7 @@ mod tests {
         let mut s = Slice::new();
 
         for i in s.iter() {
-            s.cells[i] = Cell::new_with_value((i as u16) + 1);
+            s.items[i] = Cell::new_with_value((i as u16) + 1);
         }
 
         s
@@ -251,8 +287,8 @@ mod tests {
     pub fn test_only_possible() {
         let mut s = slice_example();
 
-        s.cells[5] = Cell::new();
-        s.cells[6] = Cell::new();
+        s.items[5] = Cell::new();
+        s.items[6] = Cell::new();
 
         let s = s.only_possible();
         let count = s.count();
@@ -264,8 +300,8 @@ mod tests {
     pub fn test_only_possible_value() {
         let mut s = slice_example();
 
-        s.cells[5] = Cell::new();
-        s.cells[6] = Cell::new();
+        s.items[5] = Cell::new();
+        s.items[6] = Cell::new();
 
         let s = s.only_possible_value(Mark::N7);
         let count = s.count();
@@ -277,8 +313,8 @@ mod tests {
     pub fn test_only_determined() {
         let mut s = slice_example();
 
-        s.cells[5] = Cell::new();
-        s.cells[6] = Cell::new();
+        s.items[5] = Cell::new();
+        s.items[6] = Cell::new();
 
         let s = s.only_determined();
         let count = s.count();
@@ -290,8 +326,8 @@ mod tests {
     pub fn test_only_determined_value() {
         let mut s = slice_example();
 
-        s.cells[5] = Cell::new();
-        s.cells[6] = Cell::new();
+        s.items[5] = Cell::new();
+        s.items[6] = Cell::new();
 
         let s = s.only_determined_value(1);
         let count = s.count();
