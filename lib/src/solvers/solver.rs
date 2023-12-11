@@ -70,8 +70,8 @@ pub enum SolveResult {
 
 impl SolveResult {
     pub fn combine(self, other: SolveResult) -> Self {
-        if other as usize >= self as usize {
-            return other;
+        if self as usize >= other as usize {
+            return self;
         }
 
         return self;
@@ -81,6 +81,13 @@ impl SolveResult {
         match self {
             SolveResult::Solved | SolveResult::Error => true,
             _ => false,
+        }
+    }
+
+    pub fn from_changed(changed: bool) -> Self {
+        match changed {
+            true => SolveResult::Updated,
+            false => SolveResult::Nothing,
         }
     }
 }

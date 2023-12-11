@@ -19,6 +19,14 @@ impl DeterminedSolver {
     }
 
     pub fn solve(grid: &mut Grid) -> SolveResult {
+        let ch1 = DeterminedSolver::solve_rows(grid);
+        let ch2 = DeterminedSolver::solve_columns(grid);
+        let ch3 = DeterminedSolver::solve_squares(grid);
+
+        ch1.combine(ch2).combine(ch3)
+    }
+
+    pub fn solve_rows(grid: &mut Grid) -> SolveResult {
         let mut changed = false;
 
         // Check rows
@@ -26,20 +34,29 @@ impl DeterminedSolver {
             changed |= set_if_possible_area(grid, &row);
         }
 
+        SolveResult::from_changed(changed)
+    }
+
+    pub fn solve_columns(grid: &mut Grid) -> SolveResult {
+        let mut changed = false;
+
         // Check columns
         for col in Column::iter_col() {
             changed |= set_if_possible_area(grid, &col);
         }
+
+        SolveResult::from_changed(changed)
+    }
+
+    pub fn solve_squares(grid: &mut Grid) -> SolveResult {
+        let mut changed = false;
 
         // Check squares
         for sq in Square::iter_squares() {
             changed |= set_if_possible_area(grid, &sq);
         }
 
-        return match changed {
-            false => SolveResult::Nothing,
-            _ => SolveResult::Updated,
-        };
+        SolveResult::from_changed(changed)
     }
 }
 
@@ -55,18 +72,14 @@ impl Solver for DeterminedSolver {
 
 #[inline(always)]
 fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
-    let slice: Slice = Slice::from(grid, area);
-    let determined = slice.only_determined().count();
-
-    if determined == 9 {
-        return false;
-    }
-    let or = slice.or_all().only_possible();
+    let only_possible = Slice::from(grid, area).only_possible();
+    let or_all = only_possible.or_all();
     let mut changed = false;
 
-    for mark in or.iter_possible() {
-        let (index, count) = slice.search_count_possible(mark);
-        if count == 1 {
+    for mark in or_all.iter_possible() {
+        let marked = only_possible.only_possible_value(mark);
+        if marked.count() == 1 {
+            let index = marked.first_possible(mark);
             let coord = area.get_coord(index);
             let value = mark.to_value();
             changed = true;

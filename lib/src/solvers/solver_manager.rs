@@ -2,7 +2,6 @@ use super::{
     determined_solver::DeterminedSolver,
     is_solved::IsSolved,
     mark_reset::MarkReset,
-    mark_shapes::MarkShapes,
     mark_simple::MarkSimple,
     mark_survivor::MarkSurvivor,
     solver::{AnnotatedSolverResult, SolveResult},
@@ -40,8 +39,9 @@ impl SolverManager {
     }
 
     pub fn pre_solve(&self, grid: &mut Grid) -> SolveResult {
-        if MarkReset::solve(grid) == SolveResult::Solved {
-            return SolveResult::Solved;
+        let result = MarkReset::solve(grid);
+        if result.is_done() {
+            return result;
         }
 
         MarkSimple::solve(grid)
@@ -49,20 +49,30 @@ impl SolverManager {
 
     pub fn solve_round(&self, grid: &mut Grid) -> SolveResult {
         //Markers
-
-        if MarkShapes::solve(grid) == SolveResult::Solved {
-            return SolveResult::Solved;
+        let result = MarkSimple::solve(grid);
+        if result.is_done() {
+            return result;
         }
         // if MarkAreaCount::solve(grid) == SolveResult::Solved {
         //     return SolveResult::Solved;
         // }
         // Solvers
-        if MarkSurvivor::solve(grid) == SolveResult::Solved {
-            return SolveResult::Solved;
+        if MarkSurvivor::solve(grid).is_done() {
+            return result;
         }
-        if DeterminedSolver::solve(grid) == SolveResult::Solved {
-            return SolveResult::Solved;
+        let result = DeterminedSolver::solve_rows(grid);
+        if result.is_done() {
+            return result;
         }
+        let result = DeterminedSolver::solve_columns(grid);
+        if result.is_done() {
+            return result;
+        }
+        let result = DeterminedSolver::solve_squares(grid);
+        if result.is_done() {
+            return result;
+        }
+
         //Finalizers
         IsSolved::solve(grid)
     }
@@ -70,6 +80,7 @@ impl SolverManager {
     pub fn solve(&self, grid: Grid) -> AnnotatedSolverResult {
         let mut current = &mut grid.clone();
         let mut result = self.solve_simple(current);
+        current = &mut result.grid;
 
         if result.result != SolveResult::Solved {
             loop {
@@ -133,11 +144,7 @@ impl SolverManager {
         for index in grid.iter() {
             let cell = grid.get_cell(index);
 
-            if cell.is_determined() {
-                continue;
-            }
-
-            for mark in cell.iter_possible() {
+            for mark in cell.only_possible().iter_possible() {
                 grid.clone_to(new_grid);
                 new_grid.place_value(index, mark.to_value());
 

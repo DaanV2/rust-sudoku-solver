@@ -67,6 +67,13 @@ impl Cell {
         Self::new_with_value(v)
     }
 
+    /// Creates a new cell with a mark as a value, and all possibilities off
+    pub fn mask() -> Cell {
+        Cell {
+            data: 0b1111_1111_1111_1111,
+        }
+    }
+
     /// Returns true if the cell is empty or not
     pub fn is_empty(self) -> bool {
         self.data == 0

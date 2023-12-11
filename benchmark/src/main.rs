@@ -15,7 +15,7 @@ const SIZE: usize = 5000;
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..1 {
+    for _ in 0..5 {
         let point = run_random_test(SIZE);
         points.push(point);
     }
@@ -101,7 +101,6 @@ fn run_test(size: usize, remove_cells: usize) -> DataPoint {
             println!("Generated {} grids", count);
         }
         if let Some(grid) = generator.generate() {
-            // println!("{}", grid);
             // validate_grid(&grid);
             let g: &mut Grid = &mut grid.clone();
 
