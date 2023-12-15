@@ -54,14 +54,13 @@ impl Slice {
 
     /// Returns if the given mark is possible in this slice
     pub fn any_possible(&self, mark: Mark) -> bool {
-        let mut data: u16 = 0;
-        let v = mark.to_data();
+        let mut result = Cell::new_empty();
 
         for c in self.items.iter() {
-            data |= c.get_value();
+            result = result | *c;
         }
 
-        data & v == v
+        result.is_possible(mark)
     }
 
     pub fn count_possible(&self, mark: Mark) -> usize {
@@ -119,16 +118,6 @@ impl Slice {
         }
 
         false
-    }
-
-    pub fn is_possible(&self, mark: Mark) -> bool {
-        let mut possible = false;
-
-        for c in self.items.iter() {
-            possible &= c.is_possible(mark);
-        }
-
-        possible
     }
 
     pub fn is_fully_determined(&self) -> bool {
@@ -318,7 +307,7 @@ impl BitOr for SliceValue {
 #[cfg(test)]
 mod tests {
     use crate::{
-        grid::{cell::Cell, coords::Coord, mark::Mark},
+        grid::{cell::Cell, column::Column, coords::Coord, mark::Mark, row::Row},
         test::util::general_tests,
     };
 
@@ -338,12 +327,12 @@ mod tests {
     pub fn test_from() {
         let grid = general_tests::filled_sudoku();
 
-        let s = Slice::from(&grid, &grid.get_row(0));
+        let s = Slice::from(&grid, &Row::new(0));
         for i in s.iter() {
             assert_eq!(s.items[i], *grid.get_cell_at(Coord::new(0, i)));
         }
 
-        let s = Slice::from(&grid, &grid.get_column(0));
+        let s = Slice::from(&grid, &Column::new(0));
         for i in s.iter() {
             assert_eq!(s.items[i], *grid.get_cell_at(Coord::new(i, 0)));
         }

@@ -1,7 +1,9 @@
-use std::time::Instant;
+use std::{fs::File, io::Write, time::Instant};
 
 use sudoku_solver_lib::{
-    generators::generators::Generator, grid::grid::Grid, solvers::solver_manager::SolverManager,
+    generators::generators::Generator,
+    grid::grid::Grid,
+    solvers::{solver::SolveResult, solver_manager::SolverManager},
 };
 
 use crate::data::datapoint::DataPoint;
@@ -10,12 +12,23 @@ pub mod data;
 pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
-const SIZE: usize = 5000;
+const SIZE: usize = 200;
+
+struct GridSet {
+    pub original: Grid,
+    pub to_solve: Grid,
+}
+
+impl GridSet {
+    pub fn new(original: Grid, to_solve: Grid) -> GridSet {
+        GridSet { original, to_solve }
+    }
+}
 
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..5 {
+    for _ in 0..1 {
         let point = run_random_test(SIZE);
         points.push(point);
     }
@@ -63,7 +76,7 @@ fn run_random_test(size: usize) -> DataPoint {
             let g: &mut Grid = &mut grid.clone();
 
             generator.remove_cells(g);
-            grids.push(g.clone());
+            grids.push(GridSet::new(grid, g.clone()));
             count += 1;
         }
     }
@@ -101,11 +114,10 @@ fn run_test(size: usize, remove_cells: usize) -> DataPoint {
             println!("Generated {} grids", count);
         }
         if let Some(grid) = generator.generate() {
-            // validate_grid(&grid);
             let g: &mut Grid = &mut grid.clone();
 
             generator.remove_cells_amount(g, remove_cells);
-            grids.push(g.clone());
+            grids.push(GridSet::new(grid, g.clone()));
             count += 1;
         }
     }
@@ -122,11 +134,12 @@ fn run_test(size: usize, remove_cells: usize) -> DataPoint {
     point
 }
 
-fn solve(grids: Vec<Grid>, point: DataPoint) -> DataPoint {
+fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
     let solver = SolverManager::new();
     let size = grids.len();
     let step = size / 10;
     let mut iterations = 0;
+    let mut print_grids = Vec::with_capacity(grids.len());
 
     let mut solved = 0;
     let mut nothing = 0;
@@ -136,12 +149,14 @@ fn solve(grids: Vec<Grid>, point: DataPoint) -> DataPoint {
     println!("Solving...");
     let start_time = Instant::now();
 
+    let mut file = File::create("tests.rs").unwrap();
+
     //Solve all of them
     for i in 0..size {
         if i % step == 0 {
             println!("Solving grid {}...", i);
         }
-        let grid = grids.get(i).unwrap().clone();
+        let grid = grids.get(i).unwrap().to_solve.clone();
         let r = solver.solve(grid);
 
         iterations += r.iterations;
@@ -151,10 +166,49 @@ fn solve(grids: Vec<Grid>, point: DataPoint) -> DataPoint {
             sudoku_solver_lib::solvers::solver::SolveResult::Error => error += 1,
             sudoku_solver_lib::solvers::solver::SolveResult::Updated => updated += 1,
         }
+
+        if r.result != SolveResult::Solved {
+            print_grids.push(grids.get(i).unwrap());
+        }
     }
+
+    file.flush().unwrap();
 
     let solve_time = start_time.elapsed();
     let size128 = size as u128;
+
+    // print_grids.sort_by(|a, b| {
+    //     a.to_solve
+    //         .count_determined()
+    //         .cmp(&b.to_solve.count_determined())
+    // });
+
+    // for i in 0..print_grids.len() {
+    //     file.write_all(b"#[test]\n").unwrap();
+    //     file.write_all(format!("fn test_{}() {{\n", i).as_bytes())
+    //         .unwrap();
+
+    //     file.write_all(
+    //         format!("/* original:\n{}*/\n", print_grids.get(i).unwrap().original).as_bytes(),
+    //     )
+    //     .unwrap();
+
+    //     file.write_all(
+    //         format!(
+    //             "    let grid = utility::parse_from_ascii(r#\"{}\"#);\n",
+    //             print_grids.get(i).unwrap().to_solve
+    //         )
+    //         .as_bytes(),
+    //     )
+    //     .unwrap();
+
+    //     file.write_all(b"general_tests::test_should_solve(grid);\n")
+    //         .unwrap();
+
+    //     file.write_all(b"}\n\n").unwrap();
+    // }
+
+    file.flush().unwrap();
 
     DataPoint {
         updated,

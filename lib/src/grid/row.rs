@@ -32,6 +32,12 @@ impl Row {
     }
 }
 
+impl From<usize> for Row {
+    fn from(row: usize) -> Self {
+        Self::new(row)
+    }
+}
+
 impl CellCollection for Row {
     fn get_coord(&self, col: usize) -> Coord {
         Coord::new(self.row, col)
@@ -55,10 +61,7 @@ impl Display for Row {
 #[cfg(test)]
 mod test {
     use super::Row;
-    use crate::{
-        grid::{cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE},
-        test::util::general_tests,
-    };
+    use crate::grid::{cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE};
 
     #[test]
     fn test_coords() {
@@ -75,10 +78,8 @@ mod test {
 
     #[test]
     fn test_row_iter_coords() {
-        let grid = general_tests::filled_sudoku();
-
         for row_index in GRID_HEIGHT_RANGE {
-            let row = grid.get_row(row_index);
+            let row = Row::new(row_index);
 
             for c in row.iter() {
                 let coord = row.get_coord(c);
@@ -89,10 +90,8 @@ mod test {
 
     #[test]
     fn test_row_iter_cells() {
-        let grid = general_tests::filled_sudoku();
-
         for row_index in GRID_HEIGHT_RANGE {
-            let row = grid.get_row(row_index);
+            let row = Row::new(row_index);
 
             for index in row.iter() {
                 let coord = row.get_coord(index);

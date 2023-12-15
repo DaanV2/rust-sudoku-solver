@@ -1,6 +1,6 @@
 use crate::grid::{
-    cell_collection::CellCollection, column::Column, grid::Grid, row::Row, slice::Slice,
-    square::Square,
+    cell_collection::CellCollection, column::Column, grid::Grid, mark::Mark, row::Row,
+    slice::Slice, square::Square,
 };
 
 use super::solver::{SolveResult, Solver};
@@ -8,6 +8,16 @@ use super::solver::{SolveResult, Solver};
 // The solver that turns solved cells into determined cells.
 // EC if only 1 possibility is left
 pub struct DeterminedSolver {}
+
+impl Solver for DeterminedSolver {
+    fn name(&self) -> &'static str {
+        "Determined Solver"
+    }
+
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        DeterminedSolver::solve(grid)
+    }
+}
 
 impl DeterminedSolver {
     pub fn new() -> Self {
@@ -23,51 +33,65 @@ impl DeterminedSolver {
         let ch2 = DeterminedSolver::solve_columns(grid);
         let ch3 = DeterminedSolver::solve_squares(grid);
 
-        ch1.combine(ch2).combine(ch3)
+        SolveResult::from_changed(ch1 | ch2 | ch3)
     }
 
-    pub fn solve_rows(grid: &mut Grid) -> SolveResult {
-        let mut changed = false;
+    pub fn solve_for_mark(grid: &mut Grid, mark: Mark) -> SolveResult {
+        let ch1 = DeterminedSolver::solve_rows_for_mark(grid, mark);
+        let ch2 = DeterminedSolver::solve_columns_for_mark(grid, mark);
+        let ch3 = DeterminedSolver::solve_squares_for_mark(grid, mark);
 
-        // Check rows
-        for row in Row::iter_row() {
-            changed |= set_if_possible_area(grid, &row);
-        }
-
-        SolveResult::from_changed(changed)
+        SolveResult::from_changed(ch1 | ch2 | ch3)
     }
 
-    pub fn solve_columns(grid: &mut Grid) -> SolveResult {
-        let mut changed = false;
-
-        // Check columns
-        for col in Column::iter_col() {
-            changed |= set_if_possible_area(grid, &col);
-        }
-
-        SolveResult::from_changed(changed)
+    pub fn solve_rows(grid: &mut Grid) -> bool {
+        solve_area(grid, Row::iter_row())
     }
 
-    pub fn solve_squares(grid: &mut Grid) -> SolveResult {
-        let mut changed = false;
+    pub fn solve_rows_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        solve_area_for_mark(grid, Row::iter_row(), mark)
+    }
 
-        // Check squares
-        for sq in Square::iter_squares() {
-            changed |= set_if_possible_area(grid, &sq);
-        }
+    pub fn solve_columns(grid: &mut Grid) -> bool {
+        solve_area(grid, Column::iter_col())
+    }
 
-        SolveResult::from_changed(changed)
+    pub fn solve_columns_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        solve_area_for_mark(grid, Column::iter_col(), mark)
+    }
+
+    pub fn solve_squares(grid: &mut Grid) -> bool {
+        solve_area(grid, Square::iter_squares())
+    }
+
+    pub fn solve_squares_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        solve_area_for_mark(grid, Square::iter_squares(), mark)
     }
 }
 
-impl Solver for DeterminedSolver {
-    fn name(&self) -> &'static str {
-        "Determined Solver"
+#[inline(always)]
+fn solve_area<U: CellCollection, T: Iterator<Item = U>>(grid: &mut Grid, iter: T) -> bool {
+    let mut changed = false;
+
+    for area in iter {
+        changed |= set_if_possible_area(grid, &area);
     }
 
-    fn solve(&self, grid: &mut Grid) -> SolveResult {
-        DeterminedSolver::solve(grid)
+    return changed;
+}
+#[inline(always)]
+fn solve_area_for_mark<U: CellCollection, T: Iterator<Item = U>>(
+    grid: &mut Grid,
+    iter: T,
+    mark: Mark,
+) -> bool {
+    let mut changed = false;
+
+    for area in iter {
+        changed |= set_if_possible_area_for_mark(grid, &area, mark);
     }
+
+    return changed;
 }
 
 #[inline(always)]
@@ -86,6 +110,24 @@ fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
 
             grid.place_value_at(coord, value);
         }
+    }
+
+    return changed;
+}
+
+#[inline(always)]
+fn set_if_possible_area_for_mark<T: CellCollection>(grid: &mut Grid, area: &T, mark: Mark) -> bool {
+    let only_possible = Slice::from(grid, area).only_possible();
+    let mut changed = false;
+
+    let marked = only_possible.only_possible_value(mark);
+    if marked.count() == 1 {
+        let index = marked.first_possible(mark);
+        let coord = area.get_coord(index);
+        let value = mark.to_value();
+        changed = true;
+
+        grid.place_value_at(coord, value);
     }
 
     return changed;

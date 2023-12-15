@@ -81,7 +81,7 @@ impl Cell {
 
     /// Returns true if the cell is determined or not
     pub fn is_determined(self) -> bool {
-        (self.data & CELL_VALUE_MASK) > 0
+        (self.data & CELL_VALUE_MASK) != 0
     }
 
     /// Returns true if the given value is possible for this cell
@@ -89,7 +89,7 @@ impl Cell {
         let v = value.to_data();
         let d = self.data;
 
-        d & v == v
+        d & v != 0
     }
 
     /// Returns true if the given value is possible for this cell
@@ -98,7 +98,7 @@ impl Cell {
         let b = Cell::possible_to_bit(value);
         let d = self.data;
 
-        d & b == b
+        d & b != 0
     }
 
     /// Stores the given value in the cell, sets all possibilities off
@@ -206,7 +206,11 @@ impl Display for Cell {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "[")?;
 
-        for mark in self.only_possible().iter_possible() {
+        for mark in Mark::iter() {
+            if !self.is_possible(mark) {
+                write!(f, "_")?;
+                continue;
+            }
             write!(f, "{}", mark)?;
         }
         write!(f, ",")?;

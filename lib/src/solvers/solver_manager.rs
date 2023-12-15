@@ -4,6 +4,7 @@ use super::{
     mark_reset::MarkReset,
     mark_simple::MarkSimple,
     mark_survivor::MarkSurvivor,
+    mark_trail_and_error::MarkTrailAndError,
     solver::{AnnotatedSolverResult, SolveResult},
     validator::is_valid,
 };
@@ -16,7 +17,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 1000,
+            max_iterations: 100,
         }
     }
 }
@@ -49,7 +50,7 @@ impl SolverManager {
 
     pub fn solve_round(&self, grid: &mut Grid) -> SolveResult {
         //Markers
-        let result = MarkSimple::solve(grid);
+        let mut result = MarkSimple::solve(grid);
         if result.is_done() {
             return result;
         }
@@ -57,24 +58,21 @@ impl SolverManager {
         //     return SolveResult::Solved;
         // }
         // Solvers
-        if MarkSurvivor::solve(grid).is_done() {
-            return result;
-        }
-        let result = DeterminedSolver::solve_rows(grid);
+        result = result | MarkSurvivor::solve(grid);
         if result.is_done() {
             return result;
         }
-        let result = DeterminedSolver::solve_columns(grid);
+        result = result | DeterminedSolver::solve(grid);
         if result.is_done() {
             return result;
         }
-        let result = DeterminedSolver::solve_squares(grid);
+        result = result | MarkTrailAndError::solve(grid);
         if result.is_done() {
             return result;
         }
 
         //Finalizers
-        IsSolved::solve(grid)
+        result | IsSolved::solve(grid)
     }
 
     pub fn solve(&self, grid: Grid) -> AnnotatedSolverResult {
@@ -103,18 +101,18 @@ impl SolverManager {
 
     fn solve_internal(&self, grid: &mut Grid, start_iteration: usize) -> AnnotatedSolverResult {
         let mut iteration = start_iteration;
-        //Pre-solve
-        let mut current = self.pre_solve(grid);
-
         // Pre solvers can do a lot of work, but not mark it as solved or updated
-        if current == SolveResult::Nothing {
-            current = SolveResult::Updated;
-        }
+        let mut current = self.pre_solve(grid) | SolveResult::Updated;
 
         //While the grid has been updated, keep solving
-        while SolveResult::Updated == current {
+        while current == SolveResult::Updated {
             current = self.solve_round(grid);
-            if current == SolveResult::Solved {
+
+            // Remove previous grid from terminal
+            // print!("\x1B[2J\x1B[1;1H");
+            // println!("round {}\n{}", iteration, grid);
+
+            if current.is_done() {
                 break;
             }
 

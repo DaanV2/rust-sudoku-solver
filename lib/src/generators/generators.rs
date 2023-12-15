@@ -2,7 +2,7 @@ use rand::{rngs::StdRng, seq::IteratorRandom, Rng, RngCore, SeedableRng};
 
 use crate::{
     grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, grid::Grid},
-    solvers::{solver::SolveResult, solver_manager::SolverManager},
+    solvers::{solver::SolveResult, solver_manager::SolverManager, validator::validate_grid},
 };
 
 pub struct Generator<T: RngCore> {
@@ -59,17 +59,21 @@ impl<T: RngCore> Generator<T> {
             }
         }
 
+        let out: Grid;
         if !SolveResult::is_done(result) {
             let r = self.solvers.solve(grid.clone());
-            match r.result {
-                SolveResult::Solved => {
-                    return Some(r.grid);
-                }
-                _ => {}
-            }
+            out = r.grid;
+            result = r.result;
+        } else {
+            out = grid.clone();
         }
+
+        if let Err(_) = validate_grid(&out) {
+            return None;
+        }
+
         match result {
-            SolveResult::Solved => Some(grid.clone()),
+            SolveResult::Solved => Some(out),
             _ => None,
         }
     }

@@ -1,4 +1,7 @@
-use std::fmt::{Display, Formatter};
+use std::{
+    fmt::{Display, Formatter},
+    ops::BitOr,
+};
 
 use crate::grid::grid::Grid;
 
@@ -74,7 +77,7 @@ impl SolveResult {
             return self;
         }
 
-        return self;
+        return other;
     }
 
     pub fn is_done(self) -> bool {
@@ -100,6 +103,14 @@ impl Display for SolveResult {
             SolveResult::Solved => write!(f, "Solved"),
             SolveResult::Error => write!(f, "Error"),
         }
+    }
+}
+
+impl BitOr for SolveResult {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.combine(rhs)
     }
 }
 

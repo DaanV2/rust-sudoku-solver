@@ -29,7 +29,9 @@ pub mod general_tests {
         );
 
         assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
-        validate_grid(&output.grid);
+        if let Err(e) = validate_grid(&output.grid) {
+            panic!("Grid is not valid: {}", e);
+        }
     }
 
     /// Removes a random amount of cells from the grid

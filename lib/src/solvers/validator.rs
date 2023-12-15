@@ -2,28 +2,28 @@ use core::panic;
 use std::error::Error;
 
 use crate::grid::{
-    cell::Cell, cell_collection::CellCollection, coords::Coord, flags::Flags16, grid::Grid,
-    mark::Mark, queries::count_determine_value, slice::Slice,
+    cell::Cell, cell_collection::CellCollection, column::Column, coords::Coord, flags::Flags16,
+    grid::Grid, mark::Mark, queries::count_determine_value, row::Row, slice::Slice,
 };
 
-pub fn validate_grid(grid: &Grid) -> bool {
+pub fn validate_grid(grid: &Grid) -> Result<(), Box<dyn Error>> {
     for index in grid.iter() {
         let coord = grid.get_coord(index);
         let cell = grid.get_cell_at(coord);
-        validate_cell(cell, coord);
+        validate_cell(cell, coord)?;
     }
 
     for r in grid.iter_rows() {
-        validate_area(grid, r);
+        validate_area(grid, r)?;
     }
     for c in grid.iter_columns() {
-        validate_area(grid, c);
+        validate_area(grid, c)?;
     }
     for s in grid.iter_squares() {
-        validate_area(grid, s);
+        validate_area(grid, s)?;
     }
 
-    true
+    Ok(())
 }
 
 pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error>> {
@@ -36,13 +36,13 @@ pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error
     let v = cell.get_value();
 
     // Row should only be 1
-    let determined = count_determine_value(grid, grid.get_row(coord.get_row()), v);
+    let determined = count_determine_value(grid, Row::new(coord.get_row()), v);
     if determined != 1 {
         panic!("Row {} should only be 1", coord.get_row());
     }
 
     // Column should only be 1
-    let determined = count_determine_value(grid, grid.get_column(coord.get_col()), v);
+    let determined = count_determine_value(grid, Column::new(coord.get_col()), v);
     if determined != 1 {
         panic!("Column {} should only be 1", coord.get_col());
     }
@@ -56,21 +56,26 @@ pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-pub fn validate_cell(cell: &Cell, coord: Coord) {
+pub fn validate_cell(cell: &Cell, coord: Coord) -> Result<(), Box<dyn Error>> {
     let possible = cell.iter_possible().count();
     if let Some(v) = cell.value() {
         if v > 9 || v < 1 {
-            panic!("Invalid value {} at {}", v, coord);
+            let msg = format!("Invalid value {} at {}", v, coord);
+            return Err(msg)?;
         }
-        return;
+        return Ok(());
     }
 
-    if possible == 0 {
-        panic!("No possible values at {}", coord);
-    }
+    return match possible {
+        0 => {
+            let msg = format!("No possible values at {}", coord);
+            Err(msg)?
+        }
+        _ => Ok(()),
+    };
 }
 
-pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) {
+pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) -> Result<(), Box<dyn Error>> {
     let first: Coord = area.get_coord(0);
     let last = area.get_coord(area.max() - 1);
     let slice = Slice::from(grid, &area);
@@ -80,19 +85,24 @@ pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) {
         let possible = slice.any_possible(mark);
 
         if determined > 1 {
-            panic!("More than one {} in area, from {} to {}", mark, first, last);
+            let msg = format!("More than one {} in area, from {} to {}", mark, first, last);
+            return Err(msg)?;
         } else if determined == 1 && possible {
-            panic!(
+            let msg = format!(
                 "Determined {} with possible values, from {} to {}",
                 mark, first, last
             );
+            return Err(msg)?;
         } else if determined == 0 && !possible {
-            panic!(
+            let msg = format!(
                 "No possible values for {}, from {} to {}",
                 mark, first, last
             );
+            return Err(msg)?;
         }
     }
+
+    Ok(())
 }
 
 pub fn is_valid(grid: &Grid) -> bool {

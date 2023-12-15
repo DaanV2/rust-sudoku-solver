@@ -95,7 +95,8 @@ pub mod utility {
         )
     }
 
-    pub fn to_csv(grid: &Grid) -> String {
+    /// Returns a string representation of a grid in a digit format
+    pub fn to_digits(grid: &Grid) -> String {
         let mut chars = ['0'; GRID_SIZE];
 
         for i in grid.iter() {
@@ -109,5 +110,18 @@ pub mod utility {
         }
 
         chars.iter().collect()
+    }
+
+    /// Returns a grid from a digit format
+    pub fn from_digit(digits: &str) -> Grid {
+        let mut grid = Grid::new();
+
+        for (i, c) in digits.chars().enumerate() {
+            if c != '0' {
+                grid.place_value(i, c.to_digit(10).unwrap() as u16);
+            }
+        }
+
+        grid
     }
 }

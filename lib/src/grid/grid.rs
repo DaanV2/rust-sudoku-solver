@@ -62,16 +62,6 @@ impl Grid {
         self.set_cell(coord.get_index(), cell);
     }
 
-    /// Retrieves the row at the given index
-    pub fn get_row(&self, row: usize) -> Row {
-        Row::new(row)
-    }
-
-    /// Retrieves the column at the given index
-    pub fn get_column(&self, col: usize) -> Column {
-        Column::new(col)
-    }
-
     /// Retrieves the square at the given row and column
     pub fn get_square_at(&self, coord: Coord) -> Square {
         let (row, col) = coord.get_row_col();
@@ -133,18 +123,18 @@ impl Grid {
     }
 
     /// Iterates over all rows
-    pub fn iter_rows(&self) -> impl Iterator<Item = Row> + '_ {
-        GRID_HEIGHT_RANGE.map(move |row| self.get_row(row))
+    pub fn iter_rows(&self) -> impl Iterator<Item = Row> {
+        GRID_HEIGHT_RANGE.map(move |row| Row::new(row))
     }
 
     /// Iterates over all columns
-    pub fn iter_columns(&self) -> impl Iterator<Item = Column> + '_ {
-        GRID_WIDTH_RANGE.map(move |col| self.get_column(col))
+    pub fn iter_columns(&self) -> impl Iterator<Item = Column> {
+        GRID_WIDTH_RANGE.map(move |col| Column::new(col))
     }
 
     /// Iterates over all squares
-    pub fn iter_squares(&self) -> impl Iterator<Item = Square> + '_ {
-        Square::iter_coords().map(move |coord| self.get_square_at(coord))
+    pub fn iter_squares(&self) -> impl Iterator<Item = Square> {
+        Square::iter_squares()
     }
 
     /// Iterates over all cells and counts the determined cells
@@ -189,11 +179,11 @@ impl Grid {
     }
 
     pub fn mark_off_row(&mut self, row: usize, mark: Mark) {
-        self.unset_possible_area(&self.get_row(row), mark);
+        self.unset_possible_area(&Row::new(row), mark);
     }
 
     pub fn mark_off_column(&mut self, col: usize, mark: Mark) {
-        self.unset_possible_area(&self.get_column(col), mark);
+        self.unset_possible_area(&Column::new(col), mark);
     }
 
     pub fn mark_off_square(&mut self, square: &Square, mark: Mark) {
@@ -234,9 +224,11 @@ mod tests {
         grid::{
             cell::Cell,
             cell_collection::CellCollection,
+            column::Column,
             constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
             coords::Coord,
             mark::Mark,
+            row::Row,
         },
         test::util::general_tests,
     };
@@ -277,7 +269,7 @@ mod tests {
     fn test_get_row() {
         for row_index in GRID_HEIGHT_RANGE {
             let grid = general_tests::filled_sudoku();
-            let row = grid.get_row(row_index);
+            let row = Row::new(row_index);
 
             for col_index in GRID_WIDTH_RANGE {
                 let coord = row.get_coord(col_index);
@@ -295,7 +287,7 @@ mod tests {
     fn test_get_column() {
         for col_index in GRID_WIDTH_RANGE {
             let grid = general_tests::filled_sudoku();
-            let column = grid.get_column(col_index);
+            let column = Column::new(col_index);
 
             for row_index in GRID_HEIGHT_RANGE {
                 let coord = column.get_coord(row_index);
