@@ -12,7 +12,7 @@ pub mod data;
 pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
-const SIZE: usize = 200;
+const SIZE: usize = 1000;
 
 struct GridSet {
     pub original: Grid,

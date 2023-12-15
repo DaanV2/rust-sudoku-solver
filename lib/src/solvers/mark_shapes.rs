@@ -1,6 +1,6 @@
 use crate::grid::{
     cell::Cell, cell_collection::CellCollection, column::Column, coords::Coord, grid::Grid,
-    mark::Mark, row::Row, slice::Slice, square::Square,
+    mark::Mark, row::Row, square::Square,
 };
 
 use super::solver::{SolveResult, Solver};
@@ -47,19 +47,18 @@ impl MarkShapes {
         SolveResult::from_changed(changed)
     }
 
-    pub fn solve_square(grid: &mut Grid, square: &Square) -> bool {
-        let s = Slice::from(grid, square);
+    pub fn solve_square(g: &mut Grid, s: &Square) -> bool {
         let mut changed = false;
 
         // Rows
-        let row_0 = or_cells(&s, index(0, 0), index(0, 1), index(0, 2));
-        let row_1 = or_cells(&s, index(1, 0), index(1, 1), index(1, 2));
-        let row_2 = or_cells(&s, index(2, 0), index(2, 1), index(2, 2));
+        let row_0 = get_cell(g, s, 0, 0) | get_cell(g, s, 0, 1) | get_cell(g, s, 0, 2);
+        let row_1 = get_cell(g, s, 1, 0) | get_cell(g, s, 1, 1) | get_cell(g, s, 1, 2);
+        let row_2 = get_cell(g, s, 2, 0) | get_cell(g, s, 2, 1) | get_cell(g, s, 2, 2);
 
         // Columns
-        let col_0 = or_cells(&s, index(0, 0), index(1, 0), index(2, 0));
-        let col_1 = or_cells(&s, index(0, 1), index(1, 1), index(2, 1));
-        let col_2 = or_cells(&s, index(0, 2), index(1, 2), index(2, 2));
+        let col_0 = get_cell(g, s, 0, 0) | get_cell(g, s, 1, 0) | get_cell(g, s, 2, 0);
+        let col_1 = get_cell(g, s, 0, 1) | get_cell(g, s, 1, 1) | get_cell(g, s, 2, 1);
+        let col_2 = get_cell(g, s, 0, 2) | get_cell(g, s, 1, 2) | get_cell(g, s, 2, 2);
 
         let or = row_0 | row_1 | row_2 | col_0 | col_1 | col_2;
 
@@ -75,7 +74,7 @@ impl MarkShapes {
                 (false, false, true) => Some(2),
                 _ => None,
             } {
-                changed = changed | mark_off_rows(&square, grid, index, mark);
+                changed = changed | mark_off_rows(&s, g, index, mark);
             }
 
             //If a col is certain, mark off the other squares, and the other are not possible
@@ -89,26 +88,25 @@ impl MarkShapes {
                 (false, false, true) => Some(2),
                 _ => None,
             } {
-                changed = changed | mark_off_columns(&square, grid, index, mark);
+                changed = changed | mark_off_columns(&s, g, index, mark);
             }
         }
 
         changed
     }
 
-    pub fn solve_square_for_mark(grid: &mut Grid, square: &Square, mark: Mark) -> bool {
-        let s = Slice::from(grid, square);
+    pub fn solve_square_for_mark(g: &mut Grid, s: &Square, mark: Mark) -> bool {
         let mut changed = false;
 
         // Rows
-        let row_0 = or_cells(&s, index(0, 0), index(0, 1), index(0, 2));
-        let row_1 = or_cells(&s, index(1, 0), index(1, 1), index(1, 2));
-        let row_2 = or_cells(&s, index(2, 0), index(2, 1), index(2, 2));
+        let row_0 = get_cell(g, s, 0, 0) | get_cell(g, s, 0, 1) | get_cell(g, s, 0, 2);
+        let row_1 = get_cell(g, s, 1, 0) | get_cell(g, s, 1, 1) | get_cell(g, s, 1, 2);
+        let row_2 = get_cell(g, s, 2, 0) | get_cell(g, s, 2, 1) | get_cell(g, s, 2, 2);
 
         // Columns
-        let col_0 = or_cells(&s, index(0, 0), index(1, 0), index(2, 0));
-        let col_1 = or_cells(&s, index(0, 1), index(1, 1), index(2, 1));
-        let col_2 = or_cells(&s, index(0, 2), index(1, 2), index(2, 2));
+        let col_0 = get_cell(g, s, 0, 0) | get_cell(g, s, 1, 0) | get_cell(g, s, 2, 0);
+        let col_1 = get_cell(g, s, 0, 1) | get_cell(g, s, 1, 1) | get_cell(g, s, 2, 1);
+        let col_2 = get_cell(g, s, 0, 2) | get_cell(g, s, 1, 2) | get_cell(g, s, 2, 2);
 
         //If a row is certain, mark off the other squares, and the other are not possible
         if let Some(index) = match (
@@ -121,7 +119,7 @@ impl MarkShapes {
             (false, false, true) => Some(2),
             _ => None,
         } {
-            changed = changed | mark_off_rows(&square, grid, index, mark);
+            changed = changed | mark_off_rows(&s, g, index, mark);
         }
 
         //If a col is certain, mark off the other squares, and the other are not possible
@@ -135,7 +133,7 @@ impl MarkShapes {
             (false, false, true) => Some(2),
             _ => None,
         } {
-            changed = changed | mark_off_columns(&square, grid, index, mark);
+            changed = changed | mark_off_columns(&s, g, index, mark);
         }
 
         changed
@@ -143,13 +141,9 @@ impl MarkShapes {
 }
 
 #[inline(always)]
-fn index(row: usize, col: usize) -> usize {
-    row * 3 + col
-}
-
-#[inline(always)]
-fn or_cells(slice: &Slice, c1: usize, c2: usize, c3: usize) -> Cell {
-    slice.items[c1] | slice.items[c2] | slice.items[c3]
+fn get_cell(grid: &Grid, square: &Square, row: usize, col: usize) -> Cell {
+    let coord = square.get_coord_at(row, col);
+    *grid.get_cell_at(coord)
 }
 
 /// Marks off the rows except for the square
@@ -212,7 +206,7 @@ mod test {
 
     use super::*;
     use crate::{
-        grid::{coords::Coord, utility::utility},
+        grid::{coords::Coord, slice::Slice, utility::utility},
         solvers::{mark_reset::MarkReset, mark_simple::MarkSimple},
         test::util::general_tests,
     };

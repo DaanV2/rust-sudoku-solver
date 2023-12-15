@@ -17,7 +17,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 100,
+            max_iterations: 200,
         }
     }
 }
@@ -62,11 +62,11 @@ impl SolverManager {
         if result.is_done() {
             return result;
         }
-        result = result | DeterminedSolver::solve(grid);
+        result = result | MarkTrailAndError::solve(grid);
         if result.is_done() {
             return result;
         }
-        result = result | MarkTrailAndError::solve(grid);
+        result = result | DeterminedSolver::solve(grid);
         if result.is_done() {
             return result;
         }

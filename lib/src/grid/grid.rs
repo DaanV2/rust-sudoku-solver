@@ -92,20 +92,6 @@ impl Grid {
     pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
         self.unset_possible(coord.get_index(), mark);
     }
-
-    pub fn unset_possible_area<T: CellCollection>(&mut self, area: &T, mark: Mark) {
-        let mut mask = Cell::mask();
-        mask = mask & Cell::new_with_value(!mark.to_data());
-
-        for index in area.iter() {
-            let coord = area.get_coord(index);
-            unsafe {
-                let c = self.cells.get_unchecked_mut(coord.get_index());
-                c.clone_from(&c.bitand(mask));
-            }
-        }
-    }
-
     /// Un sets the given value as possible for this cell
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
         let mut new_cell = self.get_cell(index).clone();
@@ -166,28 +152,66 @@ impl Grid {
         self.mark_off(coord);
     }
 
+    #[inline(always)]
     pub fn mark_off(&mut self, coord: Coord) {
         let mark = Mark::from_value(self.get_cell_at(coord).get_value());
         let (row, col) = coord.get_row_col();
+        let square: Square = self.get_square_at(coord);
 
         // Mark off row
-        self.mark_off_row(row, mark);
-        self.mark_off_column(col, mark);
+        // self.mark_off_row(row, mark);
+        // self.mark_off_column(col, mark);
+        // self.mark_off_square(&square, mark);
 
-        let square: Square = self.get_square_at(coord);
-        self.mark_off_square(&square, mark);
+        let mask = Cell::mask() & Cell::new_with_value(!mark.to_data());
+        let mask_grid = &mut Grid::from([Cell::mask(); GRID_SIZE]);
+
+        // Set row with mask
+        mask_grid.set_cell_area(&Row::new(row), &mask);
+        mask_grid.set_cell_area(&Column::new(col), &mask);
+        mask_grid.set_cell_area(&square, &mask);
+
+        // Apply mask
+        for index in mask_grid.iter() {
+            self.cells[index] = self.cells[index].bitand(mask_grid.cells[index]);
+        }
     }
 
+    #[inline(always)]
     pub fn mark_off_row(&mut self, row: usize, mark: Mark) {
         self.unset_possible_area(&Row::new(row), mark);
     }
 
+    #[inline(always)]
     pub fn mark_off_column(&mut self, col: usize, mark: Mark) {
         self.unset_possible_area(&Column::new(col), mark);
     }
 
+    #[inline(always)]
     pub fn mark_off_square(&mut self, square: &Square, mark: Mark) {
         self.unset_possible_area(square, mark);
+    }
+
+    #[inline(always)]
+    pub fn unset_possible_area<T: CellCollection>(&mut self, area: &T, mark: Mark) {
+        let mut mask = Cell::mask();
+        mask = mask & Cell::new_with_value(!mark.to_data());
+
+        for index in area.iter() {
+            let coord = area.get_coord(index);
+            unsafe {
+                let c = self.cells.get_unchecked_mut(coord.get_index());
+                c.clone_from(&c.bitand(mask));
+            }
+        }
+    }
+
+    #[inline(always)]
+    pub fn set_cell_area(&mut self, area: &impl CellCollection, cell: &Cell) {
+        for index in area.iter() {
+            let coord = area.get_coord(index);
+            self.set_cell_at(coord, cell);
+        }
     }
 }
 

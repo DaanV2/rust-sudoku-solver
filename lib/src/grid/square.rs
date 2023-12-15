@@ -106,7 +106,7 @@ impl CellCollection for Square {
     }
 
     fn iter(&self) -> std::ops::Range<usize> {
-        0..9
+        0..self.max()
     }
 
     fn max(&self) -> usize {

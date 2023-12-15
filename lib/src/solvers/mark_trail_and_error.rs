@@ -2,11 +2,7 @@ use crate::grid::{
     cell_collection::CellCollection, grid::Grid, mark::Mark, slice::Slice, square::Square,
 };
 
-use super::{
-    determined_solver::DeterminedSolver,
-    mark_shapes::MarkShapes,
-    solver::{SolveResult, Solver},
-};
+use super::solver::{SolveResult, Solver};
 
 /**
  * MarkTrailAndError takes a number, and checks if any of the possible cell left to fill in,
@@ -35,28 +31,38 @@ impl MarkTrailAndError {
     }
 
     pub fn solve(grid: &mut Grid) -> SolveResult {
-        let mut result = SolveResult::Nothing;
+        let mut changed = false;
 
         for mark in Mark::iter() {
-            result = result | MarkTrailAndError::solve_for_mark(grid, mark);
+            changed = changed | MarkTrailAndError::solve_for_mark(grid, mark);
         }
 
-        result
+        SolveResult::from_changed(changed)
     }
 
-    pub fn solve_for_mark(grid: &mut Grid, mark: Mark) -> SolveResult {
-        let mut square_solved = [false; 9];
-        let mut output = SolveResult::Nothing;
+    pub fn solve_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        let buffer = &mut Grid::empty();
+        let mut squares_determined = [false; 9];
+        let mut changed = false;
+
+        let determined = grid.count_determined();
 
         for sq_index in Square::iter() {
             let sq = Square::from_square_index(sq_index);
 
-            square_solved[sq_index] = Slice::from(grid, &sq).is_determined(mark.to_value());
+            squares_determined[sq_index] = Slice::from(grid, &sq).is_determined(mark.to_value());
+        }
+
+        let squares_count = squares_determined.iter().filter(|x| **x).count();
+        if squares_count < 3 || squares_count > 7 || determined < 25 {
+            // 8 and 9 amount statistics are almost 100% never hitting
+            // Under determined 25 is the most in-effective
+            return false;
         }
 
         for sq_index in Square::iter() {
             let sq = Square::from_square_index(sq_index);
-            if square_solved[sq_index] {
+            if squares_determined[sq_index] {
                 continue;
             }
 
@@ -66,28 +72,28 @@ impl MarkTrailAndError {
                     continue;
                 }
 
-                let buffer = &mut grid.clone();
+                buffer.clone_from(grid);
                 // Place the mark
                 buffer.place_value_at(c, mark.to_value());
 
                 // Solve some stuff
-                let mut result;
-                loop {
-                    result = SolveResult::Nothing;
-                    result = result | MarkShapes::solve_for_mark(buffer, mark);
-                    result = result | DeterminedSolver::solve_for_mark(buffer, mark);
-                    if result != SolveResult::Updated {
-                        break;
-                    }
-                }
-                if result == SolveResult::Error {
-                    continue;
-                }
+                // let mut result;
+                // loop {
+                //     result = SolveResult::Nothing;
+                //     result = result | MarkShapes::solve_for_mark(buffer, mark);
+                //     result = result | DeterminedSolver::solve_for_mark(buffer, mark);
+                //     if result != SolveResult::Updated {
+                //         break;
+                //     }
+                // }
+                // if result == SolveResult::Error {
+                //     continue;
+                // }
 
                 // Check all the square were possible are now determined, or have at least one possible left
                 // If there is any square not determined or any possible left, this cell is causing errors and needs to be marked off
                 for old_sq_index in Square::iter() {
-                    if square_solved[sq_index] || old_sq_index == sq_index {
+                    if squares_determined[sq_index] || old_sq_index == sq_index {
                         continue;
                     }
                     let sq = Square::from_square_index(old_sq_index);
@@ -111,12 +117,12 @@ impl MarkTrailAndError {
                     // }
 
                     grid.unset_possible_at(c, mark);
-                    output = SolveResult::Updated;
+                    changed = true;
                     break;
                 }
             }
         }
 
-        output
+        changed
     }
 }

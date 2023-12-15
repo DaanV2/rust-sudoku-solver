@@ -4,13 +4,13 @@ use super::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark}
 
 #[derive(Clone)]
 pub struct Slice {
-    pub items: [Cell; 9],
+    pub items: [Cell; 12],
 }
 
 impl Slice {
     pub fn new() -> Self {
         Slice {
-            items: [Cell::new_empty(); 9],
+            items: [Cell::new_empty(); 12],
         }
     }
 
@@ -328,12 +328,12 @@ mod tests {
         let grid = general_tests::filled_sudoku();
 
         let s = Slice::from(&grid, &Row::new(0));
-        for i in s.iter() {
+        for i in 0..9 {
             assert_eq!(s.items[i], *grid.get_cell_at(Coord::new(0, i)));
         }
 
         let s = Slice::from(&grid, &Column::new(0));
-        for i in s.iter() {
+        for i in 0..9 {
             assert_eq!(s.items[i], *grid.get_cell_at(Coord::new(i, 0)));
         }
     }
