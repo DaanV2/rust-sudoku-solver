@@ -1,6 +1,6 @@
 use crate::grid::{cell_collection::CellCollection, coords::Coord, grid::Grid};
 
-use super::solver::{Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 /** Marks off the row, column and square of a determined cell */
 pub struct MarkSimple {}
@@ -13,6 +13,19 @@ impl MarkSimple {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
+
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        for i in grid.iter().rev() {
+            let cell = grid.get_cell(i);
+
+            //If the cell is determined, mark off that square, row and column
+            if cell.is_determined() {
+                grid.mark_off(Coord::from_index(i));
+            }
+        }
+
+        SolveResult::Nothing
+    }
 }
 
 impl Solver for MarkSimple {
@@ -20,19 +33,8 @@ impl Solver for MarkSimple {
         "Mark Simple"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
-        let mut current = grid.clone();
-
-        for i in grid.iter().rev() {
-            let cell = current.get_cell(i);
-
-            //If the cell is determined, mark off that square, row and column
-            if cell.is_determined() {
-                current.mark_off(Coord::from_index(i));
-            }
-        }
-
-        SolverResult::nothing(current)
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        MarkSimple::solve(grid)
     }
 }
 
@@ -102,19 +104,18 @@ mod test {
     }
 
     fn test_at_coord(coord: Coord, mark: Mark) {
-        let mut grid = Grid::new();
+        let grid = &mut Grid::new();
 
-        grid.set_cell_at(coord, Cell::new_with_value(mark.to_value()));
+        grid.set_cell_at(coord, &Cell::new_with_value(mark.to_value()));
 
         println!("{}\n{}", get_url(&grid), utility::ascii_grid(&grid));
         let solver = super::MarkSimple::new();
-        let result = solver.solve(&grid);
-        let modified = result.grid;
+        solver.solve(grid);
 
         // Checks the rows
-        for row in modified.iter_rows() {
+        for row in grid.iter_rows() {
             let row_index = row.row_index();
-            let possible = row.count_possible(&modified, mark);
+            let possible = row.count_possible(grid, mark);
 
             if row_index == coord.get_row() {
                 assert_eq!(possible, 0, "Row {} is not marked off", row_index);
@@ -124,9 +125,9 @@ mod test {
         }
 
         // Checks the columns
-        for col in modified.iter_columns() {
+        for col in grid.iter_columns() {
             let col_index = col.col_index();
-            let possible = col.count_possible(&modified, mark);
+            let possible = col.count_possible(grid, mark);
 
             if col_index == coord.get_col() {
                 assert_eq!(possible, 0, "Column {} is not marked off", col_index);
@@ -140,8 +141,8 @@ mod test {
         }
 
         // Checks the squares
-        for square in modified.iter_squares() {
-            let possible = square.count_possible(&modified, mark);
+        for square in grid.iter_squares() {
+            let possible = square.count_possible(grid, mark);
 
             if square.is_coord_in_square(coord) {
                 assert_eq!(possible, 0, "Square is not marked off");

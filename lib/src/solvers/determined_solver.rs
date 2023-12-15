@@ -3,11 +3,21 @@ use crate::grid::{
     slice::Slice, square::Square,
 };
 
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 // The solver that turns solved cells into determined cells.
 // EC if only 1 possibility is left
 pub struct DeterminedSolver {}
+
+impl Solver for DeterminedSolver {
+    fn name(&self) -> &'static str {
+        "Determined Solver"
+    }
+
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        DeterminedSolver::solve(grid)
+    }
+}
 
 impl DeterminedSolver {
     pub fn new() -> Self {
@@ -17,72 +27,107 @@ impl DeterminedSolver {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
-}
 
-impl Solver for DeterminedSolver {
-    fn name(&self) -> &'static str {
-        "Determined Solver"
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        let ch1 = DeterminedSolver::solve_rows(grid);
+        let ch2 = DeterminedSolver::solve_columns(grid);
+        let ch3 = DeterminedSolver::solve_squares(grid);
+
+        SolveResult::from_changed(ch1 | ch2 | ch3)
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
-        let current: &mut Grid = &mut grid.clone();
-        let mut changed = false;
+    pub fn solve_for_mark(grid: &mut Grid, mark: Mark) -> SolveResult {
+        let ch1 = DeterminedSolver::solve_rows_for_mark(grid, mark);
+        let ch2 = DeterminedSolver::solve_columns_for_mark(grid, mark);
+        let ch3 = DeterminedSolver::solve_squares_for_mark(grid, mark);
 
-        // Check rows
-        for row in Row::iter_row() {
-            changed |= set_if_possible_area(current, &row);
-        }
+        SolveResult::from_changed(ch1 | ch2 | ch3)
+    }
 
-        // Check columns
-        for col in Column::iter_col() {
-            changed |= set_if_possible_area(current, &col);
-        }
+    pub fn solve_rows(grid: &mut Grid) -> bool {
+        solve_area(grid, Row::iter_row())
+    }
 
-        // Check squares
-        for sq in Square::iter_squares() {
-            changed |= set_if_possible_area(current, &sq);
-        }
+    pub fn solve_rows_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        solve_area_for_mark(grid, Row::iter_row(), mark)
+    }
 
-        // for index in current.iter() {
-        //     let coord = current.get_coord(index);
-        //     let cell = current.get_cell_at(coord);
-        //     if cell.is_determined() {
-        //         continue;
-        //     }
-        //     if set_if_possible_all(current, cell, coord) {
-        //         result = SolveResult::Updated;
-        //     }
-        // }
+    pub fn solve_columns(grid: &mut Grid) -> bool {
+        solve_area(grid, Column::iter_col())
+    }
 
-        let result = match changed {
-            true => SolveResult::Updated,
-            false => SolveResult::Nothing,
-        };
+    pub fn solve_columns_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        solve_area_for_mark(grid, Column::iter_col(), mark)
+    }
 
-        SolverResult::new(*current, result)
+    pub fn solve_squares(grid: &mut Grid) -> bool {
+        solve_area(grid, Square::iter_squares())
+    }
+
+    pub fn solve_squares_for_mark(grid: &mut Grid, mark: Mark) -> bool {
+        solve_area_for_mark(grid, Square::iter_squares(), mark)
     }
 }
 
-fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
-    let slice = Slice::from(grid, area);
-    let mut determined = slice.count_determined();
-    if determined == 9 {
-        return false;
-    }
+#[inline(always)]
+fn solve_area<U: CellCollection, T: Iterator<Item = U>>(grid: &mut Grid, iter: T) -> bool {
     let mut changed = false;
 
-    for mark in Mark::iter() {
-        let (index, count) = slice.search_count_possible(mark);
-        if count == 1 {
+    for area in iter {
+        changed |= set_if_possible_area(grid, &area);
+    }
+
+    return changed;
+}
+#[inline(always)]
+fn solve_area_for_mark<U: CellCollection, T: Iterator<Item = U>>(
+    grid: &mut Grid,
+    iter: T,
+    mark: Mark,
+) -> bool {
+    let mut changed = false;
+
+    for area in iter {
+        changed |= set_if_possible_area_for_mark(grid, &area, mark);
+    }
+
+    return changed;
+}
+
+#[inline(always)]
+fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
+    let only_possible = Slice::from(grid, area).only_possible();
+    let or_all = only_possible.or_all();
+    let mut changed = false;
+
+    for mark in or_all.iter_possible() {
+        let marked = only_possible.only_possible_value(mark);
+        if marked.count() == 1 {
+            let index = marked.first_possible(mark);
             let coord = area.get_coord(index);
             let value = mark.to_value();
-            grid.place_value_at(coord, value);
             changed = true;
-            determined += 1;
-            if determined == 9 {
-                break;
-            }
+
+            grid.place_value_at(coord, value);
         }
+    }
+
+    return changed;
+}
+
+#[inline(always)]
+fn set_if_possible_area_for_mark<T: CellCollection>(grid: &mut Grid, area: &T, mark: Mark) -> bool {
+    let only_possible = Slice::from(grid, area).only_possible();
+    let mut changed = false;
+
+    let marked = only_possible.only_possible_value(mark);
+    if marked.count() == 1 {
+        let index = marked.first_possible(mark);
+        let coord = area.get_coord(index);
+        let value = mark.to_value();
+        changed = true;
+
+        grid.place_value_at(coord, value);
     }
 
     return changed;
@@ -100,10 +145,10 @@ mod test {
     fn test_can_solve() {
         let grid = &mut general_tests::filled_sudoku();
 
-        let index = 64;
+        let index = 2;
         let coord = grid.get_coord(index);
 
-        let cell = grid.get_cell_at(coord);
+        let cell = grid.get_cell_at(coord).clone();
         let mut new_cell;
 
         if let Some(value) = cell.value() {
@@ -113,33 +158,31 @@ mod test {
             panic!("Cell should be determined");
         }
 
-        grid.set_cell_at(coord, new_cell);
+        grid.set_cell_at(coord, &new_cell);
 
         let solver = super::DeterminedSolver::new();
-        let output = solver.solve(&grid);
+        let output = solver.solve(grid);
 
-        assert_eq!(output.result, SolveResult::Updated);
+        let check_cell = grid.get_cell_at(coord);
 
-        let check_cell = output.grid.get_cell_at(coord);
-
-        assert_eq!(check_cell, cell);
+        assert_eq!(check_cell, &cell);
+        assert_eq!(output, SolveResult::Updated);
     }
 
     #[test]
     fn test_single_missing_number() {
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
 
-        general_tests::remove_number(&mut grid, 5);
+        general_tests::remove_number(grid, 5);
 
-        println!("{}", grid);
         let solver = super::DeterminedSolver::new();
-        let result = solver.solve(&grid);
+        let result = solver.solve(grid);
 
-        assert_eq!(result.result, SolveResult::Updated);
+        assert_eq!(result, SolveResult::Updated);
 
         //Check that all cells with value 5 are determined
-        for index in result.grid.iter() {
-            let cell = result.grid.get_cell(index);
+        for index in grid.iter() {
+            let cell = grid.get_cell(index);
 
             assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
@@ -147,22 +190,18 @@ mod test {
 
     #[test]
     fn test_double_missing_number() {
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
 
-        general_tests::remove_number(&mut grid, 5);
-        general_tests::remove_number(&mut grid, 1);
+        general_tests::remove_number(grid, 5);
+        general_tests::remove_number(grid, 1);
 
-        println!("{}", grid);
+        let result = super::DeterminedSolver::new().solve(grid);
 
-        let result = super::DeterminedSolver::new().solve(&grid);
-
-        println!("{}", result.grid);
-
-        assert_eq!(result.result, SolveResult::Updated);
+        assert_eq!(result, SolveResult::Updated);
 
         //Check that all cells with value 5 are determined
-        for index in result.grid.iter() {
-            let cell = result.grid.get_cell(index);
+        for index in grid.iter() {
+            let cell = grid.get_cell(index);
 
             assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
@@ -170,21 +209,21 @@ mod test {
 
     #[test]
     fn test_only_1_possible() {
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
 
         for i in 0..10 {
-            general_tests::remove_number(&mut grid, i);
+            general_tests::remove_number(grid, i);
         }
 
         println!("{}", grid);
-        let result = super::DeterminedSolver::new().solve(&grid);
+        let result = super::DeterminedSolver::new().solve(grid);
 
-        println!("{}", result.grid);
-        assert_eq!(result.result, SolveResult::Updated);
+        println!("{}", grid);
+        assert_eq!(result, SolveResult::Updated);
 
         //Check that all cells with value 5 are determined
-        for index in result.grid.iter() {
-            let cell = result.grid.get_cell(index);
+        for index in grid.iter() {
+            let cell = grid.get_cell(index);
 
             assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }

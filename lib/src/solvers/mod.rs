@@ -5,6 +5,7 @@ pub mod mark_reset;
 pub mod mark_shapes;
 pub mod mark_simple;
 pub mod mark_survivor;
+pub mod mark_trail_and_error;
 pub mod solver;
 pub mod solver_manager;
 pub mod util;

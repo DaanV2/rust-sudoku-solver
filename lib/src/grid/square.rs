@@ -1,4 +1,6 @@
-use super::{cell_collection::CellCollection, coords::Coord};
+use std::fmt::{Display, Formatter};
+
+use super::{cell_collection::CellCollection, column::Column, coords::Coord, row::Row};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Square {
@@ -10,7 +12,7 @@ pub struct Square {
 
 impl Square {
     /// Creates a new square from the given row and column
-    pub fn new(row: usize, col: usize) -> Self {
+    pub const fn new(row: usize, col: usize) -> Self {
         Self { row, col }
     }
 
@@ -20,6 +22,10 @@ impl Square {
         let col_offset = col - col % 3;
 
         Square::new(row_offset, col_offset)
+    }
+
+    pub fn get_coord_start(&self) -> Coord {
+        Coord::new(self.row, self.col)
     }
 
     /// Gets the coord at the row and column
@@ -50,49 +56,45 @@ impl Square {
         row * 3 + col
     }
 
+    /// Returns the square associated with the index (0..9)
+    pub fn from_square_index(index: usize) -> Square {
+        let row = index / 3;
+        let col = index % 3;
+
+        return Square::new(row * 3, col * 3);
+    }
+
+    /// Returns the index of the square (0..9)
+    pub fn to_square_index(&self) -> usize {
+        let row = self.row / 3;
+        let col = self.col / 3;
+
+        return row * 3 + col;
+    }
+
+    pub fn iter() -> std::ops::Range<usize> {
+        (0..9).into_iter()
+    }
+
     /// Returns an iterator over the indices of the cells in the square
     pub fn iter_coords() -> impl Iterator<Item = Coord> {
-        let mut row = 0;
-        let mut col = 0;
-
-        std::iter::from_fn(move || {
-            if row > 6 {
-                return None;
-            }
-
-            let coord = Coord::new(row, col);
-
-            if col >= 6 {
-                col = 0;
-                row += 3;
-            } else {
-                col += 3;
-            }
-
-            Some(coord)
-        })
+        Square::iter_squares().map(|i| i.get_coord_start())
     }
 
     pub fn iter_squares() -> impl Iterator<Item = Square> {
-        let mut row = 0;
-        let mut col = 0;
+        Square::iter().map(|i| Square::from_square_index(i))
+    }
 
-        std::iter::from_fn(move || {
-            if row > 6 {
-                return None;
-            }
+    /// Iterates over all rows
+    pub fn iter_rows(&self) -> impl Iterator<Item = Row> {
+        let row = self.row;
+        (0..3).map(move |i| Row::new(row + i))
+    }
 
-            let square = Square::new(row, col);
-
-            if col >= 6 {
-                col = 0;
-                row += 3;
-            } else {
-                col += 3;
-            }
-
-            Some(square)
-        })
+    /// Iterates over all columns
+    pub fn iter_columns(&self) -> impl Iterator<Item = Column> {
+        let col = self.col;
+        (0..3).map(move |i| Column::new(col + i))
     }
 }
 
@@ -104,7 +106,7 @@ impl CellCollection for Square {
     }
 
     fn iter(&self) -> std::ops::Range<usize> {
-        0..9
+        0..self.max()
     }
 
     fn max(&self) -> usize {
@@ -115,6 +117,12 @@ impl CellCollection for Square {
 impl Default for Square {
     fn default() -> Self {
         Self { row: 0, col: 0 }
+    }
+}
+
+impl Display for Square {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Square({}, {})", self.row, self.col)
     }
 }
 
@@ -158,6 +166,18 @@ mod test {
         for sqr in Square::iter_squares() {
             assert_eq!(sqr.row % 3, 0);
             assert_eq!(sqr.col % 3, 0);
+        }
+    }
+
+    #[test]
+    fn test_from_index() {
+        for i in 0..9 {
+            let square = Square::from_square_index(i);
+            assert_eq!(square.row, i / 3 * 3);
+            assert_eq!(square.col, i % 3 * 3);
+
+            let j = square.to_square_index();
+            assert_eq!(i, j);
         }
     }
 }

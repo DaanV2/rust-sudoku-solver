@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::BitAnd};
 
 use super::{
     cell::Cell,
@@ -25,38 +25,41 @@ impl Grid {
         }
     }
 
+    pub fn empty() -> Grid {
+        Grid {
+            cells: [Cell::new_empty(); GRID_SIZE],
+        }
+    }
+
     pub fn from(cells: [Cell; GRID_SIZE]) -> Grid {
         Grid { cells: cells }
     }
 
     /// Retrieves the cell at the given index
-    pub fn get_cell(&self, index: usize) -> Cell {
-        return self.cells[index];
+    pub fn get_cell(&self, index: usize) -> &Cell {
+        debug_assert_eq!(index < GRID_SIZE, true, "Index out of bounds");
+        unsafe {
+            return self.cells.get_unchecked(index);
+        }
     }
 
     /// Sets the cell at the given index
-    pub fn set_cell(&mut self, index: usize, cell: Cell) {
-        self.cells[index] = cell;
+    pub fn set_cell(&mut self, index: usize, cell: &Cell) {
+        debug_assert_eq!(index < GRID_SIZE, true, "Index out of bounds");
+        unsafe {
+            let v = self.cells.get_unchecked_mut(index);
+            *v = *cell;
+        }
     }
 
     /// Retrieves the cell at the given coordinate
-    pub fn get_cell_at(&self, coord: Coord) -> Cell {
+    pub fn get_cell_at(&self, coord: Coord) -> &Cell {
         self.get_cell(coord.get_index())
     }
 
     /// Sets the cell at the given coordinate
-    pub fn set_cell_at(&mut self, coord: Coord, cell: Cell) {
+    pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
         self.set_cell(coord.get_index(), cell);
-    }
-
-    /// Retrieves the row at the given index
-    pub fn get_row(&self, row: usize) -> Row {
-        Row::new(row)
-    }
-
-    /// Retrieves the column at the given index
-    pub fn get_column(&self, col: usize) -> Column {
-        Column::new(col)
     }
 
     /// Retrieves the square at the given row and column
@@ -76,7 +79,7 @@ impl Grid {
     }
 
     /// Returns true if the given value is possible for this cell
-    pub fn is_possible(&self, index: usize, mark: Mark) -> bool {
+    pub fn is_possible(&mut self, index: usize, mark: Mark) -> bool {
         self.get_cell(index).is_possible(mark)
     }
 
@@ -89,36 +92,35 @@ impl Grid {
     pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
         self.unset_possible(coord.get_index(), mark);
     }
+    /// Un sets the given value as possible for this cell
+    pub fn unset_possible(&mut self, index: usize, mark: Mark) {
+        let mut new_cell = self.get_cell(index).clone();
+        new_cell.unset_possible(mark);
+        self.set_cell(index, &new_cell);
+    }
 
     /// Returns true if the given value is present in this collection
     pub fn set_possible(&mut self, index: usize, mark: Mark) {
         let mut new_cell = self.get_cell(index).clone();
         new_cell.set_possible(mark);
         if !new_cell.is_determined() {
-            self.set_cell(index, new_cell);
+            self.set_cell(index, &new_cell);
         }
     }
 
-    /// Un sets the given value as possible for this cell
-    pub fn unset_possible(&mut self, index: usize, mark: Mark) {
-        let mut new_cell = self.get_cell(index).clone();
-        new_cell.unset_possible(mark);
-        self.set_cell(index, new_cell);
-    }
-
     /// Iterates over all rows
-    pub fn iter_rows(&self) -> impl Iterator<Item = Row> + '_ {
-        GRID_HEIGHT_RANGE.map(move |row| self.get_row(row))
+    pub fn iter_rows(&self) -> impl Iterator<Item = Row> {
+        GRID_HEIGHT_RANGE.map(move |row| Row::new(row))
     }
 
     /// Iterates over all columns
-    pub fn iter_columns(&self) -> impl Iterator<Item = Column> + '_ {
-        GRID_WIDTH_RANGE.map(move |col| self.get_column(col))
+    pub fn iter_columns(&self) -> impl Iterator<Item = Column> {
+        GRID_WIDTH_RANGE.map(move |col| Column::new(col))
     }
 
     /// Iterates over all squares
-    pub fn iter_squares(&self) -> impl Iterator<Item = Square> + '_ {
-        Square::iter_coords().map(move |coord| self.get_square_at(coord))
+    pub fn iter_squares(&self) -> impl Iterator<Item = Square> {
+        Square::iter_squares()
     }
 
     /// Iterates over all cells and counts the determined cells
@@ -133,15 +135,19 @@ impl Grid {
         sum
     }
 
-    #[inline(always)]
-    pub fn place_value(&mut self, index: usize, value: usize) {
+    pub fn clone_to(&self, to: &mut Grid) {
+        for index in self.iter() {
+            to.set_cell(index, self.get_cell(index));
+        }
+    }
+
+    pub fn place_value(&mut self, index: usize, value: u16) {
         let coord = Coord::from_index(index);
         self.place_value_at(coord, value);
     }
 
-    #[inline(always)]
-    pub fn place_value_at(&mut self, coord: Coord, value: usize) {
-        self.set_cell_at(coord, Cell::new_with_value(value));
+    pub fn place_value_at(&mut self, coord: Coord, value: u16) {
+        self.set_cell_at(coord, &Cell::new_with_value(value));
 
         self.mark_off(coord);
     }
@@ -150,21 +156,61 @@ impl Grid {
     pub fn mark_off(&mut self, coord: Coord) {
         let mark = Mark::from_value(self.get_cell_at(coord).get_value());
         let (row, col) = coord.get_row_col();
+        let square: Square = self.get_square_at(coord);
 
         // Mark off row
-        for c in GRID_WIDTH_RANGE.rev() {
-            self.unset_possible_at(Coord::new(row, c), mark);
-        }
+        // self.mark_off_row(row, mark);
+        // self.mark_off_column(col, mark);
+        // self.mark_off_square(&square, mark);
 
-        // Mark off column
-        for r in GRID_HEIGHT_RANGE.rev() {
-            self.unset_possible_at(Coord::new(r, col), mark);
-        }
+        let mask = Cell::mask() & Cell::new_with_value(!mark.to_data());
+        let mask_grid = &mut Grid::from([Cell::mask(); GRID_SIZE]);
 
-        // Mark off square
-        let square = self.get_square_at(coord);
-        for c in square.iter().rev() {
-            self.unset_possible_at(square.get_coord(c), mark);
+        // Set row with mask
+        mask_grid.set_cell_area(&Row::new(row), &mask);
+        mask_grid.set_cell_area(&Column::new(col), &mask);
+        mask_grid.set_cell_area(&square, &mask);
+
+        // Apply mask
+        for index in mask_grid.iter() {
+            self.cells[index] = self.cells[index].bitand(mask_grid.cells[index]);
+        }
+    }
+
+    #[inline(always)]
+    pub fn mark_off_row(&mut self, row: usize, mark: Mark) {
+        self.unset_possible_area(&Row::new(row), mark);
+    }
+
+    #[inline(always)]
+    pub fn mark_off_column(&mut self, col: usize, mark: Mark) {
+        self.unset_possible_area(&Column::new(col), mark);
+    }
+
+    #[inline(always)]
+    pub fn mark_off_square(&mut self, square: &Square, mark: Mark) {
+        self.unset_possible_area(square, mark);
+    }
+
+    #[inline(always)]
+    pub fn unset_possible_area<T: CellCollection>(&mut self, area: &T, mark: Mark) {
+        let mut mask = Cell::mask();
+        mask = mask & Cell::new_with_value(!mark.to_data());
+
+        for index in area.iter() {
+            let coord = area.get_coord(index);
+            unsafe {
+                let c = self.cells.get_unchecked_mut(coord.get_index());
+                c.clone_from(&c.bitand(mask));
+            }
+        }
+    }
+
+    #[inline(always)]
+    pub fn set_cell_area(&mut self, area: &impl CellCollection, cell: &Cell) {
+        for index in area.iter() {
+            let coord = area.get_coord(index);
+            self.set_cell_at(coord, cell);
         }
     }
 }
@@ -200,8 +246,13 @@ mod tests {
     use super::Grid;
     use crate::{
         grid::{
+            cell::Cell,
             cell_collection::CellCollection,
+            column::Column,
             constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+            coords::Coord,
+            mark::Mark,
+            row::Row,
         },
         test::util::general_tests,
     };
@@ -225,10 +276,24 @@ mod tests {
     }
 
     #[test]
+    fn cell_get_set() {
+        let mut grid = general_tests::filled_sudoku();
+        let index: usize = 64;
+        let mut c = Cell::new_with_value(9);
+        c.set_possible(Mark::N3);
+        c.set_possible(Mark::N4);
+
+        grid.set_cell(index, &c);
+        let t = grid.get_cell(index);
+
+        assert_eq!(t, &c);
+    }
+
+    #[test]
     fn test_get_row() {
         for row_index in GRID_HEIGHT_RANGE {
             let grid = general_tests::filled_sudoku();
-            let row = grid.get_row(row_index);
+            let row = Row::new(row_index);
 
             for col_index in GRID_WIDTH_RANGE {
                 let coord = row.get_coord(col_index);
@@ -246,7 +311,7 @@ mod tests {
     fn test_get_column() {
         for col_index in GRID_WIDTH_RANGE {
             let grid = general_tests::filled_sudoku();
-            let column = grid.get_column(col_index);
+            let column = Column::new(col_index);
 
             for row_index in GRID_HEIGHT_RANGE {
                 let coord = column.get_coord(row_index);
@@ -256,6 +321,52 @@ mod tests {
                 assert_eq!(cell, column_cell);
                 assert_eq!(coord.get_col(), col_index);
             }
+        }
+    }
+
+    #[test]
+    fn test_place() {
+        let mut grid = Grid::new();
+
+        let index = 64;
+        let coord = grid.get_coord(index);
+
+        grid.place_value_at(coord, 9);
+
+        assert_eq!(grid.get_cell_at(coord).get_value(), 9);
+
+        //Check row
+        for col in GRID_WIDTH_RANGE {
+            let at = Coord::new(coord.get_row(), col);
+            if at == coord {
+                continue;
+            }
+
+            let c = grid.get_cell_at(at);
+            assert_eq!(c.is_possible(Mark::N9), false);
+        }
+
+        //Check column
+        for row in GRID_HEIGHT_RANGE {
+            let at = Coord::new(row, coord.get_col());
+            if at == coord {
+                continue;
+            }
+
+            let c = grid.get_cell_at(at);
+            assert_eq!(c.is_possible(Mark::N9), false);
+        }
+
+        //Check square
+        let square = grid.get_square_at(coord);
+        for c in square.iter() {
+            let at = square.get_coord(c);
+            if at == coord {
+                continue;
+            }
+
+            let c = grid.get_cell_at(at);
+            assert_eq!(c.is_possible(Mark::N9), false);
         }
     }
 }

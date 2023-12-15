@@ -3,7 +3,7 @@ use crate::grid::{
     square::Square,
 };
 
-use super::solver::{SolveResult, Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 
 /** A solver takes a mark and its areas, and counts and tries to eliminate other marks from that area */
 pub struct MarkAreaCount {}
@@ -16,6 +16,11 @@ impl MarkAreaCount {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
+
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        let instance = &mut MarkAreaCountInstance::new(*grid);
+        instance.check_marks_area()
+    }
 }
 
 impl Solver for MarkAreaCount {
@@ -23,11 +28,8 @@ impl Solver for MarkAreaCount {
         "Mark Area Count"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
-        let instance = &mut MarkAreaCountInstance::new(*grid);
-        let result = instance.check_marks_area();
-
-        SolverResult::new(instance.grid, result)
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        MarkAreaCount::solve(grid)
     }
 }
 
@@ -104,7 +106,7 @@ impl MarkAreaCountInstance {
 
             self.data[i] = MarkAreaCountDataItem {
                 check: check,
-                cell: cell,
+                cell: cell.clone(),
                 coord,
             };
         }

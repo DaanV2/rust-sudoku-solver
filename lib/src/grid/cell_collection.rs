@@ -36,7 +36,7 @@ pub trait CellCollection {
         count
     }
 
-    fn count_determined_value(&self, grid: &Grid, value: usize) -> usize {
+    fn count_determined_value(&self, grid: &Grid, value: u16) -> usize {
         let mut count = 0;
 
         for i in self.iter() {

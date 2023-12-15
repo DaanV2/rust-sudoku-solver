@@ -2,27 +2,28 @@ use core::panic;
 use std::error::Error;
 
 use crate::grid::{
-    cell::Cell, cell_collection::CellCollection, coords::Coord, grid::Grid, mark::Mark,
+    cell::Cell, cell_collection::CellCollection, column::Column, coords::Coord, flags::Flags16,
+    grid::Grid, mark::Mark, queries::count_determine_value, row::Row, slice::Slice,
 };
 
-pub fn validate_grid(grid: &Grid) -> bool {
+pub fn validate_grid(grid: &Grid) -> Result<(), Box<dyn Error>> {
     for index in grid.iter() {
         let coord = grid.get_coord(index);
         let cell = grid.get_cell_at(coord);
-        validate_cell(cell, coord);
+        validate_cell(cell, coord)?;
     }
 
     for r in grid.iter_rows() {
-        validate_area(grid, r);
+        validate_area(grid, r)?;
     }
     for c in grid.iter_columns() {
-        validate_area(grid, c);
+        validate_area(grid, c)?;
     }
     for s in grid.iter_squares() {
-        validate_area(grid, s);
+        validate_area(grid, s)?;
     }
 
-    true
+    Ok(())
 }
 
 pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error>> {
@@ -32,27 +33,22 @@ pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error
     if !cell.is_determined() {
         panic!("Cell at {} is not determined", coord);
     }
+    let v = cell.get_value();
 
     // Row should only be 1
-    let determined = grid
-        .get_row(coord.get_row())
-        .count_determined_value(grid, cell.get_value());
+    let determined = count_determine_value(grid, Row::new(coord.get_row()), v);
     if determined != 1 {
         panic!("Row {} should only be 1", coord.get_row());
     }
 
     // Column should only be 1
-    let determined = grid
-        .get_column(coord.get_col())
-        .count_determined_value(grid, cell.get_value());
+    let determined = count_determine_value(grid, Column::new(coord.get_col()), v);
     if determined != 1 {
         panic!("Column {} should only be 1", coord.get_col());
     }
 
     // Square should only be 1
-    let determined = grid
-        .get_square_at(coord)
-        .count_determined_value(grid, cell.get_value());
+    let determined = count_determine_value(grid, grid.get_square_at(coord), v);
     if determined != 1 {
         panic!("Square should only be 1");
     }
@@ -60,51 +56,53 @@ pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error
     Ok(())
 }
 
-pub fn validate_cell(cell: Cell, coord: Coord) {
+pub fn validate_cell(cell: &Cell, coord: Coord) -> Result<(), Box<dyn Error>> {
     let possible = cell.iter_possible().count();
     if let Some(v) = cell.value() {
         if v > 9 || v < 1 {
-            panic!("Invalid value {} at {}", v, coord);
+            let msg = format!("Invalid value {} at {}", v, coord);
+            return Err(msg)?;
         }
-        return;
+        return Ok(());
     }
 
-    if possible == 0 {
-        panic!("No possible values at {}", coord);
-    }
+    return match possible {
+        0 => {
+            let msg = format!("No possible values at {}", coord);
+            Err(msg)?
+        }
+        _ => Ok(()),
+    };
 }
 
-pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) {
+pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) -> Result<(), Box<dyn Error>> {
+    let first: Coord = area.get_coord(0);
+    let last = area.get_coord(area.max() - 1);
+    let slice = Slice::from(grid, &area);
+
     for mark in Mark::iter() {
-        let first = area.get_coord(0);
-        let last = area.get_coord(area.max() - 1);
-
-        let determined = area
-            .iter()
-            .map(|c| grid.get_cell_at(area.get_coord(c)))
-            .filter(|c| c.is_determined() && c.get_value() == mark.to_value())
-            .count();
-
-        let possible = area
-            .iter()
-            .map(|c| grid.get_cell_at(area.get_coord(c)))
-            .filter(|c| c.is_possible(mark))
-            .count();
+        let determined = slice.count_determined_value(mark.to_value());
+        let possible = slice.any_possible(mark);
 
         if determined > 1 {
-            panic!("More than one {} in area, from {} to {}", mark, first, last);
-        } else if determined == 1 && possible > 0 {
-            panic!(
+            let msg = format!("More than one {} in area, from {} to {}", mark, first, last);
+            return Err(msg)?;
+        } else if determined == 1 && possible {
+            let msg = format!(
                 "Determined {} with possible values, from {} to {}",
                 mark, first, last
             );
-        } else if determined == 0 && possible == 0 {
-            panic!(
+            return Err(msg)?;
+        } else if determined == 0 && !possible {
+            let msg = format!(
                 "No possible values for {}, from {} to {}",
                 mark, first, last
             );
+            return Err(msg)?;
         }
     }
+
+    Ok(())
 }
 
 pub fn is_valid(grid: &Grid) -> bool {
@@ -128,41 +126,53 @@ pub fn is_valid(grid: &Grid) -> bool {
 }
 
 pub fn is_valid_area<T: CellCollection>(grid: &Grid, area: T) -> bool {
-    let mut determined = [0; 10];
-    let mut possibles = [0; 10];
+    let mut determined = Flags16::new();
+    let mut possible = Flags16::new();
 
-    for index in area.iter() {
-        let coord = area.get_coord(index);
-        let cell = grid.get_cell_at(coord);
+    let slice = Slice::from(grid, &area);
 
-        if cell.is_determined() {
-            let value = cell.get_value();
-            if determined[value] >= 1 {
-                return false;
-            }
+    for index in slice.iter() {
+        let cell = slice.items[index];
 
-            determined[value] = determined[value] + 1;
+        if let Some(v) = cell.value() {
+            determined.set_bit(v as usize);
         } else {
-            for value in cell.iter_possible() {
-                let v = value.to_value();
-                possibles[v] = possibles[v] + 1;
-            }
+            let f = Flags16::from(cell);
+            possible = possible | f;
         }
     }
 
-    for i in 1..9 {
-        // If not determined, then it needs to be possible
-        if determined[i] == 0 {
-            if possibles[i] == 0 {
-                return false;
-            }
-        } else {
-            // If determined, then it can't be possible
-            if possibles[i] > 0 {
-                return false;
-            }
+    for i in 1..=9 {
+        // if determined and possible have the same bit set, then it's invalid
+        // Since determined and possible are mutually exclusive, this is the same as
+        if determined.get_bit(i) == possible.get_bit(i) {
+            return false;
         }
     }
 
     return true;
+}
+
+#[cfg(test)]
+mod test {
+    use crate::grid::utility::utility::parse_from_ascii;
+
+    #[test]
+    pub fn test_specific_case() {
+        let grid = parse_from_ascii(
+            "6 . . | . . . | 7 . .
+             . . 2 | 5 . . | 4 . .
+             1 . . | 8 . . | 5 . .
+             ------|-------|------
+             . . . | . . . | . . .
+             . . . | . . . | 9 . .
+             . . . | . . . | . . .
+             ------|-------|------
+             . . . | . . . | . . .
+             . . . | . 5 . | . . .
+             . . . | . . . | . . .",
+        );
+
+        assert!(super::is_valid(&grid));
+    }
 }

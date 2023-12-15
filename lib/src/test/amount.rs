@@ -55,10 +55,10 @@ mod test {
         let percent = (amount * 100) / total;
 
         println!("test_amount({}) {}%", amount, percent);
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
 
-        general_tests::remove_cells_amount(&mut grid, amount);
+        general_tests::remove_cells_amount(grid, amount);
 
-        general_tests::test_should_solve(grid);
+        general_tests::test_should_solve(*grid);
     }
 }

@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use super::{
     cell_collection::CellCollection, constants::GRID_HEIGHT, coords::Coord, square::Square,
 };
@@ -22,31 +24,44 @@ impl Row {
     }
 
     pub fn iter_row() -> impl Iterator<Item = Row> {
-        (0..GRID_HEIGHT).map(|i| Row::new(i))
+        (0..Row::max()).map(|i| Row::new(i))
+    }
+
+    pub fn max() -> usize {
+        GRID_HEIGHT
+    }
+}
+
+impl From<usize> for Row {
+    fn from(row: usize) -> Self {
+        Self::new(row)
     }
 }
 
 impl CellCollection for Row {
-    fn get_coord(&self, index: usize) -> Coord {
-        Coord::new(self.row, index)
+    fn get_coord(&self, col: usize) -> Coord {
+        Coord::new(self.row, col)
     }
 
     fn iter(&self) -> std::ops::Range<usize> {
-        0..GRID_HEIGHT
+        0..Row::max()
     }
 
     fn max(&self) -> usize {
-        GRID_HEIGHT
+        Row::max()
+    }
+}
+
+impl Display for Row {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[Row {}]", self.row)
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::Row;
-    use crate::{
-        grid::{cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE},
-        test::util::general_tests,
-    };
+    use crate::grid::{cell_collection::CellCollection, constants::GRID_HEIGHT_RANGE};
 
     #[test]
     fn test_coords() {
@@ -63,10 +78,8 @@ mod test {
 
     #[test]
     fn test_row_iter_coords() {
-        let grid = general_tests::filled_sudoku();
-
         for row_index in GRID_HEIGHT_RANGE {
-            let row = grid.get_row(row_index);
+            let row = Row::new(row_index);
 
             for c in row.iter() {
                 let coord = row.get_coord(c);
@@ -77,10 +90,8 @@ mod test {
 
     #[test]
     fn test_row_iter_cells() {
-        let grid = general_tests::filled_sudoku();
-
         for row_index in GRID_HEIGHT_RANGE {
-            let row = grid.get_row(row_index);
+            let row = Row::new(row_index);
 
             for index in row.iter() {
                 let coord = row.get_coord(index);

@@ -1,7 +1,8 @@
 pub mod utility {
 
     use crate::grid::{
-        constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+        cell_collection::CellCollection,
+        constants::{GRID_HEIGHT_RANGE, GRID_SIZE, GRID_WIDTH_RANGE},
         coords::Coord,
         grid::Grid,
         square::Square,
@@ -68,7 +69,7 @@ pub mod utility {
                 if char == '.' || char == '0' {
                     index += 1;
                 } else if let Some(value) = char.to_digit(10) {
-                    grid.place_value(index, value as usize);
+                    grid.place_value(index, value as u16);
                     index += 1;
                 }
             }
@@ -92,5 +93,35 @@ pub mod utility {
              2 4 8 | 9 5 7 | 1 3 6\n\
              7 6 3 | 4 1 8 | 2 5 9",
         )
+    }
+
+    /// Returns a string representation of a grid in a digit format
+    pub fn to_digits(grid: &Grid) -> String {
+        let mut chars = ['0'; GRID_SIZE];
+
+        for i in grid.iter() {
+            let cell = grid.get_cell(i);
+
+            if let Some(v) = cell.value() {
+                chars[i] = std::char::from_digit(v as u32, 10).unwrap();
+            } else {
+                chars[i] = '0';
+            }
+        }
+
+        chars.iter().collect()
+    }
+
+    /// Returns a grid from a digit format
+    pub fn from_digit(digits: &str) -> Grid {
+        let mut grid = Grid::new();
+
+        for (i, c) in digits.chars().enumerate() {
+            if c != '0' {
+                grid.place_value(i, c.to_digit(10).unwrap() as u16);
+            }
+        }
+
+        grid
     }
 }

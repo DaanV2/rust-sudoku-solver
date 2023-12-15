@@ -29,7 +29,9 @@ pub mod general_tests {
         );
 
         assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
-        validate_grid(&output.grid);
+        if let Err(e) = validate_grid(&output.grid) {
+            panic!("Grid is not valid: {}", e);
+        }
     }
 
     /// Removes a random amount of cells from the grid
@@ -42,14 +44,14 @@ pub mod general_tests {
             let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set_cell(index, Cell::new());
+                grid.set_cell(index, &Cell::new());
                 removed += 1;
             }
         }
     }
 
     /// Removes a number from the grid
-    pub fn remove_number(grid: &mut Grid, number: usize) {
+    pub fn remove_number(grid: &mut Grid, number: u16) {
         let mark = Mark::from_value(number);
 
         //Reset all cells with nr 5 to empty
@@ -59,21 +61,20 @@ pub mod general_tests {
                 let mut c = Cell::new_with_value(0);
                 c.set_possible(mark);
 
-                grid.set_cell(i, c);
+                grid.set_cell(i, &c);
             }
         }
     }
 
     /// Solves the grid with the given solvers
     pub fn process_through(grid: &Grid, solves: Vec<Box<dyn Solver>>) -> Grid {
-        let mut result = *grid;
+        let result = &mut grid.clone();
 
         for solver in solves {
-            let output = solver.solve(&result);
-            result = output.grid;
+            solver.solve(result);
         }
 
-        result
+        result.clone()
     }
 
     /// Returns a filled sudoku grid

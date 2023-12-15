@@ -1,11 +1,14 @@
-use std::fmt::{Display, Formatter};
+use std::{
+    fmt::{Display, Formatter},
+    ops::BitOr,
+};
 
 use crate::grid::grid::Grid;
 
 pub trait Solver {
     fn name(&self) -> &'static str;
     /// Solves the given grid and returns the result.
-    fn solve(&self, grid: &Grid) -> SolverResult;
+    fn solve(&self, grid: &mut Grid) -> SolveResult;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -70,17 +73,24 @@ pub enum SolveResult {
 
 impl SolveResult {
     pub fn combine(self, other: SolveResult) -> Self {
-        if other as usize >= self as usize {
-            return other;
+        if self as usize >= other as usize {
+            return self;
         }
 
-        return self;
+        return other;
     }
 
     pub fn is_done(self) -> bool {
         match self {
             SolveResult::Solved | SolveResult::Error => true,
             _ => false,
+        }
+    }
+
+    pub fn from_changed(changed: bool) -> Self {
+        match changed {
+            true => SolveResult::Updated,
+            false => SolveResult::Nothing,
         }
     }
 }
@@ -93,6 +103,14 @@ impl Display for SolveResult {
             SolveResult::Solved => write!(f, "Solved"),
             SolveResult::Error => write!(f, "Error"),
         }
+    }
+}
+
+impl BitOr for SolveResult {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        self.combine(rhs)
     }
 }
 

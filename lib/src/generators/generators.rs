@@ -2,10 +2,7 @@ use rand::{rngs::StdRng, seq::IteratorRandom, Rng, RngCore, SeedableRng};
 
 use crate::{
     grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, grid::Grid},
-    solvers::{
-        solver::{SolveResult, SolverResult},
-        solver_manager::SolverManager,
-    },
+    solvers::{solver::SolveResult, solver_manager::SolverManager, validator::validate_grid},
 };
 
 pub struct Generator<T: RngCore> {
@@ -27,53 +24,56 @@ impl<T: RngCore> Generator<T> {
 
     /// Generates a new grid
     pub fn generate(&mut self) -> Option<Grid> {
-        let grid = Grid::new();
-        let mut result = SolverResult::new(grid, SolveResult::Nothing);
+        let grid = &mut Grid::new();
         let mut iter = 0;
-        result = self.solvers.pre_solve(result);
+        let mut result = self.solvers.pre_solve(grid);
 
         // Pick a cell, Checks its possible values, and picks a random value from the possible values
-        while !SolveResult::is_done(result.result) && iter < GRID_SIZE {
+        while !SolveResult::is_done(result) && iter < GRID_SIZE {
             iter += 1;
-            let index = self.rng.gen_range(0..result.grid.max());
-            let cell = &result.grid.get_cell(index);
+            let index = self.rng.gen_range(0..grid.max());
+            let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
                 continue;
             }
 
-            let determined = result.grid.count_determined();
+            let determined = grid.count_determined();
             if determined > (GRID_SIZE / 3) {
                 break;
             }
 
             let iter = cell.iter_possible();
             if let Some(value) = iter.choose(&mut self.rng) {
-                result.grid.place_value(index, value.to_value());
+                grid.place_value(index, value.to_value());
 
                 // Solve some cells, if it fails, remove the cell
-                let mut r = self.solvers.pre_solve(result);
-                r = self.solvers.solve_round(r);
-                match r.result {
+                _ = self.solvers.pre_solve(grid);
+                result = self.solvers.solve_round(grid);
+                match result {
                     SolveResult::Error => {
-                        result.grid.set_cell(index, Cell::new());
+                        grid.set_cell(index, &Cell::new());
                     }
-                    _ => {
-                        result = r;
-                    }
+                    _ => {}
                 }
             }
         }
 
-        if !SolveResult::is_done(result.result) {
-            let r = self.solvers.solve(result.grid);
-            result = SolverResult {
-                grid: r.grid,
-                result: r.result,
-            }
+        let out: Grid;
+        if !SolveResult::is_done(result) {
+            let r = self.solvers.solve(grid.clone());
+            out = r.grid;
+            result = r.result;
+        } else {
+            out = grid.clone();
         }
-        match result.result {
-            SolveResult::Solved => Some(result.grid),
+
+        if let Err(_) = validate_grid(&out) {
+            return None;
+        }
+
+        match result {
+            SolveResult::Solved => Some(out),
             _ => None,
         }
     }
@@ -94,7 +94,7 @@ impl<T: RngCore> Generator<T> {
             let cell = &grid.get_cell(index);
 
             if cell.is_determined() {
-                grid.set_cell(index, Cell::new());
+                grid.set_cell(index, &Cell::new());
                 removed += 1;
             }
         }

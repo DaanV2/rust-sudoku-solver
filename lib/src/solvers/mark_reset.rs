@@ -1,4 +1,4 @@
-use super::solver::{Solver, SolverResult};
+use super::solver::{SolveResult, Solver};
 use crate::grid::{cell::Cell, cell_collection::CellCollection, grid::Grid};
 
 pub struct MarkReset {}
@@ -11,6 +11,21 @@ impl MarkReset {
     pub fn new_box() -> Box<Self> {
         Box::new(Self::new())
     }
+
+    pub fn solve(grid: &mut Grid) -> SolveResult {
+        for i in grid.iter() {
+            let mut cell = *grid.get_cell(i);
+
+            // If the cell is not determined, then we need to reset the marks
+            if !cell.is_determined() {
+                cell = Cell::new();
+            }
+
+            grid.set_cell(i, &cell);
+        }
+
+        SolveResult::Nothing
+    }
 }
 
 impl Solver for MarkReset {
@@ -18,19 +33,8 @@ impl Solver for MarkReset {
         "Mark Resetter"
     }
 
-    fn solve(&self, grid: &Grid) -> SolverResult {
-        let mut current = grid.clone();
-
-        for i in grid.iter() {
-            let cell = current.get_cell(i);
-
-            // If the cell is not determined, then we need to reset the marks
-            if !cell.is_determined() {
-                current.set_cell(i, Cell::new());
-            }
-        }
-
-        SolverResult::nothing(current)
+    fn solve(&self, grid: &mut Grid) -> SolveResult {
+        MarkReset::solve(grid)
     }
 }
 
@@ -41,22 +45,21 @@ mod test {
 
     #[test]
     fn test_mark_reset() {
-        let mut grid = general_tests::filled_sudoku();
+        let grid = &mut general_tests::filled_sudoku();
 
         let index = 12;
         let cell = Cell::new_with_value(0);
 
-        grid.set_cell(index, cell);
+        grid.set_cell(index, &cell);
 
         let original = grid.get_cell(index);
         //Checking it has been set properly
-        assert_eq!(original.get_count(), 0, "Cell should be empty");
+        assert_eq!(original.possible_count(), 0, "Cell should be empty");
 
-        let solver = MarkReset::new();
-        let result = solver.solve(&grid);
+        MarkReset::solve(grid);
 
         //Checking it has been reset
-        let set = result.grid.get_cell(index);
-        assert_eq!(set.get_count(), 9, "Cell should be set again");
+        let set = grid.get_cell(index);
+        assert_eq!(set.possible_count(), 9, "Cell should be set again");
     }
 }

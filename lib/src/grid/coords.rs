@@ -1,5 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
+use crate::grid::constants::GRID_SIZE;
+
 use super::constants::GRID_WIDTH;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -16,6 +18,7 @@ impl Coord {
 
     /// Creates a new coord from an index
     pub const fn from_index(index: usize) -> Self {
+        debug_assert!(index < GRID_SIZE, "Index out of bounds");
         Coord { index: index }
     }
 
