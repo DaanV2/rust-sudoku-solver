@@ -12,7 +12,7 @@ pub mod data;
 pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
-const SIZE: usize = 1000;
+const SIZE: usize = 5000;
 
 struct GridSet {
     pub original: Grid,
@@ -28,7 +28,7 @@ impl GridSet {
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..1 {
+    for _ in 0..5 {
         let point = run_random_test(SIZE);
         points.push(point);
     }
