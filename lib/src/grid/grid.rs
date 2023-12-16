@@ -152,7 +152,6 @@ impl Grid {
         self.mark_off(coord);
     }
 
-    #[inline(always)]
     pub fn mark_off(&mut self, coord: Coord) {
         let mark = Mark::from_value(self.get_cell_at(coord).get_value());
         let (row, col) = coord.get_row_col();
@@ -177,22 +176,18 @@ impl Grid {
         }
     }
 
-    #[inline(always)]
     pub fn mark_off_row(&mut self, row: usize, mark: Mark) {
         self.unset_possible_area(&Row::new(row), mark);
     }
 
-    #[inline(always)]
     pub fn mark_off_column(&mut self, col: usize, mark: Mark) {
         self.unset_possible_area(&Column::new(col), mark);
     }
 
-    #[inline(always)]
     pub fn mark_off_square(&mut self, square: &Square, mark: Mark) {
         self.unset_possible_area(square, mark);
     }
 
-    #[inline(always)]
     pub fn unset_possible_area<T: CellCollection>(&mut self, area: &T, mark: Mark) {
         let mut mask = Cell::mask();
         mask = mask & Cell::new_with_value(!mark.to_data());
@@ -206,7 +201,6 @@ impl Grid {
         }
     }
 
-    #[inline(always)]
     pub fn set_cell_area(&mut self, area: &impl CellCollection, cell: &Cell) {
         for index in area.iter() {
             let coord = area.get_coord(index);
