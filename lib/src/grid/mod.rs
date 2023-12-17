@@ -6,6 +6,7 @@ pub mod coords;
 pub mod flags;
 pub mod format;
 pub mod grid;
+pub mod grid_mask;
 pub mod mark;
 pub mod queries;
 pub mod row;

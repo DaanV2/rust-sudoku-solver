@@ -38,22 +38,22 @@ impl Coord {
     }
 
     /// Returns the row and column of the coord
-    pub fn get_row_col(&self) -> (usize, usize) {
+    pub const fn get_row_col(&self) -> (usize, usize) {
         (self.get_row(), self.get_col())
     }
 
     /// Returns a new coord with the row and column offset by the given amount
-    pub fn offset_row(self, offset: usize) -> Self {
+    pub const fn offset_row(self, offset: usize) -> Self {
         Coord::new(self.get_row() + offset, self.get_col())
     }
 
     /// Returns a new coord with the row and column offset by the given amount
-    pub fn offset_col(self, offset: usize) -> Self {
+    pub const fn offset_col(self, offset: usize) -> Self {
         Coord::new(self.get_row(), self.get_col() + offset)
     }
 
     /// Returns a new coord with the row and column offset by the given amount
-    pub fn offset(self, row_offset: usize, col_offset: usize) -> Self {
+    pub const fn offset(self, row_offset: usize, col_offset: usize) -> Self {
         Coord::new(self.get_row() + row_offset, self.get_col() + col_offset)
     }
 }

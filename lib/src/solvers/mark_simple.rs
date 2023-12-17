@@ -20,7 +20,7 @@ impl MarkSimple {
 
             //If the cell is determined, mark off that square, row and column
             if cell.is_determined() {
-                grid.mark_off(Coord::from_index(i));
+                grid.mark_off(Coord::from_index(i), cell.get_value());
             }
         }
 

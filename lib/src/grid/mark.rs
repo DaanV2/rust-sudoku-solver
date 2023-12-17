@@ -46,7 +46,7 @@ impl Mark {
     }
 
     // Returns the index of the given value
-    pub fn to_index(self) -> u16 {
+    pub const fn to_index(self) -> u16 {
         Mark::to_value(self) - 1
     }
 
@@ -55,7 +55,7 @@ impl Mark {
         Mark::from_value(index + 1)
     }
 
-    pub fn to_value(self) -> u16 {
+    pub const fn to_value(self) -> u16 {
         ((self as usize).trailing_zeros() - 6) as u16
     }
 
@@ -65,7 +65,7 @@ impl Mark {
     }
 
     // Returns raw data of the mark
-    pub fn to_data(self) -> u16 {
+    pub const fn to_data(self) -> u16 {
         self as u16
     }
 }

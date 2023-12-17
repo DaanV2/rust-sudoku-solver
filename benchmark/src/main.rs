@@ -15,6 +15,7 @@ const RNG_SEED: u64 = 77143266753986;
 const SIZE: usize = 5000;
 
 struct GridSet {
+    #[allow(dead_code)]
     pub original: Grid,
     pub to_solve: Grid,
 }

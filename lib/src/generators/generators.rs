@@ -80,7 +80,7 @@ impl<T: RngCore> Generator<T> {
 
     /// Removes a random amount of cells from the grid
     pub fn remove_cells(&mut self, grid: &mut Grid) {
-        let amount = self.rng.gen_range(0..63);
+        let amount = self.rng.gen_range(0..80);
 
         self.remove_cells_amount(grid, amount);
     }

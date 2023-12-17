@@ -28,21 +28,16 @@ async fn main() -> io::Result<()> {
             .service(routes::solver::solve_once)
             .service(routes::solver::filled);
 
+        app = app.service(
+            fs::Files::new("/", "./wasm/static/")
+                .prefer_utf8(true)
+                .show_files_listing()
+                .index_file("index.html"),
+        );
+
         // If environment is wasm, serve static files
         if env::var("WASM").is_ok() {
-            app = app.service(
-                fs::Files::new("/", "./wasm/static/")
-                    .prefer_utf8(true)
-                    .show_files_listing()
-                    .index_file("index.html"),
-            );
         } else {
-            app = app.service(
-                fs::Files::new("/", "./static/")
-                    .prefer_utf8(true)
-                    .show_files_listing()
-                    .index_file("index.html"),
-            );
         }
 
         return app;

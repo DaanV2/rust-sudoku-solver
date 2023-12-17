@@ -2,21 +2,24 @@ use std::{fmt::Display, ops::BitOr};
 
 use super::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark};
 
+const SLICE_SIZE: usize = 16;
+const SLICE_ACTUAL_SIZE: usize = 9;
+
 #[derive(Clone)]
 pub struct Slice {
-    pub items: [Cell; 12],
+    pub items: [Cell; SLICE_SIZE],
 }
 
 impl Slice {
     pub fn new() -> Self {
         Slice {
-            items: [Cell::new_empty(); 12],
+            items: [Cell::new_empty(); SLICE_SIZE],
         }
     }
 
     pub fn from<T: CellCollection>(grid: &Grid, area: &T) -> Slice {
-        if area.max() != 9 {
-            panic!("Slice must be of size 9");
+        if area.max() >= SLICE_SIZE {
+            panic!("Slice must be of size {}", SLICE_SIZE);
         }
         let mut slice = Slice::new();
 
@@ -33,12 +36,25 @@ impl Slice {
         let mut count = 0;
 
         for i in self.iter() {
-            if !self.items[i].is_empty() {
+            if self.items[i].has_any() {
                 count += 1;
             }
         }
 
-        count
+        count as usize
+    }
+
+    /// Returns the number of cells that are empty
+    pub fn count_empty(&self) -> usize {
+        let mut count = 0;
+
+        for i in self.iter() {
+            if self.items[i].is_empty() {
+                count += 1;
+            }
+        }
+
+        count as usize
     }
 
     /// Returns if the given value is determined in this slice

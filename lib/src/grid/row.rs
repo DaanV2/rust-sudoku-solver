@@ -11,7 +11,7 @@ pub struct Row {
 }
 
 impl Row {
-    pub fn new(row: usize) -> Self {
+    pub const fn new(row: usize) -> Self {
         Self { row }
     }
 

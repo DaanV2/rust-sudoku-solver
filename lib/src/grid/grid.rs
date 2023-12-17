@@ -6,6 +6,7 @@ use super::{
     column::Column,
     constants::{GRID_HEIGHT_RANGE, GRID_SIZE, GRID_WIDTH_RANGE},
     coords::Coord,
+    grid_mask::get_unset_influence_mask,
     mark::Mark,
     row::Row,
     square::Square,
@@ -19,19 +20,19 @@ pub struct Grid {
 }
 
 impl Grid {
-    pub fn new() -> Grid {
+    pub const fn new() -> Grid {
         Grid {
             cells: [Cell::new(); GRID_SIZE],
         }
     }
 
-    pub fn empty() -> Grid {
+    pub const fn empty() -> Grid {
         Grid {
             cells: [Cell::new_empty(); GRID_SIZE],
         }
     }
 
-    pub fn from(cells: [Cell; GRID_SIZE]) -> Grid {
+    pub const fn from(cells: [Cell; GRID_SIZE]) -> Grid {
         Grid { cells: cells }
     }
 
@@ -149,30 +150,19 @@ impl Grid {
     pub fn place_value_at(&mut self, coord: Coord, value: u16) {
         self.set_cell_at(coord, &Cell::new_with_value(value));
 
-        self.mark_off(coord);
+        self.mark_off(coord, value);
     }
 
-    pub fn mark_off(&mut self, coord: Coord) {
-        let mark = Mark::from_value(self.get_cell_at(coord).get_value());
-        let (row, col) = coord.get_row_col();
-        let square: Square = self.get_square_at(coord);
+    pub fn mark_off(&mut self, coord: Coord, value: u16) {
+        let mask = get_unset_influence_mask(coord, value);
 
-        // Mark off row
-        // self.mark_off_row(row, mark);
-        // self.mark_off_column(col, mark);
-        // self.mark_off_square(&square, mark);
-
-        let mask = Cell::mask() & Cell::new_with_value(!mark.to_data());
-        let mask_grid = &mut Grid::from([Cell::mask(); GRID_SIZE]);
-
-        // Set row with mask
-        mask_grid.set_cell_area(&Row::new(row), &mask);
-        mask_grid.set_cell_area(&Column::new(col), &mask);
-        mask_grid.set_cell_area(&square, &mask);
-
-        // Apply mask
-        for index in mask_grid.iter() {
-            self.cells[index] = self.cells[index].bitand(mask_grid.cells[index]);
+        // Unset the possible values
+        for index in 0..mask.cells.len() {
+            let mask = mask.cells[index];
+            unsafe {
+                let c = self.cells.get_unchecked_mut(index);
+                c.clone_from(&c.bitand(mask));
+            }
         }
     }
 
@@ -284,7 +274,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_row() {
+    fn get_row() {
         for row_index in GRID_HEIGHT_RANGE {
             let grid = general_tests::filled_sudoku();
             let row = Row::new(row_index);
@@ -302,7 +292,7 @@ mod tests {
     }
 
     #[test]
-    fn test_get_column() {
+    fn get_column() {
         for col_index in GRID_WIDTH_RANGE {
             let grid = general_tests::filled_sudoku();
             let column = Column::new(col_index);
@@ -319,12 +309,13 @@ mod tests {
     }
 
     #[test]
-    fn test_place() {
+    fn place() {
         let mut grid = Grid::new();
 
         let index = 64;
         let coord = grid.get_coord(index);
 
+        println!("placing at: {} -> {}", coord, 9);
         grid.place_value_at(coord, 9);
 
         assert_eq!(grid.get_cell_at(coord).get_value(), 9);

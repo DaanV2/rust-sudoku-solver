@@ -79,6 +79,7 @@ fn solve_area<U: CellCollection, T: Iterator<Item = U>>(grid: &mut Grid, iter: T
 
     return changed;
 }
+
 #[inline(always)]
 fn solve_area_for_mark<U: CellCollection, T: Iterator<Item = U>>(
     grid: &mut Grid,
@@ -208,7 +209,7 @@ mod test {
     }
 
     #[test]
-    fn test_only_1_possible() {
+    fn only_1_possible() {
         let grid = &mut general_tests::filled_sudoku();
 
         for i in 0..10 {

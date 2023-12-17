@@ -17,7 +17,7 @@ impl Square {
     }
 
     /// Creates a new square from the given row and column
-    pub fn from(row: usize, col: usize) -> Self {
+    pub const fn from(row: usize, col: usize) -> Self {
         let row_offset = row - row % 3;
         let col_offset = col - col % 3;
 
@@ -29,7 +29,7 @@ impl Square {
     }
 
     /// Gets the coord at the row and column
-    pub fn get_coord_at(&self, row: usize, col: usize) -> Coord {
+    pub const fn get_coord_at(&self, row: usize, col: usize) -> Coord {
         Coord::new(self.row + row, self.col + col)
     }
 

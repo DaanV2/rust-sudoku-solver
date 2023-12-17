@@ -9,7 +9,7 @@ pub struct Column {
 }
 
 impl Column {
-    pub fn new(col: usize) -> Self {
+    pub const fn new(col: usize) -> Self {
         Self { col }
     }
 

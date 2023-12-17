@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{BitAnd, BitOr},
+    ops::{BitAnd, BitOr, BitXor},
 };
 
 use super::mark::Mark;
@@ -61,14 +61,14 @@ impl Cell {
     }
 
     /// Creates a new cell with a mark as a value, and all possibilities off
-    pub fn new_from_mark_as_value(mark: Mark) -> Cell {
+    pub const fn new_from_mark_as_value(mark: Mark) -> Cell {
         let v = mark.to_value();
 
         Self::new_with_value(v)
     }
 
     /// Creates a new cell with a mark as a value, and all possibilities off
-    pub fn mask() -> Cell {
+    pub const fn mask() -> Cell {
         Cell {
             data: 0b1111_1111_1111_1111,
         }
@@ -77,6 +77,11 @@ impl Cell {
     /// Returns true if the cell is empty or not
     pub fn is_empty(self) -> bool {
         self.data == 0
+    }
+
+    /// Returns true if the cell has any possibilities or not
+    pub fn has_any(self) -> bool {
+        self.data > 0
     }
 
     /// Returns true if the cell is determined or not
@@ -109,7 +114,7 @@ impl Cell {
 
     /// Returns the value of this cell
     /// Assumes the cell is determined
-    pub fn get_value(self) -> u16 {
+    pub const fn get_value(self) -> u16 {
         self.data
     }
 
@@ -198,6 +203,16 @@ impl BitAnd for Cell {
     fn bitand(self, rhs: Self) -> Self::Output {
         Cell {
             data: self.data & rhs.data,
+        }
+    }
+}
+
+impl BitXor for Cell {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Cell {
+            data: self.data ^ rhs.data,
         }
     }
 }
