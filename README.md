@@ -4,6 +4,8 @@
 
 A rust sudoku solver. using wasm to compile for websites.
 
+![sudoku](./docs/resources/sudoku-solver.gif)
+
 ## Assembly
 
 To see assembly:
