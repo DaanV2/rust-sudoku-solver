@@ -2,6 +2,7 @@
 
 [![🦀 Checks](https://github.com/DaanV2/rust-sudoku-solver/actions/workflows/rust.yml/badge.svg)](https://github.com/DaanV2/rust-sudoku-solver/actions/workflows/rust.yml)
 
+A rust sudoku solver. using wasm to compile for websites.
 
 ## Assembly
 

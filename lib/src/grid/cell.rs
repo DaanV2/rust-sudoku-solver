@@ -93,7 +93,7 @@ impl Cell {
 
     /// Returns true if the cell is determined or not
     pub fn is_determined(self) -> bool {
-        (self.data & CELL_VALUE_MASK) != 0
+        (self.data & CELL_VALUE_MASK) > 0
     }
 
     /// Returns true if the given value is possible for this cell

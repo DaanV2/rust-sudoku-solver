@@ -28,10 +28,10 @@ pub mod general_tests {
             utility::ascii_grid(&output.grid)
         );
 
-        assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
         if let Err(e) = validate_grid(&output.grid) {
             panic!("Grid is not valid: {}", e);
         }
+        assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
     }
 
     /// Removes a random amount of cells from the grid
@@ -88,8 +88,8 @@ pub mod general_tests {
         let mut result = String::new();
         result.push_str("http://localhost:8080/?grid=");
 
-        for col in GRID_WIDTH_RANGE {
-            for row in GRID_HEIGHT_RANGE {
+        for row in GRID_HEIGHT_RANGE {
+            for col in GRID_WIDTH_RANGE {
                 let coord = Coord::new(row, col);
                 let cell = grid.get_cell_at(coord);
 

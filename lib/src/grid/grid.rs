@@ -61,6 +61,9 @@ impl Grid {
     /// Sets the cell at the given coordinate
     pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
         self.set_cell(coord.get_index(), cell);
+
+        // Clear terminal
+        println!("\x1B[2J\x1B[1;1H{}", self);
     }
 
     /// Retrieves the square at the given row and column

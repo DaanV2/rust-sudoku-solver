@@ -104,22 +104,20 @@ impl Slice {
 
     /// Returns if the given mark is possible in this slice
     pub fn any_possible(&self, mark: Mark) -> bool {
-        let mut result = Cell::new_empty();
+        let mask = Cell::new_with_possible(mark);
 
-        for c in self.items.iter() {
-            result = result | *c;
-        }
+        let result = self.bitand(Slice::create_mask_full(mask));
 
-        result.is_possible(mark)
+        result != SLICE_EMPTY
     }
 
     pub fn count_possible(&self, mark: Mark) -> usize {
+        let mask = Cell::new_with_possible(mark);
+        let result = self.bitand(Slice::create_mask_full(mask));
         let mut count = 0;
 
-        for c in self.items.iter() {
-            if c.is_possible(mark) {
-                count += 1;
-            }
+        for c in result.items.iter() {
+            count += c.get_value().count_ones() as usize;
         }
 
         count
@@ -127,11 +125,11 @@ impl Slice {
 
     pub fn count_determined(&self) -> usize {
         let mut count = 0;
+        let temp = self.only_determined();
 
-        for c in self.items.iter() {
-            if c.is_determined() {
-                count += 1;
-            }
+        for cell in temp.items.iter() {
+            let b = cell.get_value();
+            count += (b > 0) as usize;
         }
 
         count
@@ -141,9 +139,7 @@ impl Slice {
         let mut count = 0;
 
         for c in self.items.iter() {
-            if c.get_value() == value {
-                count += 1;
-            }
+            count += (c.get_value() == value) as usize;
         }
 
         count
@@ -205,11 +201,11 @@ impl Slice {
         slice
     }
 
-    pub fn only_determined(&self) -> SliceValue {
-        let mut slice = SliceValue::new();
+    pub fn only_determined(&self) -> Slice {
+        let mut slice = self.clone();
 
         for i in slice.iter() {
-            slice.items[i] = self.items[i].only_determined().get_value() as u8;
+            slice.items[i] = slice.items[i].only_determined();
         }
 
         slice
@@ -382,13 +378,14 @@ mod tests {
         test::util::general_tests,
     };
 
-    use super::Slice;
+    use super::{Slice, SLICE_ACTUAL_SIZE};
 
     fn slice_example() -> Slice {
         let mut s = Slice::new();
 
-        for i in s.iter() {
-            s.items[i] = Cell::new_with_value((i as u16) + 1);
+        for i in 0..SLICE_ACTUAL_SIZE {
+            let v = (i as u16) + 1;
+            s.items[i] = Cell::new_with_value((v % 9) + 1);
         }
 
         s

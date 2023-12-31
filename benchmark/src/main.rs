@@ -29,7 +29,7 @@ impl GridSet {
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..5 {
+    for _ in 0..1 {
         let point = run_random_test(SIZE);
         points.push(point);
     }
@@ -150,7 +150,7 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
     println!("Solving...");
     let start_time = Instant::now();
 
-    let mut file = File::create("tests.rs").unwrap();
+    let mut file = File::create("specifics.rs").unwrap();
 
     //Solve all of them
     for i in 0..size {
@@ -173,42 +173,40 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
         }
     }
 
-    file.flush().unwrap();
-
     let solve_time = start_time.elapsed();
     let size128 = size as u128;
 
-    // print_grids.sort_by(|a, b| {
-    //     a.to_solve
-    //         .count_determined()
-    //         .cmp(&b.to_solve.count_determined())
-    // });
+    // Uncomment to generate tests
+    print_grids.sort_by(|a, b| {
+        a.to_solve
+            .count_determined()
+            .cmp(&b.to_solve.count_determined())
+    });
 
-    // for i in 0..print_grids.len() {
-    //     file.write_all(b"#[test]\n").unwrap();
-    //     file.write_all(format!("fn test_{}() {{\n", i).as_bytes())
-    //         .unwrap();
+    for i in 0..print_grids.len() {
+        file.write_all(b"#[test]\n").unwrap();
+        file.write_all(format!("fn test_{}() {{\n", i).as_bytes())
+            .unwrap();
 
-    //     file.write_all(
-    //         format!("/* original:\n{}*/\n", print_grids.get(i).unwrap().original).as_bytes(),
-    //     )
-    //     .unwrap();
+        file.write_all(
+            format!("/* original:\n{}*/\n", print_grids.get(i).unwrap().original).as_bytes(),
+        )
+        .unwrap();
 
-    //     file.write_all(
-    //         format!(
-    //             "    let grid = utility::parse_from_ascii(r#\"{}\"#);\n",
-    //             print_grids.get(i).unwrap().to_solve
-    //         )
-    //         .as_bytes(),
-    //     )
-    //     .unwrap();
+        file.write_all(
+            format!(
+                "    let grid = utility::parse_from_ascii(r#\"{}\"#);\n",
+                print_grids.get(i).unwrap().to_solve
+            )
+            .as_bytes(),
+        )
+        .unwrap();
 
-    //     file.write_all(b"general_tests::test_should_solve(grid);\n")
-    //         .unwrap();
+        file.write_all(b"general_tests::test_should_solve(grid);\n")
+            .unwrap();
 
-    //     file.write_all(b"}\n\n").unwrap();
-    // }
-
+        file.write_all(b"}\n\n").unwrap();
+    }
     file.flush().unwrap();
 
     DataPoint {
