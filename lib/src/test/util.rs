@@ -27,6 +27,7 @@ pub mod general_tests {
             get_url(&output.grid),
             utility::ascii_grid(&output.grid)
         );
+        // println!("result: {}", utility::hex_grid(&grid));
 
         if let Err(e) = validate_grid(&output.grid) {
             panic!("Grid is not valid: {}", e);

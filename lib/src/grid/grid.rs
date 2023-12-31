@@ -1,5 +1,7 @@
 use std::{fmt::Display, ops::BitAnd};
 
+use crate::grid::utility::utility;
+
 use super::{
     cell::Cell,
     cell_collection::CellCollection,
@@ -10,7 +12,6 @@ use super::{
     mark::Mark,
     row::Row,
     square::Square,
-    utility::utility,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -20,20 +21,23 @@ pub struct Grid {
 }
 
 impl Grid {
+    /// Creates a new grid
     pub const fn new() -> Grid {
         Grid {
             cells: [Cell::new(); GRID_SIZE],
         }
     }
 
+    /// Creates a new empty grid
     pub const fn empty() -> Grid {
         Grid {
             cells: [Cell::new_empty(); GRID_SIZE],
         }
     }
 
+    /// Creates a new grid from an array of cells
     pub const fn from(cells: [Cell; GRID_SIZE]) -> Grid {
-        Grid { cells: cells }
+        Grid { cells }
     }
 
     /// Retrieves the cell at the given index
@@ -51,6 +55,11 @@ impl Grid {
             let v = self.cells.get_unchecked_mut(index);
             *v = *cell;
         }
+
+        // Clear terminal
+        // print!("\x1B[2J\x1B[1;1H");
+        // println!("\x1B[2J\x1B[1;1H{}", self);
+        // println!("   \"{}\",", utility::hex_value_grid(self));
     }
 
     /// Retrieves the cell at the given coordinate
@@ -61,9 +70,6 @@ impl Grid {
     /// Sets the cell at the given coordinate
     pub fn set_cell_at(&mut self, coord: Coord, cell: &Cell) {
         self.set_cell(coord.get_index(), cell);
-
-        // Clear terminal
-        println!("\x1B[2J\x1B[1;1H{}", self);
     }
 
     /// Retrieves the square at the given row and column
@@ -96,6 +102,7 @@ impl Grid {
     pub fn unset_possible_at(&mut self, coord: Coord, mark: Mark) {
         self.unset_possible(coord.get_index(), mark);
     }
+
     /// Un sets the given value as possible for this cell
     pub fn unset_possible(&mut self, index: usize, mark: Mark) {
         let mut new_cell = self.get_cell(index).clone();
@@ -139,23 +146,27 @@ impl Grid {
         sum
     }
 
+    /// Clones this grid into the given grid
     pub fn clone_to(&self, to: &mut Grid) {
         for index in self.iter() {
             to.set_cell(index, self.get_cell(index));
         }
     }
 
+    /// Places the given value at the given index, clearing the rows, columns and squares
     pub fn place_value(&mut self, index: usize, value: u16) {
         let coord = Coord::from_index(index);
         self.place_value_at(coord, value);
     }
 
+    /// Places the given value at the given coordinate, clearing the rows, columns and squares
     pub fn place_value_at(&mut self, coord: Coord, value: u16) {
         self.set_cell_at(coord, &Cell::new_with_value(value));
 
         self.mark_off(coord, value);
     }
 
+    /// Marks off the given value from the given coordinate, clearing the rows, columns and squares
     pub fn mark_off(&mut self, coord: Coord, value: u16) {
         let mask = get_unset_influence_mask(coord, value);
 
@@ -169,19 +180,23 @@ impl Grid {
         }
     }
 
+    /// Clearing off the row
     pub fn mark_off_row(&mut self, row: usize, mark: Mark) {
         self.unset_possible_area(&Row::new(row), mark);
     }
 
+    /// Clearing off the column
     pub fn mark_off_column(&mut self, col: usize, mark: Mark) {
         self.unset_possible_area(&Column::new(col), mark);
     }
 
+    /// Clearing off the square
     pub fn mark_off_square(&mut self, square: &Square, mark: Mark) {
         self.unset_possible_area(square, mark);
     }
 
-    pub fn unset_possible_area<T: CellCollection>(&mut self, area: &T, mark: Mark) {
+    /// Unset the given area
+    fn unset_possible_area<T: CellCollection>(&mut self, area: &T, mark: Mark) {
         let mut mask = Cell::mask();
         mask = mask & Cell::new_with_value(!mark.to_data());
 
@@ -191,13 +206,6 @@ impl Grid {
                 let c = self.cells.get_unchecked_mut(coord.get_index());
                 c.clone_from(&c.bitand(mask));
             }
-        }
-    }
-
-    pub fn set_cell_area(&mut self, area: &impl CellCollection, cell: &Cell) {
-        for index in area.iter() {
-            let coord = area.get_coord(index);
-            self.set_cell_at(coord, cell);
         }
     }
 }
@@ -225,6 +233,18 @@ impl CellCollection for Grid {
 impl Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", utility::ascii_grid(self))
+    }
+}
+
+impl PartialEq for Grid {
+    fn eq(&self, other: &Self) -> bool {
+        for index in self.iter() {
+            if self.cells[index] != other.cells[index] {
+                return false;
+            }
+        }
+
+        true
     }
 }
 

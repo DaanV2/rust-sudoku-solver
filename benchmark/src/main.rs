@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write, time::Instant};
+use std::time::Instant;
 
 use sudoku_solver_lib::{
     generators::generators::Generator,
@@ -29,7 +29,7 @@ impl GridSet {
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..1 {
+    for _ in 0..5 {
         let point = run_random_test(SIZE);
         points.push(point);
     }
@@ -150,7 +150,7 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
     println!("Solving...");
     let start_time = Instant::now();
 
-    let mut file = File::create("specifics.rs").unwrap();
+    // let mut file = File::create("specifics.rs").unwrap();
 
     //Solve all of them
     for i in 0..size {
@@ -177,37 +177,37 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
     let size128 = size as u128;
 
     // Uncomment to generate tests
-    print_grids.sort_by(|a, b| {
-        a.to_solve
-            .count_determined()
-            .cmp(&b.to_solve.count_determined())
-    });
+    // print_grids.sort_by(|a, b| {
+    //     a.to_solve
+    //         .count_determined()
+    //         .cmp(&b.to_solve.count_determined())
+    // });
 
-    for i in 0..print_grids.len() {
-        file.write_all(b"#[test]\n").unwrap();
-        file.write_all(format!("fn test_{}() {{\n", i).as_bytes())
-            .unwrap();
+    // for i in 0..print_grids.len() {
+    //     file.write_all(b"#[test]\n").unwrap();
+    //     file.write_all(format!("fn test_{}() {{\n", i).as_bytes())
+    //         .unwrap();
 
-        file.write_all(
-            format!("/* original:\n{}*/\n", print_grids.get(i).unwrap().original).as_bytes(),
-        )
-        .unwrap();
+    //     file.write_all(
+    //         format!("/* original:\n{}*/\n", print_grids.get(i).unwrap().original).as_bytes(),
+    //     )
+    //     .unwrap();
 
-        file.write_all(
-            format!(
-                "    let grid = utility::parse_from_ascii(r#\"{}\"#);\n",
-                print_grids.get(i).unwrap().to_solve
-            )
-            .as_bytes(),
-        )
-        .unwrap();
+    //     file.write_all(
+    //         format!(
+    //             "    let grid = utility::parse_from_ascii(r#\"{}\"#);\n",
+    //             print_grids.get(i).unwrap().to_solve
+    //         )
+    //         .as_bytes(),
+    //     )
+    //     .unwrap();
 
-        file.write_all(b"general_tests::test_should_solve(grid);\n")
-            .unwrap();
+    //     file.write_all(b"general_tests::test_should_solve(grid);\n")
+    //         .unwrap();
 
-        file.write_all(b"}\n\n").unwrap();
-    }
-    file.flush().unwrap();
+    //     file.write_all(b"}\n\n").unwrap();
+    // }
+    // file.flush().unwrap();
 
     DataPoint {
         updated,

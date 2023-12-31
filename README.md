@@ -5,6 +5,7 @@
 A rust sudoku solver. using wasm to compile for websites.
 
 ![sudoku](./docs/resources/sudoku-solver.gif)
+[Made with motion canvas](https://github.com/motion-canvas/motion-canvas)
 
 ## Assembly
 

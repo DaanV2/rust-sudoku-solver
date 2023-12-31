@@ -50,6 +50,11 @@ mod test {
         test_amount(72);
     }
 
+    #[test]
+    fn test_79() {
+        test_amount(79);
+    }
+
     fn test_amount(amount: usize) {
         let total = GRID_HEIGHT * GRID_WIDTH;
         let percent = (amount * 100) / total;

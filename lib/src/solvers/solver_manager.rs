@@ -60,11 +60,11 @@ impl SolverManager {
         if result.is_done() {
             return result;
         }
-        result |= MarkSurvivor::solve(grid);
+        result |= MarkTrailAndError::solve(grid);
         if result.is_done() {
             return result;
         }
-        result |= MarkTrailAndError::solve(grid);
+        result |= MarkSurvivor::solve(grid);
         if result.is_done() {
             return result;
         }
