@@ -10,7 +10,7 @@ pub mod general_tests {
     use crate::grid::grid::Grid;
     use crate::grid::mark::Mark;
     use crate::grid::utility::utility::{self, parse_from_ascii};
-    use crate::solvers::solver::{SolveResult, Solver};
+    use crate::solvers::solver::SolveResult;
     use crate::solvers::solver_manager::SolverManager;
     use crate::solvers::validator::validate_grid;
 
@@ -64,17 +64,6 @@ pub mod general_tests {
                 grid.set_cell(i, &c);
             }
         }
-    }
-
-    /// Solves the grid with the given solvers
-    pub fn process_through(grid: &Grid, solves: Vec<Box<dyn Solver>>) -> Grid {
-        let result = &mut grid.clone();
-
-        for solver in solves {
-            solver.solve(result);
-        }
-
-        result.clone()
     }
 
     /// Returns a filled sudoku grid

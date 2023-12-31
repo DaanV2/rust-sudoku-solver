@@ -1,6 +1,12 @@
 use crate::grid::{
-    cell::Cell, cell_collection::CellCollection, column::Column, grid::Grid, mark::Mark, row::Row,
-    slice::Slice,
+    cell::Cell,
+    cell_collection::CellCollection,
+    constants::{GRID_HEIGHT_RANGE, GRID_WIDTH_RANGE},
+    coords::Coord,
+    grid::Grid,
+    mark::Mark,
+    row::Row,
+    slice::{Slice, SLICE_EMPTY},
 };
 
 use super::solver::{SolveResult, Solver};
@@ -29,17 +35,24 @@ impl MarkOccupy {
     pub fn solve(grid: &mut Grid) -> SolveResult {
         let mut changed = false;
 
-        for row in (0..9).step_by(3) {
-            changed |= solve_set(grid, Row::new(row), Row::new(row + 1), Row::new(row + 2));
+        for row in GRID_HEIGHT_RANGE.step_by(3) {
+            let r1 = &Row::new(row + 0);
+            let r2 = &Row::new(row + 1);
+            let r3 = &Row::new(row + 2);
+
+            changed |= solve_set(grid, r1, r2, r3);
+            changed |= solve_set(grid, r2, r1, r3);
+            changed |= solve_set(grid, r3, r1, r2);
         }
 
-        for column in (0..9).step_by(3) {
-            changed |= solve_set(
-                grid,
-                Column::new(column),
-                Column::new(column + 1),
-                Column::new(column + 2),
-            );
+        for col in GRID_WIDTH_RANGE.step_by(3) {
+            let c1 = &Row::new(col + 0);
+            let c2 = &Row::new(col + 1);
+            let c3 = &Row::new(col + 2);
+
+            changed |= solve_set(grid, c1, c2, c3);
+            changed |= solve_set(grid, c2, c1, c3);
+            changed |= solve_set(grid, c3, c1, c2);
         }
 
         SolveResult::from_changed(changed)
@@ -56,53 +69,92 @@ impl Solver for MarkOccupy {
     }
 }
 
-struct SquareData {
-    pub set1: Cell,
-    pub set2: Cell,
-    pub set3: Cell,
-}
+const MASK_SQUARE1_EXCLUDED: Slice =
+    Slice::create_mask_threes(Cell::new_empty(), Cell::mask(), Cell::mask());
+const MASK_SQUARE2_EXCLUDED: Slice =
+    Slice::create_mask_threes(Cell::mask(), Cell::new_empty(), Cell::mask());
+const MASK_SQUARE3_EXCLUDED: Slice =
+    Slice::create_mask_threes(Cell::mask(), Cell::mask(), Cell::new_empty());
 
-impl SquareData {
-    #[inline(always)]
-    pub fn from(set1: &Slice, set2: &Slice, set3: &Slice, square: usize) -> Self {
-        let c = square * 3;
+pub fn solve_set<T: CellCollection>(grid: &mut Grid, check: &T, other1: &T, other2: &T) -> bool {
+    let s1 = Slice::from(grid, check);
 
-        SquareData {
-            set1: set1.get(c) | set1.get(c + 1) | set1.get(c + 1),
-            set2: set2.get(c) | set2.get(c + 1) | set2.get(c + 1),
-            set3: set3.get(c) | set3.get(c + 1) | set3.get(c + 1),
-        }
-    }
-
-    pub fn all(&self) -> Cell {
-        self.set1 | self.set2 | self.set3
-    }
-}
-
-fn solve_set<T: CellCollection>(grid: &mut Grid, set1: T, set2: T, set3: T) -> bool {
-    let s1 = Slice::from(grid, &set1);
-    let s2 = Slice::from(grid, &set2);
-    let s3 = Slice::from(grid, &set3);
-
+    // Check if only possible in one square
     let mut changed = false;
 
-    let data1 = SquareData::from(&s1, &s2, &s3, 0);
-    let data2 = SquareData::from(&s1, &s2, &s3, 1);
-    let data3 = SquareData::from(&s1, &s2, &s3, 2);
+    let possibles = s1.or_all().only_possible();
 
-    let all = data1.all() | data2.all() | data3.all();
-
-    for mark in all.only_possible().iter_possible() {
-        let c1 = count(mark, data1.set1, data2.set1, data3.set1);
-        let c2 = count(mark, data1.set2, data2.set2, data3.set2);
-        let c3 = count(mark, data1.set3, data2.set3, data3.set3);
+    for mark in possibles.iter_possible() {
+        // Isolate only the cells that have this mark
+        let marked = s1.only_possible_value(mark);
+        if let Some(square) = which_square(marked) {
+            // We found a square that can only be in one place
+            changed |= unset_three(grid, square * 3, other1, mark);
+            changed |= unset_three(grid, square * 3, other2, mark);
+        }
     }
 
     changed
 }
 
+#[inline(always)]
+fn which_square(marked: Slice) -> Option<usize> {
+    // This mark is only possible in square one?
+    if marked & MASK_SQUARE1_EXCLUDED == SLICE_EMPTY {
+        Some(0)
+        // This mark is only possible in square two?
+    } else if marked & MASK_SQUARE2_EXCLUDED == SLICE_EMPTY {
+        Some(1)
+        // This mark is only possible in square three?
+    } else if marked & MASK_SQUARE3_EXCLUDED == SLICE_EMPTY {
+        Some(2)
+    } else {
+        None
+    }
+}
+
+pub fn unset_three<T: CellCollection>(grid: &mut Grid, start: usize, set: &T, mark: Mark) -> bool {
+    let mut changed = false;
+
+    changed |= mark_off_at(grid, set.get_coord(start + 0), mark);
+    changed |= mark_off_at(grid, set.get_coord(start + 1), mark);
+    changed |= mark_off_at(grid, set.get_coord(start + 2), mark);
+
+    changed
+}
+
+#[inline(always)]
+fn mark_off_at(grid: &mut Grid, coord: Coord, mark: Mark) -> bool {
+    let cell = grid.get_cell_at(coord);
+
+    if !cell.is_possible(mark) {
+        return false;
+    }
+
+    grid.unset_possible_at(coord, mark);
+    return true;
+}
+
+pub fn only_possible_in(mark: Mark, data1: Cell, data2: Cell, data3: Cell) -> Option<usize> {
+    match (
+        data1.is_possible(mark),
+        data2.is_possible(mark),
+        data3.is_possible(mark),
+    ) {
+        (true, false, false) => Some(0),
+        (false, true, false) => Some(1),
+        (false, false, true) => Some(2),
+        _ => None,
+    }
+}
+
 pub fn count(mark: Mark, data1: Cell, data2: Cell, data3: Cell) -> usize {
-    return data1.is_possible(mark) as usize
-        + data2.is_possible(mark) as usize
-        + data3.is_possible(mark) as usize;
+    let mask = mark.to_data() as usize;
+    let shift = mask.trailing_zeros() as usize;
+
+    let c = (data1.get_value() as usize & mask)
+        + (data2.get_value() as usize & mask)
+        + (data3.get_value() as usize & mask);
+
+    c >> shift
 }

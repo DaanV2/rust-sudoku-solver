@@ -1,8 +1,12 @@
-use std::{fmt::Display, ops::BitOr};
+use std::{
+    fmt::Display,
+    ops::{BitAnd, BitOr},
+};
 
 use super::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark};
 
 const SLICE_SIZE: usize = 16;
+#[allow(dead_code)]
 const SLICE_ACTUAL_SIZE: usize = 9;
 
 #[derive(Clone)]
@@ -10,8 +14,10 @@ pub struct Slice {
     pub items: [Cell; SLICE_SIZE],
 }
 
+pub const SLICE_EMPTY: Slice = Slice::new();
+
 impl Slice {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Slice {
             items: [Cell::new_empty(); SLICE_SIZE],
         }
@@ -29,6 +35,27 @@ impl Slice {
         }
 
         slice
+    }
+
+    pub const fn create_mask_full(cell: Cell) -> Slice {
+        Slice {
+            items: [cell; SLICE_SIZE],
+        }
+    }
+
+    pub const fn create_mask_threes(c1: Cell, c2: Cell, c3: Cell) -> Slice {
+        let mut s = Slice::new();
+        s.items[0] = c1;
+        s.items[1] = c1;
+        s.items[2] = c1;
+        s.items[3] = c2;
+        s.items[4] = c2;
+        s.items[5] = c2;
+        s.items[6] = c3;
+        s.items[7] = c3;
+        s.items[8] = c3;
+
+        s
     }
 
     /// Returns the cell at the given index assumes the index is valid
@@ -169,11 +196,10 @@ impl Slice {
 
     pub fn only_possible_value(&self, mark: Mark) -> Slice {
         let mut slice = self.clone();
+        let mask = Cell::new_with_possible(mark);
 
-        for i in slice.iter() {
-            if !slice.items[i].is_possible(mark) {
-                slice.items[i] = Cell::new_empty();
-            }
+        for i in self.iter() {
+            slice.items[i] = slice.items[i] & mask;
         }
 
         slice
@@ -254,6 +280,28 @@ impl BitOr for Slice {
         slice
     }
 }
+
+impl BitAnd for Slice {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        let mut slice = Slice::new();
+
+        for i in slice.iter() {
+            slice.items[i] = self.items[i] & rhs.items[i];
+        }
+
+        slice
+    }
+}
+
+impl PartialEq for Slice {
+    fn eq(&self, other: &Self) -> bool {
+        self.items == other.items
+    }
+}
+
+impl Copy for Slice {}
 
 pub struct SliceValue {
     pub items: [u8; 9],

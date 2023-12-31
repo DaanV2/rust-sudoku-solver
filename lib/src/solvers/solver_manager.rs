@@ -1,6 +1,7 @@
 use super::{
     determined_solver::DeterminedSolver,
     is_solved::IsSolved,
+    mark_occupy::MarkOccupy,
     mark_reset::MarkReset,
     mark_simple::MarkSimple,
     mark_survivor::MarkSurvivor,
@@ -54,10 +55,10 @@ impl SolverManager {
         if result.is_done() {
             return result;
         }
-        // if MarkAreaCount::solve(grid) == SolveResult::Solved {
-        //     return SolveResult::Solved;
-        // }
-        // Solvers
+        result = result | MarkOccupy::solve(grid);
+        if result.is_done() {
+            return result;
+        }
         result = result | MarkSurvivor::solve(grid);
         if result.is_done() {
             return result;
