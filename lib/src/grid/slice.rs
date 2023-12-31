@@ -31,6 +31,13 @@ impl Slice {
         slice
     }
 
+    /// Returns the cell at the given index assumes the index is valid
+    pub fn get(&self, index: usize) -> Cell {
+        unsafe {
+            return self.items.get_unchecked(index).clone();
+        }
+    }
+
     /// Returns the number of cells that are not empty
     pub fn count(&self) -> usize {
         let mut count = 0;

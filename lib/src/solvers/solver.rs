@@ -87,6 +87,7 @@ impl SolveResult {
         }
     }
 
+    /// Returns updated if changed is true, otherwise nothing.
     pub fn from_changed(changed: bool) -> Self {
         match changed {
             true => SolveResult::Updated,
