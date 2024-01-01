@@ -155,6 +155,7 @@ impl Grid {
 
     /// Places the given value at the given index, clearing the rows, columns and squares
     pub fn place_value(&mut self, index: usize, value: u16) {
+        debug_assert!(value > 0 && value <= 9, "Value out of range");
         let coord = Coord::from_index(index);
         self.place_value_at(coord, value);
     }
@@ -168,6 +169,7 @@ impl Grid {
 
     /// Marks off the given value from the given coordinate, clearing the rows, columns and squares
     pub fn mark_off(&mut self, coord: Coord, value: u16) {
+        debug_assert!(value > 0 && value <= 9, "Value out of range");
         let mask = get_unset_influence_mask(coord, value);
 
         // Unset the possible values

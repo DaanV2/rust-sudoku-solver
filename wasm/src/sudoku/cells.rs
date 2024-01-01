@@ -49,7 +49,9 @@ impl Cell {
         }
 
         for (i, v) in cells.iter().enumerate() {
-            grid.place_value(i as usize, (*v) as u16);
+            if *v >= 1 && *v <= 9 {
+                grid.place_value(i, (*v) as u16)
+            }
         }
 
         return grid;

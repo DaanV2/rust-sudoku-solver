@@ -9,6 +9,7 @@ pub const INFLUENCE_MASK: [Grid; GRID_SIZE] = generate_influence_masks();
 pub const UNSET_INFLUENCE_MASK: [[Grid; GRID_SIZE]; 9] = generate_unset_influence_masks_all();
 
 pub fn get_unset_influence_mask(coord: Coord, value: u16) -> Grid {
+    debug_assert!(value >= 1 && value <= 9, "Value must be between 1 and 9");
     let index = (value - 1) as usize;
 
     if let Some(set) = UNSET_INFLUENCE_MASK.get(index) {
