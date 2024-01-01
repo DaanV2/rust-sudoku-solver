@@ -1,5 +1,7 @@
 mod sudoku;
 
+use std::ops::BitXor;
+
 use sudoku::cells::Cell;
 use sudoku_solver_lib::{generators::generators::Generator, solvers::solver_manager};
 use wasm_bindgen::prelude::*;
@@ -68,7 +70,13 @@ pub fn generate() -> Vec<Cell> {
 
 /// Generate a new grid with a specific difficulty and seed. If the difficulty is 0, it will be a full grid.
 #[wasm_bindgen]
-pub fn generate_with(difficulty: i32, seed: u64) -> Vec<Cell> {
+pub fn generate_with(difficulty: i32, seed: i32) -> Vec<Cell> {
+    if seed == 0 {
+        panic!("Seed cannot be 0");
+    }
+    let mut seed = seed as u64;
+    seed |= seed.bitxor(u64::MAX) << 32;
+
     let mut generator = Generator::new_with_seed(seed);
 
     let grid = generator.generate();

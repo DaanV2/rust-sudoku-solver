@@ -91,8 +91,10 @@ wasm.then(async (wasm_module) => {
   generate.onclick = function () {
     const start = Date.now();
     var diff = document.getElementById("difficulty").value;
-    var seed = BigInt(Math.random() * Number.MAX_VALUE);
+    var seed = Math.random() * Number.MAX_SAFE_INTEGER;
+    seed = Math.floor(seed);
 
+    console.log("seed", seed);
     var output = wasm_module.generate_with(diff, seed);
     output.difficulty = diff;
     output.seed = seed;
