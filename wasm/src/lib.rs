@@ -3,7 +3,10 @@ mod sudoku;
 use std::ops::BitXor;
 
 use sudoku::cells::Cell;
-use sudoku_solver_lib::{generators::generators::Generator, solvers::solver_manager};
+use sudoku_solver_lib::{
+    generators::generators::Generator,
+    solvers::{fast_solver::FastSolver, solver_manager},
+};
 use wasm_bindgen::prelude::*;
 
 /// Create a new empty grid.
@@ -49,11 +52,10 @@ pub fn solve_once(grid: Vec<i32>) -> Vec<Cell> {
 pub fn solve(grid: Vec<i32>) -> Vec<Cell> {
     let grid = Cell::to_sudoku_grid(grid);
 
-    let solver = solver_manager::SolverManager::new();
-    let result = solver.solve(grid);
-    println!("Solved: {}", result);
+    let mut solver = FastSolver::new_random();
+    let result = solver.solve(&grid);
 
-    Cell::from_grid(result.grid)
+    Cell::from_grid(result)
 }
 
 /// Generate a new grid with a random seed and difficulty.
