@@ -14,12 +14,19 @@ impl IsSolved {
     }
 
     pub fn solve(grid: &Grid) -> SolveResult {
-        let mut c: Cell = Cell::new_empty();
+        let mut check_possible = Cell::new_empty();
+        let mut check_filled = true;
+
         for i in grid.iter() {
-            c = c | *grid.get_cell(i);
+            let c = grid.get_cell(i);
+            check_possible = check_possible | *c;
+            check_filled &= c.get_value() > 0;
         }
 
-        if c.only_possible().is_empty() {
+        if check_possible.only_possible().is_empty() {
+            if !check_filled {
+                return SolveResult::Error;
+            }
             return SolveResult::Solved;
         }
 

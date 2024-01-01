@@ -1,8 +1,8 @@
 use rand::{rngs::StdRng, seq::IteratorRandom, Rng, RngCore, SeedableRng};
 
 use crate::{
-    grid::{cell::Cell, cell_collection::CellCollection, constants::GRID_SIZE, grid::Grid},
-    solvers::{solver::SolveResult, solver_manager::SolverManager, validator::validate_grid},
+    grid::{cell::Cell, cell_collection::CellCollection, grid::Grid, square::Square},
+    solvers::{solver::SolveResult, solver_manager::SolverManager},
 };
 
 pub struct Generator<T: RngCore> {
@@ -14,7 +14,7 @@ impl<T: RngCore> Generator<T> {
     /// Creates a new generator
     pub fn new(rng: T) -> Self {
         let mut solver = SolverManager::new();
-        solver.config.max_iterations = 10;
+        solver.config.max_iterations = 100;
 
         Self {
             solvers: solver,
@@ -23,59 +23,53 @@ impl<T: RngCore> Generator<T> {
     }
 
     /// Generates a new grid
-    pub fn generate(&mut self) -> Option<Grid> {
-        let grid = &mut Grid::new();
-        let mut iter = 0;
-        let mut result = self.solvers.pre_solve(grid);
+    pub fn generate(&mut self) -> Grid {
+        loop {
+            let grid = &mut Grid::new();
+            self.solvers.pre_solve(grid);
 
-        // Pick a cell, Checks its possible values, and picks a random value from the possible values
-        while !SolveResult::is_done(result) && iter < GRID_SIZE {
-            iter += 1;
-            let index = self.rng.gen_range(0..grid.max());
-            let cell = &grid.get_cell(index);
+            for sq in Square::iter_squares() {
+                let mut count = 3;
+                loop {
+                    let buf = &mut grid.clone();
+                    let result = self.determine_area(buf, sq);
+                    if result == SolveResult::Solved {
+                        return buf.clone();
+                    }
+                    if result == SolveResult::Error {
+                        count -= 1;
+                        if count == 0 {
+                            break;
+                        }
 
+                        continue;
+                    }
+
+                    // println!("{}", buf);
+                    *grid = buf.clone();
+                    break;
+                }
+            }
+        }
+    }
+
+    fn determine_area<U: CellCollection>(&mut self, grid: &mut Grid, area: U) -> SolveResult {
+        for index in area.iter() {
+            let coord = area.get_coord(index);
+            let cell = &grid.get_cell_at(coord);
             if cell.is_determined() {
                 continue;
             }
 
-            let determined = grid.count_determined();
-            if determined > (GRID_SIZE / 3) {
-                break;
-            }
-
             let iter = cell.iter_possible();
-            if let Some(value) = iter.choose(&mut self.rng) {
-                grid.place_value(index, value.to_value());
 
-                // Solve some cells, if it fails, remove the cell
-                _ = self.solvers.pre_solve(grid);
-                result = self.solvers.solve_round(grid);
-                match result {
-                    SolveResult::Error => {
-                        grid.set_cell(index, &Cell::new());
-                    }
-                    _ => {}
-                }
+            match iter.choose(&mut self.rng) {
+                Some(value) => grid.place_value_at(coord, value.to_value()),
+                None => return SolveResult::Error,
             }
         }
 
-        let out: Grid;
-        if !SolveResult::is_done(result) {
-            let r = self.solvers.solve(grid.clone());
-            out = r.grid;
-            result = r.result;
-        } else {
-            out = grid.clone();
-        }
-
-        if let Err(_) = validate_grid(&out) {
-            return None;
-        }
-
-        match result {
-            SolveResult::Solved => Some(out),
-            _ => None,
-        }
+        return self.solvers.pre_solve(grid) | self.solvers.solve_round(grid);
     }
 
     /// Removes a random amount of cells from the grid
@@ -111,5 +105,20 @@ impl Generator<StdRng> {
     pub fn new_with_seed(seed: u64) -> Self {
         let rng = StdRng::seed_from_u64(seed);
         Self::new(rng)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_generator() {
+        let mut generator = Generator::new_with_seed(77143266753986);
+        let grid = generator.generate();
+
+        println!("{}", grid);
+
+        assert_eq!(grid.count_determined(), 81);
     }
 }

@@ -135,7 +135,7 @@ impl SolverManager {
         }
     }
 
-    fn try_some_stuff(&self, grid: &Grid, start_iteration: usize) -> AnnotatedSolverResult {
+    fn try_some_stuff(&self, grid: &mut Grid, start_iteration: usize) -> AnnotatedSolverResult {
         let best_result = &mut grid.clone();
         let mut solved_amount = grid.count_determined();
         let mut iterations = start_iteration + 1;
@@ -156,6 +156,9 @@ impl SolverManager {
 
                 let result = self.solve_internal(new_grid, start_iteration);
                 if result.result == SolveResult::Error || !is_valid(&result.grid) {
+                    // Because we are trying random stuff, we can get into invalid states
+                    grid.unset_possible(index, mark);
+
                     errors += 1;
                     continue;
                 }
