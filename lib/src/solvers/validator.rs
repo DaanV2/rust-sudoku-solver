@@ -26,6 +26,34 @@ pub fn validate_grid(grid: &Grid) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+pub fn is_valid(grid: &Grid) -> bool {
+    for index in grid.iter() {
+        let coord = grid.get_coord(index);
+        let cell = grid.get_cell_at(coord);
+        if is_valid_cell(cell) == false {
+            return false;
+        }
+    }
+
+    for r in grid.iter_rows() {
+        if is_valid_area(grid, r) == false {
+            return false;
+        }
+    }
+    for c in grid.iter_columns() {
+        if is_valid_area(grid, c) == false {
+            return false;
+        }
+    }
+    for s in grid.iter_squares() {
+        if is_valid_area(grid, s) == false {
+            return false;
+        }
+    }
+
+    true
+}
+
 pub fn validate_placement(grid: &Grid, coord: Coord) -> Result<(), Box<dyn Error>> {
     //println!("{}", utility::ascii_grid(&grid));
 
@@ -75,6 +103,21 @@ pub fn validate_cell(cell: &Cell, coord: Coord) -> Result<(), Box<dyn Error>> {
     };
 }
 
+pub fn is_valid_cell(cell: &Cell) -> bool {
+    let possible = cell.iter_possible().count();
+    if let Some(v) = cell.value() {
+        if v > 9 || v < 1 {
+            return false;
+        }
+        return true;
+    }
+
+    return match possible {
+        0 => false,
+        _ => true,
+    };
+}
+
 pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) -> Result<(), Box<dyn Error>> {
     let first: Coord = area.get_coord(0);
     let last = area.get_coord(area.max() - 1);
@@ -110,11 +153,32 @@ pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) -> Result<(), Box<
     Ok(())
 }
 
-pub fn is_valid(grid: &Grid) -> bool {
-    return match validate_grid(grid) {
-        Ok(_) => true,
-        Err(_) => false,
-    };
+pub fn is_valid_area<T: CellCollection>(grid: &Grid, area: T) -> bool {
+    let slice = Slice::from(grid, &area);
+
+    for mark in Mark::iter() {
+        let determined = slice.count_determined_value(mark.to_value());
+        let possible = slice.any_possible(mark);
+
+        // If value is placed more than once, Then it's invalid
+        match determined {
+            // If value is not placed then it must be possible somewhere
+            0 => {
+                if !possible {
+                    return false;
+                }
+            }
+            // If value is placed then it can't be possible
+            1 => {
+                if possible {
+                    return false;
+                }
+            }
+            _ => return false,
+        }
+    }
+
+    true
 }
 
 #[cfg(test)]

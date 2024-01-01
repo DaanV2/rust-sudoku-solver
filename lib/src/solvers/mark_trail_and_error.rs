@@ -76,20 +76,6 @@ impl MarkTrailAndError {
                 // Place the mark
                 buffer.place_value_at(c, mark.to_value());
 
-                // Solve some stuff
-                // let mut result;
-                // loop {
-                //     result = SolveResult::Nothing;
-                //     result = result | MarkShapes::solve_for_mark(buffer, mark);
-                //     result = result | DeterminedSolver::solve_for_mark(buffer, mark);
-                //     if result != SolveResult::Updated {
-                //         break;
-                //     }
-                // }
-                // if result == SolveResult::Error {
-                //     continue;
-                // }
-
                 // Check all the square were possible are now determined, or have at least one possible left
                 // If there is any square not determined or any possible left, this cell is causing errors and needs to be marked off
                 for old_sq_index in Square::iter() {
@@ -99,23 +85,14 @@ impl MarkTrailAndError {
                     let sq = Square::from_square_index(old_sq_index);
                     let a = Slice::from(buffer, &sq);
                     //Any possible then continue
-                    if a.any_possible(mark) {
-                        continue;
-                    }
                     if a.is_determined(mark.to_value()) {
                         continue;
                     }
+                    if a.any_possible(mark) {
+                        continue;
+                    }
+
                     // This square is not determined, and has no possible left, unset this cell
-                    // println!("Marking {} at {} as impossible", mark, c);
-                    // println!("Because it causes {} to be impossible\ndata: {}", sq, a);
-                    // println!("original cell: {}", buffer);
-                    // println!("grid:\n{}", buffer);
-
-                    // for r in Row::iter_row() {
-                    //     let rs = Slice::from(buffer, &r);
-                    //     println!("{}", rs);
-                    // }
-
                     grid.unset_possible_at(c, mark);
                     changed = true;
                     break;

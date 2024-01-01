@@ -9,12 +9,24 @@ const SLICE_SIZE: usize = 16;
 #[allow(dead_code)]
 const SLICE_ACTUAL_SIZE: usize = 9;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Slice {
     pub items: [Cell; SLICE_SIZE],
 }
 
 pub const SLICE_EMPTY: Slice = Slice::new();
+
+const SLICE_POSSIBLE_MASK: [Slice; 9] = [
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N1)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N2)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N3)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N4)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N5)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N6)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N7)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N8)),
+    Slice::create_mask_full(Cell::new_with_possible(Mark::N9)),
+];
 
 impl Slice {
     pub const fn new() -> Self {
@@ -70,12 +82,10 @@ impl Slice {
         let mut count = 0;
 
         for i in self.iter() {
-            if self.items[i].has_any() {
-                count += 1;
-            }
+            count += self.items[i].has_any() as usize
         }
 
-        count as usize
+        count
     }
 
     /// Returns the number of cells that are empty
@@ -83,9 +93,7 @@ impl Slice {
         let mut count = 0;
 
         for i in self.iter() {
-            if self.items[i].is_empty() {
-                count += 1;
-            }
+            count += self.items[i].is_empty() as usize;
         }
 
         count as usize
@@ -103,26 +111,25 @@ impl Slice {
     }
 
     /// Returns if the given mark is possible in this slice
+    #[inline(always)]
     pub fn any_possible(&self, mark: Mark) -> bool {
-        let mask = Cell::new_with_possible(mark);
-
-        let result = self.bitand(Slice::create_mask_full(mask));
-
-        result != SLICE_EMPTY
+        self.only_possible_value(mark) != SLICE_EMPTY
     }
 
+    /// Counts the number of cells that are possible for the given mark
     pub fn count_possible(&self, mark: Mark) -> usize {
-        let mask = Cell::new_with_possible(mark);
-        let result = self.bitand(Slice::create_mask_full(mask));
+        let result = self.only_possible_value(mark);
         let mut count = 0;
 
-        for c in result.items.iter() {
-            count += c.get_value().count_ones() as usize;
+        for cell in result.items.iter() {
+            let b = cell.get_value();
+            count += (b > 0) as usize;
         }
 
         count
     }
 
+    /// Counts the number of cells that are determined
     pub fn count_determined(&self) -> usize {
         let mut count = 0;
         let temp = self.only_determined();
@@ -135,10 +142,12 @@ impl Slice {
         count
     }
 
+    /// Counts the number of cells that are determined to the given value
     pub fn count_determined_value(&self, value: u16) -> usize {
         let mut count = 0;
+        let temp = self.only_determined_value(value);
 
-        for c in self.items.iter() {
+        for c in temp.items.iter() {
             count += (c.get_value() == value) as usize;
         }
 
@@ -157,13 +166,13 @@ impl Slice {
     }
 
     pub fn is_determined(&self, value: u16) -> bool {
+        let mut out = false;
+
         for c in self.items.iter() {
-            if c.get_value() == value {
-                return true;
-            }
+            out |= c.get_value() == value
         }
 
-        false
+        out
     }
 
     pub fn is_fully_determined(&self) -> bool {
@@ -191,14 +200,12 @@ impl Slice {
     }
 
     pub fn only_possible_value(&self, mark: Mark) -> Slice {
-        let mut slice = self.clone();
-        let mask = Cell::new_with_possible(mark);
-
-        for i in self.iter() {
-            slice.items[i] = slice.items[i] & mask;
+        let index = mark.to_index() as usize;
+        debug_assert!(index < SLICE_POSSIBLE_MASK.len());
+        unsafe {
+            let mask = *SLICE_POSSIBLE_MASK.get_unchecked(index);
+            return self.bitand(mask);
         }
-
-        slice
     }
 
     pub fn only_determined(&self) -> Slice {

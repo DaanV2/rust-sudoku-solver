@@ -29,7 +29,7 @@ impl GridSet {
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for i in 0..5 {
+    for i in 0..1 {
         println!("Running test {}", i);
         let point = run_random_test(SIZE);
         points.push(point);

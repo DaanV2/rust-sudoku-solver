@@ -45,7 +45,7 @@ impl Mark {
         })
     }
 
-    // Returns the index of the given value
+    // Returns the index of the given value, starting from 0 to 8
     pub const fn to_index(self) -> u16 {
         Mark::to_value(self) - 1
     }
