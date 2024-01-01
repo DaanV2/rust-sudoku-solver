@@ -98,17 +98,6 @@ impl Slice {
         count as usize
     }
 
-    /// Returns if the given value is determined in this slice
-    pub fn any_determined_value(&self, value: u16) -> bool {
-        for c in self.items.iter() {
-            if c.get_value() == value {
-                return true;
-            }
-        }
-
-        false
-    }
-
     /// Returns if the given mark is possible in this slice
     #[inline(always)]
     pub fn any_possible(&self, mark: Mark) -> bool {
@@ -144,7 +133,7 @@ impl Slice {
     /// Counts the number of cells that are determined to the given value
     pub fn count_determined_value(&self, value: u16) -> usize {
         let mut count = 0;
-        let temp = self.only_determined_value(value);
+        let temp = self.clone();
 
         for c in temp.items.iter() {
             count += (c.get_value() == value) as usize;
@@ -316,78 +305,6 @@ impl PartialEq for Slice {
 }
 
 impl Copy for Slice {}
-
-pub struct SliceValue {
-    pub items: [u8; 9],
-}
-
-impl SliceValue {
-    pub fn new() -> Self {
-        SliceValue { items: [0; 9] }
-    }
-
-    pub fn iter(&self) -> std::ops::Range<usize> {
-        0..self.items.len()
-    }
-
-    pub fn any(&self) -> bool {
-        for i in self.iter() {
-            if self.items[i] != 0 {
-                return true;
-            }
-        }
-
-        false
-    }
-
-    pub fn all(&self) -> bool {
-        for i in self.iter() {
-            if self.items[i] == 0 {
-                return false;
-            }
-        }
-
-        true
-    }
-
-    pub fn count(&self) -> usize {
-        let mut count = 0;
-
-        for i in self.iter() {
-            if self.items[i] != 0 {
-                count += 1;
-            }
-        }
-
-        count
-    }
-
-    pub fn count_value(&self, value: u8) -> usize {
-        let mut count = 0;
-
-        for i in self.iter() {
-            if self.items[i] == value {
-                count += 1;
-            }
-        }
-
-        count
-    }
-}
-
-impl BitOr for SliceValue {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self::Output {
-        let mut slice = SliceValue::new();
-
-        for i in slice.iter() {
-            slice.items[i] = self.items[i] | rhs.items[i];
-        }
-
-        slice
-    }
-}
 
 #[cfg(test)]
 mod tests {
