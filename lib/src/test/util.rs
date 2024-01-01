@@ -10,13 +10,14 @@ pub mod general_tests {
     use crate::grid::grid::Grid;
     use crate::grid::mark::Mark;
     use crate::grid::utility::utility::{self, parse_from_ascii};
+    use crate::solvers::fast_solver::FastSolver;
     use crate::solvers::solver::SolveResult;
     use crate::solvers::solver_manager::SolverManager;
     use crate::solvers::validator::validate_grid;
 
     /// Tests that the grid should be solved
     pub fn test_should_solve(grid: Grid) {
-        println!("{}", utility::ascii_grid(&grid));
+        println!("{}", grid);
 
         let solver = SolverManager::new();
         let output = solver.solve(grid);
@@ -33,6 +34,20 @@ pub mod general_tests {
             panic!("Grid is not valid: {}", e);
         }
         assert_eq!(output.result, SolveResult::Solved, "Grid should be solved");
+    }
+
+    pub fn test_should_fast_solve(grid: Grid) {
+        println!("{}", grid);
+
+        let mut solver = FastSolver::new_with_seed(85822788013146);
+        let output = solver.solve(&grid);
+
+        println!("{}\n{}", get_url(&output), output);
+        // println!("result: {}", utility::hex_grid(&grid));
+
+        if let Err(e) = validate_grid(&output) {
+            panic!("Grid is not valid: {}", e);
+        }
     }
 
     /// Removes a random amount of cells from the grid

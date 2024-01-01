@@ -65,5 +65,6 @@ mod test {
         general_tests::remove_cells_amount(grid, amount);
 
         general_tests::test_should_solve(*grid);
+        general_tests::test_should_fast_solve(*grid);
     }
 }

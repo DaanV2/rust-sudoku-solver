@@ -5,10 +5,6 @@ use crate::grid::{cell_collection::CellCollection, grid::Grid, square::Square};
 use super::{solver::SolveResult, solver_manager::SolverManager};
 
 /// A solver that uses a random number generator to solve the puzzle, forcefully goes through each square
-///
-/// ```rust
-/// let mut solver = FastSolver::new_random();
-/// ```
 pub struct FastSolver<T: RngCore> {
     pub rng: T,
     pub solvers: SolverManager,
