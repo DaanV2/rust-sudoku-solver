@@ -45,8 +45,6 @@ impl MarkTrailAndError {
         let mut squares_determined = [false; 9];
         let mut changed = false;
 
-        let determined = grid.count_determined();
-
         for sq_index in Square::iter() {
             let sq = Square::from_square_index(sq_index);
 
@@ -54,7 +52,7 @@ impl MarkTrailAndError {
         }
 
         let squares_count = squares_determined.iter().filter(|x| **x).count();
-        if squares_count < 3 || squares_count > 7 || determined < 25 {
+        if squares_count < 3 || squares_count > 7 || grid.count_determined() < 25 {
             // 8 and 9 amount statistics are almost 100% never hitting
             // Under determined 25 is the most in-effective
             return false;
