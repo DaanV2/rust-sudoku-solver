@@ -29,7 +29,8 @@ impl GridSet {
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for _ in 0..5 {
+    for i in 0..5 {
+        println!("Running test {}", i);
         let point = run_random_test(SIZE);
         points.push(point);
     }
@@ -71,15 +72,14 @@ fn run_random_test(size: usize) -> DataPoint {
         if count % step == 0 {
             println!("Generated {} grids", count);
         }
-        if let Some(grid) = generator.generate() {
-            // println!("{}", grid);
-            // validate_grid(&grid);
-            let g: &mut Grid = &mut grid.clone();
+        let grid = generator.generate();
+        // println!("{}", grid);
+        // validate_grid(&grid);
+        let g: &mut Grid = &mut grid.clone();
 
-            generator.remove_cells(g);
-            grids.push(GridSet::new(grid, g.clone()));
-            count += 1;
-        }
+        generator.remove_cells(g);
+        grids.push(GridSet::new(grid, g.clone()));
+        count += 1;
     }
 
     let generation_time = start_time.elapsed();
@@ -114,13 +114,12 @@ fn run_test(size: usize, remove_cells: usize) -> DataPoint {
         if count % step == 0 {
             println!("Generated {} grids", count);
         }
-        if let Some(grid) = generator.generate() {
-            let g: &mut Grid = &mut grid.clone();
+        let grid = generator.generate();
+        let g: &mut Grid = &mut grid.clone();
 
-            generator.remove_cells_amount(g, remove_cells);
-            grids.push(GridSet::new(grid, g.clone()));
-            count += 1;
-        }
+        generator.remove_cells_amount(g, remove_cells);
+        grids.push(GridSet::new(grid, g.clone()));
+        count += 1;
     }
 
     let generation_time = start_time.elapsed();

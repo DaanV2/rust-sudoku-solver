@@ -59,14 +59,11 @@ pub fn solve(grid: Vec<i32>) -> Vec<Cell> {
 pub fn generate() -> Vec<Cell> {
     let mut generator = Generator::new_random();
 
-    loop {
-        if let Some(grid) = generator.generate() {
-            let mut g = grid.clone();
-            generator.remove_cells(&mut g);
+    let grid = generator.generate();
+    let mut g = grid.clone();
+    generator.remove_cells(&mut g);
 
-            return Cell::from_grid(g);
-        }
-    }
+    return Cell::from_grid(g);
 }
 
 /// Generate a new grid with a specific difficulty and seed. If the difficulty is 0, it will be a full grid.
@@ -74,17 +71,14 @@ pub fn generate() -> Vec<Cell> {
 pub fn generate_with(difficulty: i32, seed: u64) -> Vec<Cell> {
     let mut generator = Generator::new_with_seed(seed);
 
-    loop {
-        if let Some(grid) = generator.generate() {
-            let mut g = grid.clone();
+    let grid = generator.generate();
+    let mut g = grid.clone();
 
-            if difficulty != 0 {
-                generator.remove_cells_amount(&mut g, difficulty as usize);
-            }
-
-            return Cell::from_grid(g);
-        }
+    if difficulty != 0 {
+        generator.remove_cells_amount(&mut g, difficulty as usize);
     }
+
+    return Cell::from_grid(g);
 }
 
 #[cfg(test)]
