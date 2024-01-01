@@ -19,6 +19,7 @@ use super::mark::Mark;
 // 9 is possible = 1000 0000 0000 0000
 
 type InnerCell = u16;
+pub const CELL_BITS_SIZE: usize = u16::BITS as usize;
 
 /// A cell in the grid
 #[derive(Debug, Clone, Copy, PartialEq)]
