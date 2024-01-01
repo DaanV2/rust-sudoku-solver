@@ -1,8 +1,12 @@
-use std::{fmt::Display, ops::BitOr};
+use std::{
+    fmt::Display,
+    ops::{BitAnd, BitOr},
+};
 
 use super::{cell::Cell, cell_collection::CellCollection, grid::Grid, mark::Mark};
 
 const SLICE_SIZE: usize = 16;
+#[allow(dead_code)]
 const SLICE_ACTUAL_SIZE: usize = 9;
 
 #[derive(Clone)]
@@ -10,8 +14,10 @@ pub struct Slice {
     pub items: [Cell; SLICE_SIZE],
 }
 
+pub const SLICE_EMPTY: Slice = Slice::new();
+
 impl Slice {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Slice {
             items: [Cell::new_empty(); SLICE_SIZE],
         }
@@ -29,6 +35,34 @@ impl Slice {
         }
 
         slice
+    }
+
+    pub const fn create_mask_full(cell: Cell) -> Slice {
+        Slice {
+            items: [cell; SLICE_SIZE],
+        }
+    }
+
+    pub const fn create_mask_threes(c1: Cell, c2: Cell, c3: Cell) -> Slice {
+        let mut s = Slice::new();
+        s.items[0] = c1;
+        s.items[1] = c1;
+        s.items[2] = c1;
+        s.items[3] = c2;
+        s.items[4] = c2;
+        s.items[5] = c2;
+        s.items[6] = c3;
+        s.items[7] = c3;
+        s.items[8] = c3;
+
+        s
+    }
+
+    /// Returns the cell at the given index assumes the index is valid
+    pub fn get(&self, index: usize) -> Cell {
+        unsafe {
+            return self.items.get_unchecked(index).clone();
+        }
     }
 
     /// Returns the number of cells that are not empty
@@ -70,22 +104,20 @@ impl Slice {
 
     /// Returns if the given mark is possible in this slice
     pub fn any_possible(&self, mark: Mark) -> bool {
-        let mut result = Cell::new_empty();
+        let mask = Cell::new_with_possible(mark);
 
-        for c in self.items.iter() {
-            result = result | *c;
-        }
+        let result = self.bitand(Slice::create_mask_full(mask));
 
-        result.is_possible(mark)
+        result != SLICE_EMPTY
     }
 
     pub fn count_possible(&self, mark: Mark) -> usize {
+        let mask = Cell::new_with_possible(mark);
+        let result = self.bitand(Slice::create_mask_full(mask));
         let mut count = 0;
 
-        for c in self.items.iter() {
-            if c.is_possible(mark) {
-                count += 1;
-            }
+        for c in result.items.iter() {
+            count += c.get_value().count_ones() as usize;
         }
 
         count
@@ -93,11 +125,11 @@ impl Slice {
 
     pub fn count_determined(&self) -> usize {
         let mut count = 0;
+        let temp = self.only_determined();
 
-        for c in self.items.iter() {
-            if c.is_determined() {
-                count += 1;
-            }
+        for cell in temp.items.iter() {
+            let b = cell.get_value();
+            count += (b > 0) as usize;
         }
 
         count
@@ -107,9 +139,7 @@ impl Slice {
         let mut count = 0;
 
         for c in self.items.iter() {
-            if c.get_value() == value {
-                count += 1;
-            }
+            count += (c.get_value() == value) as usize;
         }
 
         count
@@ -162,21 +192,20 @@ impl Slice {
 
     pub fn only_possible_value(&self, mark: Mark) -> Slice {
         let mut slice = self.clone();
+        let mask = Cell::new_with_possible(mark);
 
-        for i in slice.iter() {
-            if !slice.items[i].is_possible(mark) {
-                slice.items[i] = Cell::new_empty();
-            }
+        for i in self.iter() {
+            slice.items[i] = slice.items[i] & mask;
         }
 
         slice
     }
 
-    pub fn only_determined(&self) -> SliceValue {
-        let mut slice = SliceValue::new();
+    pub fn only_determined(&self) -> Slice {
+        let mut slice = self.clone();
 
         for i in slice.iter() {
-            slice.items[i] = self.items[i].only_determined().get_value() as u8;
+            slice.items[i] = slice.items[i].only_determined();
         }
 
         slice
@@ -247,6 +276,28 @@ impl BitOr for Slice {
         slice
     }
 }
+
+impl BitAnd for Slice {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        let mut slice = Slice::new();
+
+        for i in slice.iter() {
+            slice.items[i] = self.items[i] & rhs.items[i];
+        }
+
+        slice
+    }
+}
+
+impl PartialEq for Slice {
+    fn eq(&self, other: &Self) -> bool {
+        self.items == other.items
+    }
+}
+
+impl Copy for Slice {}
 
 pub struct SliceValue {
     pub items: [u8; 9],
@@ -327,13 +378,14 @@ mod tests {
         test::util::general_tests,
     };
 
-    use super::Slice;
+    use super::{Slice, SLICE_ACTUAL_SIZE};
 
     fn slice_example() -> Slice {
         let mut s = Slice::new();
 
-        for i in s.iter() {
-            s.items[i] = Cell::new_with_value((i as u16) + 1);
+        for i in 0..SLICE_ACTUAL_SIZE {
+            let v = (i as u16) + 1;
+            s.items[i] = Cell::new_with_value((v % 9) + 1);
         }
 
         s

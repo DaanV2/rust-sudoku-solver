@@ -29,7 +29,7 @@ async fn main() -> io::Result<()> {
             .service(routes::solver::filled);
 
         app = app.service(
-            fs::Files::new("/", "./wasm/static/")
+            fs::Files::new("/", "./static/")
                 .prefer_utf8(true)
                 .show_files_listing()
                 .index_file("index.html"),

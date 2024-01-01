@@ -1,6 +1,7 @@
 use super::{
     determined_solver::DeterminedSolver,
     is_solved::IsSolved,
+    mark_occupy::MarkOccupy,
     mark_reset::MarkReset,
     mark_simple::MarkSimple,
     mark_survivor::MarkSurvivor,
@@ -17,7 +18,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 200,
+            max_iterations: 1000,
         }
     }
 }
@@ -40,33 +41,34 @@ impl SolverManager {
     }
 
     pub fn pre_solve(&self, grid: &mut Grid) -> SolveResult {
-        let result = MarkReset::solve(grid);
+        let mut result = MarkReset::solve(grid);
         if result.is_done() {
             return result;
         }
 
-        MarkSimple::solve(grid)
+        result |= MarkSimple::solve(grid);
+        if result.is_done() {
+            return result;
+        }
+
+        MarkOccupy::solve(grid)
     }
 
     pub fn solve_round(&self, grid: &mut Grid) -> SolveResult {
         //Markers
-        let mut result = MarkSimple::solve(grid);
+        let mut result = MarkOccupy::solve(grid);
         if result.is_done() {
             return result;
         }
-        // if MarkAreaCount::solve(grid) == SolveResult::Solved {
-        //     return SolveResult::Solved;
-        // }
-        // Solvers
-        result = result | MarkSurvivor::solve(grid);
+        result |= MarkTrailAndError::solve(grid);
         if result.is_done() {
             return result;
         }
-        result = result | MarkTrailAndError::solve(grid);
+        result |= MarkSurvivor::solve(grid);
         if result.is_done() {
             return result;
         }
-        result = result | DeterminedSolver::solve(grid);
+        result |= DeterminedSolver::solve(grid);
         if result.is_done() {
             return result;
         }
@@ -83,9 +85,12 @@ impl SolverManager {
         if result.result != SolveResult::Solved {
             loop {
                 result = self.try_some_stuff(current, result.iterations);
-                if result.result == SolveResult::Solved
-                    || result.iterations >= self.config.max_iterations
-                {
+                match result.result {
+                    SolveResult::Solved => return result,
+                    SolveResult::Error => return result,
+                    _ => (),
+                }
+                if result.iterations >= self.config.max_iterations {
                     return result;
                 }
                 current = &mut result.grid;
@@ -134,6 +139,8 @@ impl SolverManager {
         let best_result = &mut grid.clone();
         let mut solved_amount = grid.count_determined();
         let mut iterations = start_iteration + 1;
+        let mut errors = 0;
+        let mut tries: usize = 0;
 
         //Used as a buffer
         let new_grid = &mut Grid::empty();
@@ -143,11 +150,13 @@ impl SolverManager {
             let cell = grid.get_cell(index);
 
             for mark in cell.only_possible().iter_possible() {
+                tries += 1;
                 grid.clone_to(new_grid);
                 new_grid.place_value(index, mark.to_value());
 
                 let result = self.solve_internal(new_grid, start_iteration);
                 if result.result == SolveResult::Error || !is_valid(&result.grid) {
+                    errors += 1;
                     continue;
                 }
                 if result.result == SolveResult::Solved {
@@ -162,9 +171,15 @@ impl SolverManager {
             }
         }
 
+        let result = if errors == tries {
+            SolveResult::Error
+        } else {
+            SolveResult::Nothing
+        };
+
         AnnotatedSolverResult {
             grid: best_result.clone(),
-            result: SolveResult::Nothing,
+            result: result,
             iterations: iterations,
         }
     }

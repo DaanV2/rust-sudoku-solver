@@ -2,8 +2,8 @@ use core::panic;
 use std::error::Error;
 
 use crate::grid::{
-    cell::Cell, cell_collection::CellCollection, column::Column, coords::Coord, flags::Flags16,
-    grid::Grid, mark::Mark, queries::count_determine_value, row::Row, slice::Slice,
+    cell::Cell, cell_collection::CellCollection, column::Column, coords::Coord, grid::Grid,
+    mark::Mark, queries::count_determine_value, row::Row, slice::Slice,
 };
 
 pub fn validate_grid(grid: &Grid) -> Result<(), Box<dyn Error>> {
@@ -84,15 +84,20 @@ pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) -> Result<(), Box<
         let determined = slice.count_determined_value(mark.to_value());
         let possible = slice.any_possible(mark);
 
+        // If value is placed more than once, Then it's invalid
         if determined > 1 {
             let msg = format!("More than one {} in area, from {} to {}", mark, first, last);
             return Err(msg)?;
+
+        // If value is placed then it can't be possible
         } else if determined == 1 && possible {
             let msg = format!(
                 "Determined {} with possible values, from {} to {}",
                 mark, first, last
             );
             return Err(msg)?;
+
+        // If value is not placed then it must be possible somewhere
         } else if determined == 0 && !possible {
             let msg = format!(
                 "No possible values for {}, from {} to {}",
@@ -106,51 +111,10 @@ pub fn validate_area<T: CellCollection>(grid: &Grid, area: T) -> Result<(), Box<
 }
 
 pub fn is_valid(grid: &Grid) -> bool {
-    for r in grid.iter_rows() {
-        if !is_valid_area(grid, r) {
-            return false;
-        }
-    }
-    for c in grid.iter_columns() {
-        if !is_valid_area(grid, c) {
-            return false;
-        }
-    }
-    for s in grid.iter_squares() {
-        if !is_valid_area(grid, s) {
-            return false;
-        }
-    }
-
-    true
-}
-
-pub fn is_valid_area<T: CellCollection>(grid: &Grid, area: T) -> bool {
-    let mut determined = Flags16::new();
-    let mut possible = Flags16::new();
-
-    let slice = Slice::from(grid, &area);
-
-    for index in slice.iter() {
-        let cell = slice.items[index];
-
-        if let Some(v) = cell.value() {
-            determined.set_bit(v as usize);
-        } else {
-            let f = Flags16::from(cell);
-            possible = possible | f;
-        }
-    }
-
-    for i in 1..=9 {
-        // if determined and possible have the same bit set, then it's invalid
-        // Since determined and possible are mutually exclusive, this is the same as
-        if determined.get_bit(i) == possible.get_bit(i) {
-            return false;
-        }
-    }
-
-    return true;
+    return match validate_grid(grid) {
+        Ok(_) => true,
+        Err(_) => false,
+    };
 }
 
 #[cfg(test)]

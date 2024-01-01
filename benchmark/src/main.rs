@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write, time::Instant};
+use std::time::Instant;
 
 use sudoku_solver_lib::{
     generators::generators::Generator,
@@ -150,7 +150,7 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
     println!("Solving...");
     let start_time = Instant::now();
 
-    let mut file = File::create("tests.rs").unwrap();
+    // let mut file = File::create("specifics.rs").unwrap();
 
     //Solve all of them
     for i in 0..size {
@@ -173,11 +173,10 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
         }
     }
 
-    file.flush().unwrap();
-
     let solve_time = start_time.elapsed();
     let size128 = size as u128;
 
+    // Uncomment to generate tests
     // print_grids.sort_by(|a, b| {
     //     a.to_solve
     //         .count_determined()
@@ -208,8 +207,7 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
 
     //     file.write_all(b"}\n\n").unwrap();
     // }
-
-    file.flush().unwrap();
+    // file.flush().unwrap();
 
     DataPoint {
         updated,

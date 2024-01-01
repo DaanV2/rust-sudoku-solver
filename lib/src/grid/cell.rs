@@ -60,6 +60,13 @@ impl Cell {
         Cell { data }
     }
 
+    /// Creates a new cell with a mark turned on as a possibility, and all  other possibilities off
+    pub const fn new_with_possible(mark: Mark) -> Cell {
+        let v = mark.to_data();
+
+        Self::new_with_value(v)
+    }
+
     /// Creates a new cell with a mark as a value, and all possibilities off
     pub const fn new_from_mark_as_value(mark: Mark) -> Cell {
         let v = mark.to_value();
@@ -86,7 +93,7 @@ impl Cell {
 
     /// Returns true if the cell is determined or not
     pub fn is_determined(self) -> bool {
-        (self.data & CELL_VALUE_MASK) != 0
+        (self.data & CELL_VALUE_MASK) > 0
     }
 
     /// Returns true if the given value is possible for this cell

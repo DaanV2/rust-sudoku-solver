@@ -1,6 +1,6 @@
 use std::{
     fmt::{Display, Formatter},
-    ops::BitOr,
+    ops::{BitOr, BitOrAssign},
 };
 
 use crate::grid::grid::Grid;
@@ -87,6 +87,7 @@ impl SolveResult {
         }
     }
 
+    /// Returns updated if changed is true, otherwise nothing.
     pub fn from_changed(changed: bool) -> Self {
         match changed {
             true => SolveResult::Updated,
@@ -111,6 +112,12 @@ impl BitOr for SolveResult {
 
     fn bitor(self, rhs: Self) -> Self::Output {
         self.combine(rhs)
+    }
+}
+
+impl BitOrAssign for SolveResult {
+    fn bitor_assign(&mut self, rhs: Self) {
+        *self = self.combine(rhs);
     }
 }
 

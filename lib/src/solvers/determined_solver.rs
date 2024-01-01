@@ -137,8 +137,16 @@ fn set_if_possible_area_for_mark<T: CellCollection>(grid: &mut Grid, area: &T, m
 #[cfg(test)]
 mod test {
     use crate::{
-        grid::{cell::Cell, cell_collection::CellCollection, mark::Mark},
-        solvers::solver::{SolveResult, Solver},
+        grid::{
+            cell::Cell, cell_collection::CellCollection, coords::Coord, mark::Mark,
+            utility::utility,
+        },
+        solvers::{
+            determined_solver::DeterminedSolver,
+            mark_reset::MarkReset,
+            mark_simple::MarkSimple,
+            solver::{SolveResult, Solver},
+        },
         test::util::general_tests,
     };
 
@@ -228,5 +236,61 @@ mod test {
 
             assert!(cell.is_determined(), "Cell at {} is not determined", index)
         }
+    }
+
+    #[test]
+    pub fn specific_test() {
+        let grid = &mut utility::parse_from_ascii(
+            r#"4 3 5 | 2 6 9 | . . .
+               6 8 2 | . 7 . | 4 9 3
+               1 9 7 | 8 3 4 | 5 . .
+               ------|-------|------
+               8 2 6 | . 9 . | 3 4 7
+               3 7 4 | 6 8 2 | 9 1 5
+               9 5 1 | 7 4 3 | 6 . .
+               ------|-------|------
+               5 1 9 | 3 2 6 | . . 4
+               2 4 8 | 9 5 7 | . . .
+               7 6 3 | 4 1 8 | 2 5 9"#,
+        );
+        println!("{}", grid);
+
+        MarkReset::solve(grid);
+        MarkSimple::solve(grid);
+        let result: SolveResult = DeterminedSolver::solve(grid);
+
+        assert_eq!(result, SolveResult::Updated);
+        let c = grid.get_cell_at(Coord::new(7, 7));
+
+        println!("{}", grid);
+        assert_eq!(c.get_value(), 3);
+    }
+
+    #[test]
+    pub fn specific_test2() {
+        let grid = &mut utility::parse_from_ascii(
+            r#". 3 . | 2 6 . | . . .
+               . . . | . 7 . | . 9 .
+               1 . 7 | 8 3 4 | 5 . .
+               ------|-------|------
+               . 2 . | . . . | . . 7
+               3 . 4 | 6 . 2 | . . 5
+               9 5 1 | 7 4 3 | 6 . .
+               ------|-------|------
+               . 1 . | 3 . 6 | . . 4
+               2 . 8 | . 5 . | . . .
+               7 6 3 | 4 1 . | 2 5 ."#,
+        );
+        println!("{}", grid);
+
+        MarkReset::solve(grid);
+        MarkSimple::solve(grid);
+        let result: SolveResult = DeterminedSolver::solve(grid);
+
+        assert_eq!(result, SolveResult::Updated);
+        let c = grid.get_cell_at(Coord::new(4, 1));
+
+        println!("{}", grid);
+        assert_eq!(c.get_value(), 7);
     }
 }
