@@ -97,14 +97,13 @@ fn solve_area_for_mark<U: CellCollection, T: Iterator<Item = U>>(
 
 #[inline(always)]
 fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
-    let only_possible = Slice::from(grid, area).only_possible();
-    let or_all = only_possible.or_all();
+    let data = Slice::from(grid, area);
+    let or_all = data.only_possible().or_all();
     let mut changed = false;
 
     for mark in or_all.iter_possible() {
-        let marked = only_possible.only_possible_value(mark);
-        if marked.count() == 1 {
-            let index = marked.first_possible(mark);
+        if data.count_possible(mark) == 1 {
+            let index = data.first_possible(mark);
             let coord = area.get_coord(index);
             let value = mark.to_value();
             changed = true;
@@ -118,12 +117,11 @@ fn set_if_possible_area<T: CellCollection>(grid: &mut Grid, area: &T) -> bool {
 
 #[inline(always)]
 fn set_if_possible_area_for_mark<T: CellCollection>(grid: &mut Grid, area: &T, mark: Mark) -> bool {
-    let only_possible = Slice::from(grid, area).only_possible();
+    let data = Slice::from(grid, area);
     let mut changed = false;
 
-    let marked = only_possible.only_possible_value(mark);
-    if marked.count() == 1 {
-        let index = marked.first_possible(mark);
+    if data.count_possible(mark) == 1 {
+        let index = data.first_possible(mark);
         let coord = area.get_coord(index);
         let value = mark.to_value();
         changed = true;

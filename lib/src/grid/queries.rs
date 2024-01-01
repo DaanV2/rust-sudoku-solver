@@ -20,25 +20,6 @@ pub fn count_determine_value<T: CellCollection>(grid: &Grid, area: T, value: u16
     count
 }
 
-pub fn any_determined_value<T: CellCollection>(grid: &Grid, area: T, value: u16) -> bool {
-    if area.max() == 9 {
-        let s = Slice::from(grid, &area);
-
-        return s.any_determined_value(value);
-    }
-
-    for i in area.iter() {
-        let c = area.get_coord(i);
-        let cell = grid.get_cell_at(c);
-
-        if cell.get_value() == value {
-            return true;
-        }
-    }
-
-    false
-}
-
 pub fn count_possible<T: CellCollection>(grid: &Grid, area: T, mark: Mark) -> usize {
     if area.max() == 9 {
         let s = Slice::from(grid, &area);
@@ -57,23 +38,4 @@ pub fn count_possible<T: CellCollection>(grid: &Grid, area: T, mark: Mark) -> us
     }
 
     count
-}
-
-pub fn any_possible<T: CellCollection>(grid: &Grid, area: T, mark: Mark) -> bool {
-    if area.max() == 9 {
-        let s = Slice::from(grid, &area);
-
-        return s.any_possible(mark);
-    }
-
-    for i in area.iter() {
-        let c = area.get_coord(i);
-        let cell = grid.get_cell_at(c);
-
-        if cell.is_possible(mark) {
-            return true;
-        }
-    }
-
-    false
 }

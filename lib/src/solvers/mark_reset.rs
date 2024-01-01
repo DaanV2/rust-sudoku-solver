@@ -14,14 +14,16 @@ impl MarkReset {
 
     pub fn solve(grid: &mut Grid) -> SolveResult {
         for i in grid.iter() {
-            let mut cell = *grid.get_cell(i);
+            let cell = *grid.get_cell(i);
 
             // If the cell is not determined, then we need to reset the marks
-            if !cell.is_determined() {
-                cell = Cell::new();
-            }
+            let c = if cell.is_determined() {
+                cell
+            } else {
+                Cell::new()
+            };
 
-            grid.set_cell(i, &cell);
+            grid.set_cell(i, &c);
         }
 
         SolveResult::Nothing

@@ -172,8 +172,8 @@ impl Grid {
 
         // Unset the possible values
         for index in 0..mask.cells.len() {
-            let mask = mask.cells[index];
             unsafe {
+                let mask = *mask.cells.get_unchecked(index);
                 let c = self.cells.get_unchecked_mut(index);
                 c.clone_from(&c.bitand(mask));
             }

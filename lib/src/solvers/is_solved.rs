@@ -24,6 +24,7 @@ impl IsSolved {
         }
 
         if check_possible.only_possible().is_empty() {
+            // If there is a cell with no possible values, then the puzzle is unsolvable
             if !check_filled {
                 return SolveResult::Error;
             }

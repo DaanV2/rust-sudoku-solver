@@ -15,7 +15,7 @@ impl MarkSimple {
     }
 
     pub fn solve(grid: &mut Grid) -> SolveResult {
-        for i in grid.iter().rev() {
+        for i in grid.iter() {
             let cell = grid.get_cell(i);
 
             //If the cell is determined, mark off that square, row and column
