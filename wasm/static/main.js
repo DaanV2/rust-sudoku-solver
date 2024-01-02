@@ -18,7 +18,7 @@ for (var i = 0; i < 9; i++) {
     var input = document.createElement("input");
     cell.appendChild(input);
 
-    input.type = "text";
+    input.type = "number";
     input.setAttribute("class", "cell");
     input.setAttribute("id", `cell_${index}`);
     input.setAttribute("placeholder", "");
@@ -27,7 +27,8 @@ for (var i = 0; i < 9; i++) {
     input.setAttribute("onkeyup", "checkInput(this)");
     input.setAttribute("onchange", "cell_changed(this)");
     input.setAttribute("value", "");
-    input.setAttribute("title", `Cell ${index}`);
+    input.setAttribute("title", `Cell ${i + 1} by ${j + 1}`);
+    input.setAttribute("alt", `Cell ${i + 1} by ${j + 1}`);
   }
 }
 

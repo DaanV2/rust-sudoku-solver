@@ -1,18 +1,18 @@
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --text-color: #f0f0f0;
     --bg-color: #2b2b2b;
     --cell-bg-color: #3c3c3c;
     --highlight: #ff9500;
-  }
-
-  .cell {
-    color: var(--text-color);
-    background-color: var(--cell-bg-color) !important;
-  }
-  #playground {
-    color: var(--text-color);
-    background-color: var(--bg-color);
   }
 }
 
@@ -22,15 +22,6 @@
     --bg-color: #f0f0f0;
     --cell-bg-color: #e0e0e0;
     --highlight: #ff9500;
-  }
-
-  .cell {
-    color: var(--text-color);
-    background-color: var(--cell-bg-color) !important;
-  }
-  #playground {
-    color: var(--text-color);
-    background-color: var(--bg-color);
   }
 }
 
@@ -45,17 +36,34 @@ body {
   width: 600px;
   color: var(--text-color);
   background-color: var(--bg-color);
+  transition: width 0.5s ease;
+}
+
+@media screen and (max-width: 600px) {
+  #playground {
+    width: 90%;
+  }  
 }
 
 #sudoku {
   border-collapse: collapse;
   margin: auto;
   width: 100%;
+  aspect-ratio: 1/1;
+  border: var(--text-color) 3px solid;
+  border-radius: 5px;
+  transition: width 0.5s ease, height 0.5s ease, transform 0.5s ease;
 }
 
 #sudoku td {
-  border: 1px thin grey;
   text-align: center;
+  transition: background-color 0.5s;
+}
+
+/* Cell hover col */
+#sudoku td:hover {
+  background-color: var(--highlight) !important;
+  transition: background-color 0.5s;
 }
 
 .horizontal-center {
@@ -64,40 +72,41 @@ body {
 }
 
 .cell {
-  width: 70px;
-  height: 70px;
+  width: 100%;
+  aspect-ratio: 1/1;
+  box-sizing: border-box;
+  padding: 5px;
+  border: 0px solid transparent;
   text-align: center;
   font-size: larger;
-  padding: 0;
   margin: 0;
-  transition: background-color 0.5s;
   word-wrap: break-word;
   word-break: break-all;
   color: var(--text-color);
-  background-color: var(--bg-color);
-  transition: background-color 0.5s;
+  background-color: transparent;
 }
 
-/* Cell hover col */
-.cell:hover {
-  background-color: var(--highlight) !important;
-  transition: background-color 0.5s;
+.row {
+  padding: 0;
+  margin: 0;
+  border-bottom: var(--cell-bg-color) 2px solid;
 }
 
-.row,
 .col {
   padding: 0;
   margin: 0;
+  border-right: var(--cell-bg-color) 2px solid;
 }
 
 .row_2,
 .row_5 {
-  border-bottom: 2px solid var(--text-color);
+  border-bottom: 3px solid var(--text-color);
 }
 
 .col_2,
 .col_5 {
-  border-right: 2px solid var(--text-color);
+  border-right: 3px solid var(--text-color);
+  padding: 2px;
 }
 
 #buttons {
@@ -107,7 +116,7 @@ body {
 button {
   font-size: 24px;
   height: 50px;
-  width: 25%;
+  width: 150px;
   color: var(--text-color);
   background-color: var(--bg-color);
   border-radius: 7px;
@@ -134,18 +143,18 @@ label {
 }
 
 #text {
-    font-size: 24px;
-    height: auto;
-    width: 100%;
-    text-align: center;
-    border: 0px solid transparent;
-    border-radius: 5px;
-    margin: 0;
-    margin-top: 20px;
-    padding: 0;
-    transition: background-color 0.5s;
-    color: var(--text-color);
-    background-color: var(--bg-color);
+  font-size: 24px;
+  height: auto;
+  width: 100%;
+  text-align: center;
+  border: 0px solid transparent;
+  border-radius: 5px;
+  margin: 0;
+  margin-top: 20px;
+  padding: 0;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  transition: background-color 0.5s;
 }
 
 .error {
@@ -154,4 +163,8 @@ label {
 
 .info {
     background-color: green !important;
+}
+
+.animated {
+  transition: width 0.5s ease, height 0.5s ease, transform 0.5s ease;
 }
