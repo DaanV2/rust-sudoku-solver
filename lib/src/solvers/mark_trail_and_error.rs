@@ -65,7 +65,7 @@ impl MarkTrailAndError {
             }
 
             for c in sq.iter().map(|s| sq.get_coord(s)) {
-                let original_cell = grid.get_cell_at(c);
+                let original_cell = *grid.get_cell_at(c);
                 if !original_cell.is_possible(mark) {
                     continue;
                 }

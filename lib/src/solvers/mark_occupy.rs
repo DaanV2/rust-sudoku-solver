@@ -67,14 +67,14 @@ fn solve_set<T: CellCollection>(grid: &mut Grid, check: &T, other1: &T, other2: 
 
     // Check if only possible in one square
     let mut changed = false;
+    let possibles = s1.only_possible().or_all();
 
-    let possibles = s1.or_all().only_possible();
     for mark in possibles.iter_possible() {
         // Isolate only the cells that have this mark
         if let Some(square) = which_square(s1, mark) {
             // We found a square that can only be in one place
-            changed |= unset_three(grid, square * 3, other1, mark);
-            changed |= unset_three(grid, square * 3, other2, mark);
+            changed |= unset_three(grid, square, other1, mark);
+            changed |= unset_three(grid, square, other2, mark);
         }
     }
 
@@ -83,15 +83,19 @@ fn solve_set<T: CellCollection>(grid: &mut Grid, check: &T, other1: &T, other2: 
 
 #[inline(always)]
 fn which_square(marked: Slice, mark: Mark) -> Option<usize> {
-    // This mark is only possible in square one?'
-    let s1 = (marked.get(0) | marked.get(1) | marked.get(2)).is_possible(mark);
-    let s2 = (marked.get(3) | marked.get(4) | marked.get(5)).is_possible(mark);
-    let s3 = (marked.get(6) | marked.get(7) | marked.get(8)).is_possible(mark);
+    // This mark is only possible in square one?
+    let c1 = marked.get(0) | marked.get(1) | marked.get(2);
+    let c2 = marked.get(3) | marked.get(4) | marked.get(5);
+    let c3 = marked.get(6) | marked.get(7) | marked.get(8);
 
-    return match (s1, s2, s3) {
+    return match (
+        c1.is_possible(mark),
+        c2.is_possible(mark),
+        c3.is_possible(mark),
+    ) {
         (true, false, false) => Some(0),
-        (false, true, false) => Some(1),
-        (false, false, true) => Some(2),
+        (false, true, false) => Some(3),
+        (false, false, true) => Some(6),
         _ => None,
     };
 }
@@ -108,12 +112,10 @@ pub fn unset_three<T: CellCollection>(grid: &mut Grid, start: usize, set: &T, ma
 
 #[inline(always)]
 fn mark_off_at(grid: &mut Grid, coord: Coord, mark: Mark) -> bool {
-    let cell = grid.get_cell_at(coord);
-
-    if !cell.is_possible(mark) {
-        return false;
-    }
-
+    let old = *grid.get_cell_at(coord);
     grid.unset_possible_at(coord, mark);
-    return true;
+
+    let n = *grid.get_cell_at(coord);
+
+    return n != old;
 }

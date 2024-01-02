@@ -13,7 +13,7 @@ pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
 const SOLVE_SEED: u64 = 85822788013146;
-const SIZE: usize = 5000;
+const SIZE: usize = 10000;
 
 struct GridSet {
     #[allow(dead_code)]
@@ -30,7 +30,7 @@ impl GridSet {
 fn main() {
     let mut points = Vec::with_capacity(20);
 
-    for i in 0..5 {
+    for i in 0..10 {
         println!("Running test {}", i);
         let point = run_random_test(SIZE);
         points.push(point);
