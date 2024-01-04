@@ -96,17 +96,22 @@ fn solve_set<T: CellCollection>(grid: &mut Grid, check: &T, other1: &T, other2: 
         // Isolate only the cells that have this mark
         if let Some(square) = which_square(c1, c2, c3, mark) {
             // We found a square that can only be in one place
-            unset_three(grid, square, other1, mark);
-            unset_three(grid, square, other2, mark);
-            changed = true;
+            changed |= unset_three(grid, square, other1, mark);
+            changed |= unset_three(grid, square, other2, mark);
         }
     }
 
     changed
 }
 
-pub fn unset_three<T: CellCollection>(grid: &mut Grid, start: usize, set: &T, mark: Mark) {
+pub fn unset_three<T: CellCollection>(grid: &mut Grid, start: usize, set: &T, mark: Mark) -> bool {
+    let c1 = *grid.get_cell_at(set.get_coord(start + 0));
+    let c2 = *grid.get_cell_at(set.get_coord(start + 1));
+    let c3 = *grid.get_cell_at(set.get_coord(start + 2));
+
     grid.unset_possible_at(set.get_coord(start + 0), mark);
     grid.unset_possible_at(set.get_coord(start + 1), mark);
     grid.unset_possible_at(set.get_coord(start + 2), mark);
+
+    return (c1 | c2 | c3).is_possible(mark);
 }

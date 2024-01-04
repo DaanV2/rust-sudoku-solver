@@ -18,7 +18,7 @@ pub struct SolverManagerConfig {
 impl SolverManagerConfig {
     pub fn new() -> Self {
         Self {
-            max_iterations: 1000,
+            max_iterations: 200,
         }
     }
 }
@@ -60,10 +60,10 @@ impl SolverManager {
         if result.is_done() {
             return result;
         }
-        // result |= MarkTrailAndError::solve(grid);
-        // if result.is_done() {
-        //     return result;
-        // }
+        result |= MarkTrailAndError::solve(grid);
+        if result.is_done() {
+            return result;
+        }
         result |= MarkSurvivor::solve(grid);
         if result.is_done() {
             return result;

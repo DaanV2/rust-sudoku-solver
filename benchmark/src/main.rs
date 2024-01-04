@@ -13,7 +13,7 @@ pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
 const SOLVE_SEED: u64 = 85822788013146;
-const SIZE: usize = 40000;
+const SIZE: usize = 10000;
 
 struct GridSet {
     #[allow(dead_code)]
