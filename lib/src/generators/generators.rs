@@ -13,20 +13,16 @@ pub struct Generator<T: RngCore> {
 impl<T: RngCore> Generator<T> {
     /// Creates a new generator
     pub fn new(rng: T) -> Self {
-        let mut solver = SolverManager::new();
-        solver.config.max_iterations = 100;
+        let mut solvers = SolverManager::new();
+        solvers.config.max_iterations = 100;
 
-        Self {
-            solvers: solver,
-            rng: rng,
-        }
+        Self { solvers, rng }
     }
 
     /// Generates a new grid
     pub fn generate(&mut self) -> Grid {
         loop {
             let grid = &mut Grid::new();
-            self.solvers.pre_solve(grid);
 
             for sq in Square::iter_squares() {
                 let mut count = 3;

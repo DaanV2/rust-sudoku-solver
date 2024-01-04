@@ -1,6 +1,6 @@
 use crate::grid::{
-    cell_collection::CellCollection, column::Column, constants::GRID_HEIGHT_RANGE, coords::Coord,
-    grid::Grid, mark::Mark, row::Row, slice::Slice,
+    cell::Cell, cell_collection::CellCollection, column::Column, constants::GRID_HEIGHT_RANGE,
+    grid::Grid, mark::Mark, row::Row,
 };
 
 use super::solver::{SolveResult, Solver};
@@ -37,7 +37,9 @@ impl MarkOccupy {
             changed |= solve_set(grid, r1, r2, r3);
             changed |= solve_set(grid, r2, r1, r3);
             changed |= solve_set(grid, r3, r1, r2);
+        }
 
+        for index in GRID_HEIGHT_RANGE.step_by(3) {
             let c1 = &Column::new(index + 0);
             let c2 = &Column::new(index + 1);
             let c3 = &Column::new(index + 2);
@@ -63,59 +65,48 @@ impl Solver for MarkOccupy {
 
 #[inline(always)]
 fn solve_set<T: CellCollection>(grid: &mut Grid, check: &T, other1: &T, other2: &T) -> bool {
-    let s1 = Slice::from(grid, check);
+    fn get_cell<T: CellCollection>(grid: &Grid, marked: &T, index: usize) -> Cell {
+        let coord = marked.get_coord(index);
+        *grid.get_cell_at(coord)
+    }
+
+    let c1 = get_cell(grid, check, 0) | get_cell(grid, check, 1) | get_cell(grid, check, 2);
+    let c2 = get_cell(grid, check, 3) | get_cell(grid, check, 4) | get_cell(grid, check, 5);
+    let c3 = get_cell(grid, check, 6) | get_cell(grid, check, 7) | get_cell(grid, check, 8);
+
+    fn which_square(c1: Cell, c2: Cell, c3: Cell, mark: Mark) -> Option<usize> {
+        // This mark is only possible in square one?
+        return match (
+            c1.is_possible(mark),
+            c2.is_possible(mark),
+            c3.is_possible(mark),
+        ) {
+            (true, false, false) => Some(0),
+            (false, true, false) => Some(3),
+            (false, false, true) => Some(6),
+            _ => None,
+        };
+    }
 
     // Check if only possible in one square
     let mut changed = false;
-    let possibles = s1.only_possible().or_all();
+    let possibles: Cell = (c1 | c2 | c3).only_possible();
 
     for mark in possibles.iter_possible() {
         // Isolate only the cells that have this mark
-        if let Some(square) = which_square(s1, mark) {
+        if let Some(square) = which_square(c1, c2, c3, mark) {
             // We found a square that can only be in one place
-            changed |= unset_three(grid, square, other1, mark);
-            changed |= unset_three(grid, square, other2, mark);
+            unset_three(grid, square, other1, mark);
+            unset_three(grid, square, other2, mark);
+            changed = true;
         }
     }
 
     changed
 }
 
-#[inline(always)]
-fn which_square(marked: Slice, mark: Mark) -> Option<usize> {
-    // This mark is only possible in square one?
-    let c1 = marked.get(0) | marked.get(1) | marked.get(2);
-    let c2 = marked.get(3) | marked.get(4) | marked.get(5);
-    let c3 = marked.get(6) | marked.get(7) | marked.get(8);
-
-    return match (
-        c1.is_possible(mark),
-        c2.is_possible(mark),
-        c3.is_possible(mark),
-    ) {
-        (true, false, false) => Some(0),
-        (false, true, false) => Some(3),
-        (false, false, true) => Some(6),
-        _ => None,
-    };
-}
-
-pub fn unset_three<T: CellCollection>(grid: &mut Grid, start: usize, set: &T, mark: Mark) -> bool {
-    let mut changed = false;
-
-    changed |= mark_off_at(grid, set.get_coord(start + 0), mark);
-    changed |= mark_off_at(grid, set.get_coord(start + 1), mark);
-    changed |= mark_off_at(grid, set.get_coord(start + 2), mark);
-
-    changed
-}
-
-#[inline(always)]
-fn mark_off_at(grid: &mut Grid, coord: Coord, mark: Mark) -> bool {
-    let old = *grid.get_cell_at(coord);
-    grid.unset_possible_at(coord, mark);
-
-    let n = *grid.get_cell_at(coord);
-
-    return n != old;
+pub fn unset_three<T: CellCollection>(grid: &mut Grid, start: usize, set: &T, mark: Mark) {
+    grid.unset_possible_at(set.get_coord(start + 0), mark);
+    grid.unset_possible_at(set.get_coord(start + 1), mark);
+    grid.unset_possible_at(set.get_coord(start + 2), mark);
 }

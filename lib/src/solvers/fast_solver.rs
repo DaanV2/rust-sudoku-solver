@@ -2,7 +2,11 @@ use rand::{rngs::StdRng, seq::IteratorRandom, RngCore, SeedableRng};
 
 use crate::grid::{cell_collection::CellCollection, grid::Grid, square::Square};
 
-use super::{solver::SolveResult, solver_manager::SolverManager};
+use super::{
+    determined_solver::DeterminedSolver, is_solved::IsSolved, mark_occupy::MarkOccupy,
+    mark_reset::MarkReset, mark_simple::MarkSimple, mark_survivor::MarkSurvivor,
+    solver::SolveResult, solver_manager::SolverManager,
+};
 
 /// A solver that uses a random number generator to solve the puzzle, forcefully goes through each square
 pub struct FastSolver<T: RngCore> {
@@ -20,6 +24,12 @@ impl<T: RngCore> FastSolver<T> {
     }
 
     pub fn solve(&mut self, source: &Grid) -> Grid {
+        let source = &mut source.clone();
+
+        if self.solvers.pre_solve(source).is_done() {
+            return *source;
+        }
+
         loop {
             match self.solve_round(source) {
                 Some(grid) => return grid,
@@ -30,7 +40,6 @@ impl<T: RngCore> FastSolver<T> {
 
     fn solve_round(&mut self, source: &Grid) -> Option<Grid> {
         let grid = &mut source.clone();
-        self.solvers.pre_solve(grid);
 
         for sq in Square::iter_squares() {
             let mut count = 3;
@@ -78,7 +87,34 @@ impl<T: RngCore> FastSolver<T> {
             }
         }
 
-        return self.solvers.pre_solve(grid) | self.solvers.solve_round(grid);
+        return self.check_solve(grid);
+    }
+
+    #[inline(always)]
+    fn check_solve(&self, grid: &mut Grid) -> SolveResult {
+        let mut result = MarkReset::solve(grid);
+        if result.is_done() {
+            return result;
+        }
+        result |= MarkSimple::solve(grid);
+        if result.is_done() {
+            return result;
+        }
+        result |= MarkOccupy::solve(grid);
+        if result.is_done() {
+            return result;
+        }
+        result |= MarkSurvivor::solve(grid);
+        if result.is_done() {
+            return result;
+        }
+        result |= DeterminedSolver::solve(grid);
+        if result.is_done() {
+            return result;
+        }
+
+        //Finalizers
+        result | IsSolved::solve(grid)
     }
 }
 

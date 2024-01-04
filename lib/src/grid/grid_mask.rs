@@ -12,13 +12,11 @@ pub fn get_unset_influence_mask(coord: Coord, value: u16) -> Grid {
     debug_assert!(value >= 1 && value <= 9, "Value must be between 1 and 9");
     let index = (value - 1) as usize;
 
-    if let Some(set) = UNSET_INFLUENCE_MASK.get(index) {
-        if let Some(mask) = set.get(coord.get_index()) {
-            return *mask;
-        }
+    unsafe {
+        let set = UNSET_INFLUENCE_MASK.get_unchecked(index);
+        let mask = set.get_unchecked(coord.get_index());
+        return *mask;
     }
-
-    GRID_MASK
 }
 
 pub const fn get_unset_possible_mask(mark: Mark) -> Grid {

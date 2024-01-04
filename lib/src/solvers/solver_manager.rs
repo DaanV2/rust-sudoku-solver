@@ -5,6 +5,7 @@ use super::{
     mark_reset::MarkReset,
     mark_simple::MarkSimple,
     mark_survivor::MarkSurvivor,
+    mark_trail_and_error::MarkTrailAndError,
     solver::{AnnotatedSolverResult, SolveResult},
     validator::is_valid,
 };

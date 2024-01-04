@@ -40,7 +40,7 @@ impl Slice {
 
         for i in area.iter() {
             let coord = area.get_coord(i);
-            slice.items[i] = grid.get_cell_at(coord).clone()
+            slice.items[i] = *grid.get_cell_at(coord)
         }
 
         slice
@@ -99,9 +99,10 @@ impl Slice {
     }
 
     /// Returns if the given mark is possible in this slice
-    #[inline(always)]
     pub fn any_possible(&self, mark: Mark) -> bool {
-        self.only_possible_value(mark) != SLICE_EMPTY
+        let d = self.only_possible_value(mark).to_u64_or();
+
+        d > 0
     }
 
     /// Counts the number of cells that are possible for the given mark
