@@ -13,7 +13,7 @@ pub mod setup;
 
 const RNG_SEED: u64 = 77143266753986;
 const SOLVE_SEED: u64 = 85822788013146;
-const SIZE: usize = 10000;
+const SIZE: usize = 40000;
 
 struct GridSet {
     #[allow(dead_code)]
@@ -59,7 +59,6 @@ fn main() {
 #[allow(dead_code)]
 fn run_random_test(size: usize) -> DataPoint {
     println!("Running test with {} grids and random cells removed", size);
-    let step = size / 10;
 
     let mut grids = Vec::with_capacity(size);
 
@@ -70,12 +69,7 @@ fn run_random_test(size: usize) -> DataPoint {
     let mut count = 0;
 
     while count < size {
-        if count % step == 0 {
-            println!("Generated {} grids", count);
-        }
         let grid = generator.generate();
-        // println!("{}", grid);
-        // validate_grid(&grid);
         let g: &mut Grid = &mut grid.clone();
 
         generator.remove_cells(g);
@@ -138,7 +132,6 @@ fn run_test(size: usize, remove_cells: usize) -> DataPoint {
 fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
     let mut solver = FastSolver::new_with_seed(SOLVE_SEED);
     let size = grids.len();
-    let step = size / 10;
 
     let mut solved = 0;
     let mut error = 0;
@@ -150,9 +143,6 @@ fn solve(grids: Vec<GridSet>, point: DataPoint) -> DataPoint {
 
     //Solve all of them
     for i in 0..size {
-        if i % step == 0 {
-            println!("Solving grid {}...", i);
-        }
         let grid = grids.get(i).unwrap().to_solve.clone();
         let r = solver.solve(&grid);
 
