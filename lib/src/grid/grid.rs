@@ -148,9 +148,7 @@ impl Grid {
 
     /// Clones this grid into the given grid
     pub fn clone_to(&self, to: &mut Grid) {
-        for index in self.iter() {
-            to.set_cell(index, self.get_cell(index));
-        }
+        to.cells.clone_from(&self.cells);
     }
 
     /// Places the given value at the given index, clearing the rows, columns and squares

@@ -30,7 +30,7 @@ impl<T: RngCore> Generator<T> {
                     let buf = &mut grid.clone();
                     let result = self.determine_area(buf, sq);
                     if result == SolveResult::Solved {
-                        return buf.clone();
+                        return *buf;
                     }
                     if result == SolveResult::Error {
                         count -= 1;
@@ -42,7 +42,7 @@ impl<T: RngCore> Generator<T> {
                     }
 
                     // println!("{}", buf);
-                    *grid = buf.clone();
+                    buf.clone_to(grid);
                     break;
                 }
             }
